@@ -1,0 +1,97 @@
+#pragma once
+
+/// <summary>
+/// クラス名：World
+/// 概要：ECSの全体を管理するクラスです。
+/// 用途：エンティティの生成・破壊、コンポーネントの操作、システムの管理を行います。
+/// </summary>
+class World
+{
+private:
+	EntityManager m_em;									
+	ComponentManager m_cm;
+	std::vector<std::unique_ptr<System>> m_systems;
+
+public:
+	/// <summary>
+	/// エンティティを作成します。
+	/// </summary>
+	/// <returns>Entity型で値を返します。</returns>
+	Entity CreateEntity();
+
+	/// <summary>
+	/// エンティティを破壊します。
+	/// </summary>
+	/// <param name="entity">破壊したいEntity</param>
+	void DestoryEntity(Entity entity);
+
+	/// <summary>
+	/// 指定したエンティティが生存しているかを確認します。
+	/// </summary>
+	/// <param name="entity">確認したいEntity</param>
+	/// <returns>生存している場合は true、生存していない場合は false を返します。</returns>
+	bool IsAlive(Entity entity)const { return m_em.IsAlive(entity); }
+
+	/// <summary>
+	/// 特定のエンティティに指定したコンポーネントを追加します。
+	/// </summary>
+	/// <typeparam name="T">追加したいコンポーネントを指定します。</typeparam>
+	/// <param name="e">コンポーネントを追加するエンティティ</param>
+	/// <param name="c">追加するコンポーネントの初期状態を設定します。</param>
+	template <typename T> void AddComponent(Entity e, const T& c) { m_cm.AddComponent(e, c); }
+
+	/// <summary>
+	/// 特定のエンティティから指定したコンポーネントを取得します。
+	/// </summary>
+	/// <typeparam name="T">取得したいコンポーネントを指定します。</typeparam>
+	/// <param name="e">コンポーネント取得先のエンティティ</param>
+	/// <returns>取得したコンポーネントをポインタ型で返します。</returns>
+	template <typename T> T* GetComponent(Entity e) { return m_cm.GetComponent<T>(e); }
+
+	/// <summary>
+	/// 特定のエンティティが指定したコンポーネントを所持しているか確認します。
+	/// </summary>
+	/// <typeparam name="T">確認したいコンポーネントを指定します。</typeparam>
+	/// <param name="e">確認したいエンティティ</param>
+	/// <returns>所持していたら true 所持していなければ false を返します。</returns>
+	template <typename T> bool HasComponent(Entity e) { return m_cm.HasComponent<T>(e); }
+
+	/// <summary>
+	/// 指定したシステムを追加します。
+	/// </summary>
+	/// <param name="sys">make_unique<追加したいSystem>で指定します。</param>
+	void AddSystem(std::unique_ptr<System> sys);
+
+	/// <summary>
+	/// 指定したシステムを取得します。
+	/// </summary>
+	/// <typeparam name="T">取得したいSystemを指定します。（Systemクラスを継承しているものだけです。）</typeparam>
+	/// <returns>取得したシステムをポインタ型で返します。</returns>
+	template <typename T>
+	T* GetSystem()
+	{
+		for (auto& sys : m_systems) 
+		{
+			if (auto ptr = dynamic_cast<T*>(sys.get())) 
+			{
+				return ptr;
+			}
+		}
+		throw std::runtime_error("System not found");
+	}
+
+	void Start(World& world);
+
+	/// <summary>
+	/// ワールドにあるすべてのUpdateを管理します。
+	/// 毎秒約60回更新され、Drawよりも先に処理が行われます。
+	/// </summary>
+	void Update(World& world);
+
+	/// <summary>
+	/// ワールドにある全てのDrawを管理します。
+	/// 毎秒約60回更新され、Updateよりも後に処理が行われます。
+	/// </summary>
+	/// <param name="world"></param>
+	void Draw(World& world);
+};
