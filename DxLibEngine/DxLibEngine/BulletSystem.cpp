@@ -4,7 +4,7 @@ void BulletSystem::CreateBulletPool(int poolSize, World& world)
 {
 	for (int i = 0; i < poolSize; i++)
 	{
-		Entity e = world.CreateEntity();
+		Entity* e = world.CreateEntity();
 	}
 }
 
@@ -32,14 +32,14 @@ void BulletSystem::Update(ComponentManager& cm, World& world)
 
 		Vector3 forward
 		(
-			transform.worldMatrix._21,  // YŽ²‚ÌX¬•ª
-			transform.worldMatrix._22,  // YŽ²‚ÌY¬•ª
+			transform.localToWorldMatrix._21,  // YŽ²‚ÌX¬•ª
+			transform.localToWorldMatrix._22,  // YŽ²‚ÌY¬•ª
 			0
 		);
 
 		m_transformSystem->Translate(transform, forward * velocity.speed * Time::GetDeltaTime());
 
-		if (transform.position.y < 0 || transform.position.x < 0 || transform.position.x > Screen::GetWidth())
+		if (transform.position.y > 1920 || transform.position.x > 1920 || transform.position.x > Screen::GetWidth())
 		{
 			world.DestoryEntity(entity);
 			continue;

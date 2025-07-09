@@ -25,7 +25,7 @@ private:
 
 	void AttackC(World& world, Transform& transform);
 
-	void Damage(Status& status, RenderCommand& renderCommand, Boss& boss);
+	void Damage(Status& status, Boss& boss);
 
 public:
 	void Start(ComponentManager& cm, World& world) override;

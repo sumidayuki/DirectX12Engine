@@ -1,8 +1,8 @@
-#include "PlayerSystem.h"
+ï»¿#include "PlayerSystem.h"
 
 void PlayerSystem::MovePlayer(Input& input, Transform& transform, Velocity& velocity)
 {
-	Vector3 direction = Vector3();
+	Vector2 direction = Vector2();
 
 	if (input.moveLeft)
 	{
@@ -20,23 +20,23 @@ void PlayerSystem::MovePlayer(Input& input, Transform& transform, Velocity& velo
 	}
 	if (input.moveUp)
 	{
-		if (transform.position.y >= 0)
+		if (transform.position.y <= Screen::GetHeight())
 		{
-			direction.y -= 1;
+			direction.y += 1;
 		}
 	}
 	if (input.moveDown)
 	{
-		if (transform.position.y <= Screen::GetHeight())
+		if (transform.position.y >= 0)
 		{
-			direction.y += 1;
+			direction.y -= 1;
 		}
 	}
 
 	if (direction.Magnitude() > 0)
 	{
 		direction = direction.Normalized();
-		m_transformSystem->Translate(transform, direction * velocity.speed * Time::GetDeltaTime());
+		m_transformSystem->Translate(transform, Vector3(direction * velocity.speed * Time::GetDeltaTime(), 0));
 	}
 }
 
@@ -44,55 +44,54 @@ void PlayerSystem::Start(ComponentManager& cm, World& world)
 {
 	m_transformSystem = world.GetSystem<TransformSystem>();
 
-	// ’Êí‚Ì“G‚ğ–‘O‚É“Ç‚İ‚ñ‚Å‚¨‚­
-	Sprite heart;
-	{
-		int heartHandle = LoadGraph("Assets/heart.png");
+	TextureImporter importer;
+	m_bulletTex = importer.Import(L"Assets/bullet_01.png");
 
-		int w, h;
-		GetGraphSize(heartHandle, &w, &h);
-
-		heart = Sprite{ .handle = heartHandle, .width = w, .height = h };
-	}
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ä½œæˆ
+	Entity* player = world.CreateWithSprite(L"Assets/player_01.png", Rect(0, 0, 128, 128), Vector2(0.5f, 0.5f), 1.0f, nullptr, Vector3(Screen::GetWidth() / 2, 300, 40));
+	world.AddComponent<Player>(*player, Player{});
+	world.AddComponent<Input>(*player, Input{});
+	world.AddComponent<Velocity>(*player, Velocity{ .speed = 350 });
+	world.AddComponent<Status>(*player, Status{ 3 });
+	world.AddComponent<CircleCollider2D>(*player, CircleCollider2D{ .radius = 40 });
 
 	for (int i = 0; i < 3; i++)
 	{
-		Entity e = world.CreateEntity();
-		world.AddComponent<RenderCommand>(e, RenderCommand{ .layer = Layer::UI, .type = RenderType::Sprite, .sprite = heart });
-		Transform* transform = world.GetComponent<Transform>(e);
+		Entity* e = world.CreateEntity();
+		Transform* transform = world.GetComponent<Transform>(*e);
 		transform->position = Vector3(500 - i * 150, 900, 0);
 		transform->scale = Vector3(0.1f, 0.1f, 0);
 		transform->dirty = true;
 
-		m_lifeObjects.push(e);
+		//m_lifeObjects.push(e);
 	}
 }
 
 void PlayerSystem::Update(ComponentManager& cm, World& world)
 {
-	// ViewƒNƒ‰ƒX‚ğg—p‚µ‚Ä world “à‚ÌŠeƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ‘S‚ÄŠ‚µ‚Ä‚¢‚é Entity ‚ğ’T‚µ‚Ü‚·B
-	View<Player, Input, Velocity, Transform, Status, RenderCommand> view(cm);
+	// Viewã‚¯ãƒ©ã‚¹ã‚’ä½¿ç”¨ã—ã¦ world å†…ã®å„ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’å…¨ã¦æ‰€æŒã—ã¦ã„ã‚‹ Entity ã‚’æ¢ã—ã¾ã™ã€‚
+	View<Player, Input, Velocity, Transform, Status> view(cm);
 
-	for (auto [entity, player, input, velocity, transform, status, renderCommand] : view)
+	for (auto [entity, player, input, velocity, transform, status] : view)
 	{
 		if (status.life <= 0)
 		{
 			world.DestoryEntity(entity);
 		}
 
-		// ƒ_ƒ[ƒW‚ğó‚¯‚½‚È‚ç
+		// ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’å—ã‘ãŸãªã‚‰
 		if (status.isDamaged)
 		{
 			player.damageTimer = 1.0f;
 
 			status.isDamaged = false;
 
-			renderCommand.sprite.g = 0;
-			renderCommand.sprite.b = 0;
+			//.sprite.g = 0;
+			//renderCommand.sprite.b = 0;
 
-			world.DestoryEntity(m_lifeObjects.front());
+			//world.DestoryEntity(m_lifeObjects.front());
 
-			m_lifeObjects.pop();
+			//m_lifeObjects.pop();
 		}
 
 		if (player.damageTimer >= 0)
@@ -101,8 +100,8 @@ void PlayerSystem::Update(ComponentManager& cm, World& world)
 		}
 		else
 		{
-			renderCommand.sprite.g = 255;
-			renderCommand.sprite.b = 255;
+			//.sprite.g = 255;
+			//renderCommand.sprite.b = 255;
 		}
 
 		MovePlayer(input, transform, velocity);
@@ -113,17 +112,11 @@ void PlayerSystem::Update(ComponentManager& cm, World& world)
 		{
 			if (m_timer >= m_coolDown)
 			{
-				Entity bullet = world.CreateEntity();
-				Transform* bTransform = world.GetComponent<Transform>(bullet);
-
-				// Œ»İ‚ÌˆÊ’u‚ğ Œ»İ‚ÌˆÊ’u + ã‚É50 + ‰œs65
-				bTransform->position = transform.position + (Vector3::up * 50) + (Vector3::forward * 65);
-				Vector3 axis = Vector3::forward;
-				m_transformSystem->Rotate(*bTransform, axis, 180);
-				world.AddComponent<Bullet>(bullet, Bullet{ .damage = 3 });
-				world.AddComponent<Velocity>(bullet, Velocity{ .speed = 700 });
-				world.AddComponent<RenderCommand>(bullet, RenderCommand{.layer = Layer::Bullet, .type = RenderType::Circle, .circle = Circle{.radius = 10 } });
-				world.AddComponent<CircleCollider2D>(bullet, CircleCollider2D{ .radius = 10 });			
+				Entity* bullet = world.CreateWithSprite(m_bulletTex, Rect(0, 0, 64, 64), Vector2(0.5f, 0.5f), 1.0f, nullptr, transform.position + (Vector3::up * 50) + (Vector3::forward * 15));
+				Transform* bTransform = world.GetComponent<Transform>(*bullet);
+				world.AddComponent<Bullet>(*bullet, Bullet{ .damage = 3 });
+				world.AddComponent<Velocity>(*bullet, Velocity{ .speed = 700 });
+				world.AddComponent<CircleCollider2D>(*bullet, CircleCollider2D{ .radius = 10 });			
 
 				m_timer = 0;
 			}

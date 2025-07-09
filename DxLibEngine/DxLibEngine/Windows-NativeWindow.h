@@ -24,6 +24,8 @@ namespace Windows
 
 		HWND GetHandle() { return m_hWnd; }
 
+		void SetFullscreen(bool enable);
+
 		void SetClientSize(const Vector2Int& size);
 
 		Vector2Int GetClientSize() const;

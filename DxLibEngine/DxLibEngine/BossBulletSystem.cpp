@@ -17,8 +17,8 @@ void BossBulletSystem::Update(ComponentManager& cm, World& world)
 		{
 			Vector3 forward
 			(
-				transform.worldMatrix._21,  // Y²‚ÌX¬•ª
-				transform.worldMatrix._22,  // Y²‚ÌY¬•ª
+				transform.localToWorldMatrix._21,  // Y²‚ÌX¬•ª
+				transform.localToWorldMatrix._22,  // Y²‚ÌY¬•ª
 				0
 			);
 

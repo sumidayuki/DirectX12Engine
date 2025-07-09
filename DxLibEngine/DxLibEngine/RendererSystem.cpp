@@ -16,10 +16,10 @@ void RendererSystem::RenderSprite(const Sprite& sprite, const Transform& transfo
 	Vector3 localLB = Vector3(-w * pivotX, h * (1.0f - pivotY), transform.position.z);
 	Vector3 localRB = Vector3(w * (1.0f - pivotX), h * (1.0f - pivotY), transform.position.z);
 
-	Vector3 lt = transform.worldMatrix.MultiplyPoint3x4(localLT);
-	Vector3 rt = transform.worldMatrix.MultiplyPoint3x4(localRT);
-	Vector3 lb = transform.worldMatrix.MultiplyPoint3x4(localLB);
-	Vector3 rb = transform.worldMatrix.MultiplyPoint3x4(localRB);
+	Vector3 lt = transform.localToWorldMatrix.MultiplyPoint3x4(localLT);
+	Vector3 rt = transform.localToWorldMatrix.MultiplyPoint3x4(localRT);
+	Vector3 lb = transform.localToWorldMatrix.MultiplyPoint3x4(localLB);
+	Vector3 rb = transform.localToWorldMatrix.MultiplyPoint3x4(localRB);
 
 	// sprite ÇÃ RGB Ç…çáÇÌÇπÇƒêFÇïœçXÇµÇ‹Ç∑ÅB
 	SetDrawBright(sprite.r, sprite.g, sprite.b);

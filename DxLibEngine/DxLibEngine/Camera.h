@@ -1,9 +1,14 @@
 #pragma once
 
-enum class ProjectionType
+/// <summary>
+/// カメラのレンダリング先のクリア方法を表す列挙型です。
+/// </summary>
+enum class CameraClearFlags
 {
-	Perspective,
-	Orthographic
+    Skybox,
+    SolidColor,
+    Depth,
+    Nothing,
 };
 
 /// <summary>
@@ -11,20 +16,19 @@ enum class ProjectionType
 /// </summary>
 struct Camera
 {
-    ProjectionType projectionType = ProjectionType::Perspective;
+    CameraClearFlags        clearFlags = CameraClearFlags::SolidColor;
+    Color                   backgroundColor = Color::cornflowerBlue;
+    bool                    orthographic = false;
+    float                   orthographicSize = 5.0f;
+    float                   fieldOfView = 60.0f;
+    float                   aspect = 1.777777;
+    float                   nearClipPlane = 0.3f;
+    float                   farClipPlane = 1000.0f;
+    float                   depth = 0.0f;
+    Rect                    viewportRect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
+    ComPtr<GraphicsBuffer>  cameraBuffer = nullptr;
+    mutable Matrix4x4       projectionMatrix = Matrix4x4::identity;
+    mutable bool            projectionMatrixIsDirty = true;
 
-    // Perspective 用
-    float fov = 60.0f;
-    float aspectRatio = 16.0f / 9.0f;
-    float nearClip = 0.1f;
-    float farClip = 1000.0f;
-
-    // Orthographic 用
-    float orthoWidth = 1280.0f;
-    float orthoHeight = 720.0f;
-
-    Matrix4x4 viewMatrix = Matrix4x4::identity;
-    Matrix4x4 projectionMatrix = Matrix4x4::identity;
-
-    bool isMain = true;
+    bool                    isStarted = false;
 };

@@ -6,36 +6,33 @@ void EnemySpawnerSystem::Update(ComponentManager& cm, World& world)
 
     View<EnemySpawnMap> view(cm);
 
-    for (auto [entity, esm] : view)
+    for (auto [entity, spawnMap] : view)
     {
-        // esm は EnemySpawnMap のコピーなので、参照として扱う
-        auto& spawnMap = cm.GetComponent<EnemySpawnMap>(entity)->map;
-
-        if (!spawnMap.empty() && spawnMap.front().spawnTime <= m_elapsedTime)
+        if (!spawnMap.map.empty())
         {
-            const EnemySpawnInfo& info = spawnMap.front();
-
-            Entity spawnedEntity = world.CreateEntity();
-            
-            // formation に応じて処理を分ける
-            EnemySpawnInfo newInfo = info;
-            
-            if (info.formation != Formation::Boss)
+            if (spawnMap.map.front().spawnTime <= m_elapsedTime)
             {
-                world.AddComponent<EnemySpawnInfo>(spawnedEntity, newInfo);
-            }
-            else
-            {
-                Entity boss = world.CreateEntity();
-                Transform* transform = world.GetComponent<Transform>(boss);
-                transform->position = info.position;
-                world.AddComponent<Boss>(boss, Boss{});
-                world.AddComponent<RenderCommand>(boss, RenderCommand{ .layer = Layer::Enemy, .type = RenderType::Sprite, .sprite = info.enemySprite });
-                world.AddComponent<CircleCollider2D>(boss, CircleCollider2D{ .radius = 100 });
-                world.AddComponent<Status>(boss, Status{ .life = 200 });
-            }
+                const EnemySpawnInfo& info = spawnMap.map.front();
 
-            spawnMap.erase(spawnMap.begin());
+                Entity* spawnedEntity = world.CreateEntity();
+                
+                // formation に応じて処理を分ける
+                EnemySpawnInfo newInfo = info;
+                
+                if (info.formation != Formation::Boss)
+                {
+                    world.AddComponent<EnemySpawnInfo>(*spawnedEntity, newInfo);
+                }
+                else
+                {
+                    //Entity* boss = world.CreateWithSprite(info.enemySprite.Get(), nullptr, info.position);
+                    //world.AddComponent<Boss>(*boss, Boss{});
+                    //world.AddComponent<CircleCollider2D>(*boss, CircleCollider2D{ .radius = 100 });
+                    //world.AddComponent<Status>(*boss, Status{ .life = 200 });
+                }
+                
+                spawnMap.map.erase(spawnMap.map.begin());
+            }
         }
     }
 }

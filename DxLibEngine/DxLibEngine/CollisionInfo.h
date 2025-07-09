@@ -10,6 +10,6 @@ enum class CollisionState
 
 struct CollisionInfo
 {
-	Entity other = (Entity) - 1;
+	Entity other = NullEntity;
 	CollisionState state = CollisionState::None;
 };

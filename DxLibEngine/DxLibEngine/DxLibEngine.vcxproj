@@ -76,8 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
@@ -86,7 +85,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,15 +95,17 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -114,8 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
@@ -124,7 +123,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,26 +133,33 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="AssetImporter.cpp" />
     <ClCompile Include="BossBulletSystem.cpp" />
     <ClCompile Include="BossSystem.cpp" />
+    <ClCompile Include="Bounds.cpp" />
     <ClCompile Include="BulletSystem.cpp" />
     <ClCompile Include="ButtonControl.cpp" />
     <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="ComponentManager.cpp" />
+    <ClCompile Include="DescriptorHeap.cpp" />
     <ClCompile Include="DxWindow.cpp" />
     <ClCompile Include="EnemyCircleSystem.cpp" />
     <ClCompile Include="EnemySpawnerSystem.cpp" />
@@ -163,17 +168,31 @@
     <ClCompile Include="EnemyVSystem.cpp" />
     <ClCompile Include="EnemyWaveSystem.cpp" />
     <ClCompile Include="EntityManager.cpp" />
+    <ClCompile Include="FrameResource.cpp" />
+    <ClCompile Include="Gamepad.cpp" />
+    <ClCompile Include="GeometryUtility.cpp" />
+    <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="GraphicsBuffer.cpp" />
+    <ClCompile Include="InputControls.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainScene.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />
+    <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlayerSystem.cpp" />
     <ClCompile Include="Quaternion.cpp" />
-    <ClCompile Include="RendererSystem.cpp" />
+    <ClCompile Include="Reference.cpp" />
     <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="ShaderBytecode.cpp" />
     <ClCompile Include="SpatialHashGrid.cpp" />
+    <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="SpriteRendererSystem.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="TextureImporter.cpp" />
     <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
     <ClCompile Include="Vector2.cpp" />
@@ -200,6 +219,7 @@
     <ClInclude Include="BossBullet.h" />
     <ClInclude Include="BossBulletSystem.h" />
     <ClInclude Include="BossSystem.h" />
+    <ClInclude Include="Bounds.h" />
     <ClInclude Include="BoxCollider2D.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="BulletSystem.h" />
@@ -210,8 +230,11 @@
     <ClInclude Include="CircleCollider2D.h" />
     <ClInclude Include="CollisionInfo.h" />
     <ClInclude Include="CollisionSystem.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="CommandBuffer.h" />
     <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="ComponentStorage.h" />
+    <ClInclude Include="DescriptorHeap.h" />
     <ClInclude Include="DxWindow.h" />
     <ClInclude Include="EnemyCircleSystem.h" />
     <ClInclude Include="Enemy.h" />
@@ -225,8 +248,15 @@
     <ClInclude Include="EnemyWaveSystem.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EntityManager.h" />
+    <ClInclude Include="FilterMode.h" />
+    <ClInclude Include="FrameResource.h" />
+    <ClInclude Include="Gamepad.h" />
+    <ClInclude Include="GeometryUtility.h" />
+    <ClInclude Include="Graphics.h" />
+    <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="IComponentStorage.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="InputControls.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="Keyboard.h" />
@@ -234,16 +264,26 @@
     <ClInclude Include="MainScene.h" />
     <ClInclude Include="Mathf.h" />
     <ClInclude Include="Matrix4x4.h" />
+    <ClInclude Include="Mouse.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerSystem.h" />
     <ClInclude Include="Quaternion.h" />
-    <ClInclude Include="RenderCommand.h" />
-    <ClInclude Include="RendererSystem.h" />
+    <ClInclude Include="Reference.h" />
     <ClInclude Include="Resolution.h" />
     <ClInclude Include="Screen.h" />
+    <ClInclude Include="ShaderBytecode.h" />
     <ClInclude Include="SpatialHashGrid.h" />
+    <ClInclude Include="Sprite.h" />
+    <ClInclude Include="SpriteRenderer.h" />
+    <ClInclude Include="SpriteRendererSystem.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="Tag.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Texture2D.h" />
+    <ClInclude Include="TextureDimension.h" />
+    <ClInclude Include="TextureImporter.h" />
+    <ClInclude Include="TextureWrapMode.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="TransformSystem.h" />
     <ClInclude Include="Utils.h" />
@@ -255,7 +295,6 @@
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
-    <ClInclude Include="Sprite.h" />
     <ClInclude Include="Box.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="SystemList.h" />
@@ -268,6 +307,19 @@
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Velocity.h" />
     <ClInclude Include="World.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SpriteRenderer.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.1</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

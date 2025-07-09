@@ -18,6 +18,8 @@ public:
 	/// <param name="world">ワールドの参照。Entityを生成したりなどに使います</param>
 	virtual void Update(ComponentManager& cm, World& world) {}
 
+	virtual void InternalRender(ComponentManager& cm, World& world) {}
+
 	/// <summary>
 	/// Systemの描画処理を行います。実装は任意です。
 	/// </summary>

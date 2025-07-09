@@ -95,12 +95,12 @@ void BossSystem::AttackA(World& world)
 	{
 		if (i % 30 == 0)
 		{
-			Entity bullet = world.CreateEntity();
-			world.AddComponent<BossBullet>(bullet, BossBullet{ .damage = 1, .bulletType = BulletType::normal });
-			world.AddComponent<Velocity>(bullet, Velocity{ .speed = 100 });
-			world.AddComponent<RenderCommand>(bullet, RenderCommand{.layer = Layer::Bullet, .type = RenderType::Circle, .circle = Circle{.radius = 30, .r = 255, .g = 0, .b = 0} });
-			world.AddComponent<CircleCollider2D>(bullet, CircleCollider2D{ .radius = 30 });
-			Transform* bTransform = world.GetComponent<Transform>(bullet);
+			Entity* bullet = world.CreateEntity();
+			world.AddComponent<BossBullet>(*bullet, BossBullet{ .damage = 1, .bulletType = BulletType::normal });
+			world.AddComponent<Velocity>(*bullet, Velocity{ .speed = 100 });
+			//world.AddComponent<RenderCommand>(bullet, RenderCommand{.layer = Layer::Bullet, .type = RenderType::Circle, .circle = Circle{.radius = 30, .r = 255, .g = 0, .b = 0} });
+			world.AddComponent<CircleCollider2D>(*bullet, CircleCollider2D{ .radius = 30 });
+			Transform* bTransform = world.GetComponent<Transform>(*bullet);
 			m_transformSystem->Translate(*bTransform, Vector3(Screen::GetWidth() / 2, 300, 70));
 			m_transformSystem->Rotate(*bTransform, Vector3::forward, i);
 		}
@@ -121,36 +121,32 @@ void BossSystem::AttackB(World& world, Transform& transform)
 
 	if (timer > 0.5f)
 	{
-		Entity bullet = world.CreateEntity();
-		world.AddComponent<BossBullet>(bullet, BossBullet{ .damage = 1, .bulletType = BulletType::normal });
-		world.AddComponent<Velocity>(bullet, Velocity{ .speed = 100 });
-		world.AddComponent<RenderCommand>(bullet, RenderCommand{ .layer = Layer::Bullet, .type = RenderType::Circle, .circle = Circle{.radius = 30, .r = 255, .g = 0, .b = 0} });
-		world.AddComponent<CircleCollider2D>(bullet, CircleCollider2D{ .radius = 30 });
-		Transform* bTransform = world.GetComponent<Transform>(bullet);
-		m_transformSystem->Translate(*bTransform, Vector3(transform.position.x, 300, 70));
+		Entity* bullet = world.CreateEntity();
+		world.AddComponent<BossBullet>(*bullet, BossBullet{ .damage = 1, .bulletType = BulletType::normal });
+		world.AddComponent<Velocity>(*bullet, Velocity{ .speed = 100 });
+		//world.AddComponent<RenderCommand>(bullet, RenderCommand{ .layer = Layer::Bullet, .type = RenderType::Circle, .circle = Circle{.radius = 30, .r = 255, .g = 0, .b = 0} });
+		world.AddComponent<CircleCollider2D>(*bullet, CircleCollider2D{ .radius = 30 });
+		Transform* bTransform = world.GetComponent<Transform>(*bullet);
+		m_transformSystem->Translate(*bTransform, Vector3(transform.position.x, 300, 0));
 		timer = 0;
 	}
 }
 
 void BossSystem::AttackC(World& world, Transform& transform)
 {
-	Entity bullet = world.CreateEntity();
-	world.AddComponent<BossBullet>(bullet, BossBullet{ .damage = 1, .bulletType = BulletType::laser });
-	world.AddComponent<Velocity>(bullet, Velocity{ .speed = 100 });
-	world.AddComponent<RenderCommand>(bullet, RenderCommand{ .layer = Layer::Bullet, .type = RenderType::Box, .box = Box{.x = 500, .y = 1000, .r = 255, .g = 0, .b = 0} });
-	world.AddComponent<BoxCollider2D>(bullet, BoxCollider2D{ .rect = Vector2(500, 1000 )});
-	Transform* bTransform = world.GetComponent<Transform>(bullet);
-	m_transformSystem->Translate(*bTransform, Vector3(transform.position.x - 250, 300, 70));
+	Entity* bullet = world.CreateEntity();
+	world.AddComponent<BossBullet>(*bullet, BossBullet{ .damage = 1, .bulletType = BulletType::laser });
+	world.AddComponent<Velocity>(*bullet, Velocity{ .speed = 100 });
+	world.AddComponent<BoxCollider2D>(*bullet, BoxCollider2D{ .rect = Vector2(500, 1000 )});
+	Transform* bTransform = world.GetComponent<Transform>(*bullet);
+	m_transformSystem->Translate(*bTransform, Vector3(transform.position.x - 250, 300, 0));
 }
 
-void BossSystem::Damage(Status& status, RenderCommand& renderCommand, Boss& boss)
+void BossSystem::Damage(Status& status, Boss& boss)
 {
 	boss.damageTimer = 0.5f;
 
 	status.isDamaged = false;
-
-	renderCommand.sprite.g = 0;
-	renderCommand.sprite.b = 0;
 }
 
 void BossSystem::Start(ComponentManager& cm, World& world)
@@ -160,9 +156,9 @@ void BossSystem::Start(ComponentManager& cm, World& world)
 
 void BossSystem::Update(ComponentManager& cm, World& world)
 {
-	View<Transform, Boss, Status, RenderCommand> view(cm);
+	View<Transform, Boss, Status> view(cm);
 
-	for (auto [entity, transform, boss, status, renderCommand] : view)
+	for (auto [entity, transform, boss, status] : view)
 	{
 		// 体力が 0 以下なら
 		if (status.life <= 0)
@@ -184,7 +180,7 @@ void BossSystem::Update(ComponentManager& cm, World& world)
 			if (status.isDamaged)
 			{
 				// ダメージ処理を実行する。
-				Damage(status, renderCommand, boss);
+				Damage(status, boss);
 			}
 
 			// 各種タイマー変数に deltaTime を加算する。
@@ -242,8 +238,8 @@ void BossSystem::Update(ComponentManager& cm, World& world)
 		}
 		else
 		{
-			renderCommand.sprite.g = 255;
-			renderCommand.sprite.b = 255;
+			//.sprite.g = 255;
+			//renderCommand.sprite.b = 255;
 		}
 	}
 }

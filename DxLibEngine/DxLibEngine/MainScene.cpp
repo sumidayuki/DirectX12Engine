@@ -1,11 +1,13 @@
-#include "MainScene.h"
+ï»¿#include "MainScene.h"
 #include "SystemList.h"
 
 void MainScene::Start()
 {
-	// World‚ÉƒVƒXƒeƒ€‚ğ’Ç‰Á
+	// Worldã«ã‚·ã‚¹ãƒ†ãƒ ã‚’è¿½åŠ 
+	m_world.AddSystem(std::make_unique<CameraSystem>());
+	m_world.AddSystem(std::make_unique<SpriteRendererSystem>());
+	m_world.AddSystem(std::make_unique<TransformSystem>());
 	m_world.AddSystem(std::make_unique<InputSystem>());
-	m_world.AddSystem(std::make_unique<RendererSystem>());
 	m_world.AddSystem(std::make_unique<CollisionSystem>());
 	m_world.AddSystem(std::make_unique<PlayerSystem>());
 	m_world.AddSystem(std::make_unique<BulletSystem>());
@@ -15,79 +17,37 @@ void MainScene::Start()
 	m_world.AddSystem(std::make_unique<EnemyStandardSystem>());
 	m_world.AddSystem(std::make_unique<EnemyCircleSystem>());
 	m_world.AddSystem(std::make_unique<EnemyWaveSystem>());
-	m_world.AddSystem(std::make_unique<BossSystem>());
-	m_world.AddSystem(std::make_unique<BossBulletSystem>());
-	m_world.AddSystem(std::make_unique<TransformSystem>());
+	//m_world.AddSystem(std::make_unique<BossSystem>());
+	//m_world.AddSystem(std::make_unique<BossBulletSystem>());
 
-	// ”wŒi‚Ìì¬
-	Entity background = m_world.CreateEntity();
-	{
-		Transform* bcTransform = m_world.GetComponent<Transform>(background);
-		bcTransform->position = Vector3(Screen::GetWidth() / 2, Screen::GetHeight() / 2, 1000);
-		m_world.AddComponent<RenderCommand>(background, RenderCommand{ .layer = Layer::BackGround, .type = RenderType::Sprite, .sprite = Sprite{.handle = LoadGraph("Assets/bc-01.png"), .width = 1920, .height = 1080 } });
-	}
+	Entity* camera = m_world.CreateCamera2D(1920, 1080, Vector3(1920 / 2, 1080 / 2, -10));
 
-	// ƒvƒŒƒCƒ„[‚Ìì¬
-	Entity player = m_world.CreateEntity();
-	{
-		m_world.AddComponent<Player>(player, Player{});
-		Transform* playerTransform = m_world.GetComponent<Transform>(player);
-		playerTransform->position = Vector3(Screen::GetWidth() / 2, 720, 50);
-		playerTransform->scale = Vector3(0.15f, 0.15f, 0);
-		m_world.AddComponent<Input>(player, Input{});
-		m_world.AddComponent<Velocity>(player, Velocity{ .speed = 350 });
-		m_world.AddComponent<Status>(player, Status{ 3 });
-		m_world.AddComponent<CircleCollider2D>(player, CircleCollider2D{ .radius = 40 });
-		int w, h;
-		GetGraphSize(LoadGraph("Assets/player_01.png"), &w, &h);
-		m_world.AddComponent<RenderCommand>(player, RenderCommand{ .layer = Layer::Player, .type = RenderType::Sprite, .sprite = Sprite{.handle = LoadGraph("Assets/player_01.png"), .width = w, .height = h, .pivot = 0.5f } });
-	}
+	Entity* bg = m_world.CreateWithSprite(L"Assets/bc-01.png", Rect(0, 0, 1920, 1080), Vector2::zero, 1.0f, nullptr, Vector3(0, 0, 100));
 
-	// ’Êí‚Ì“G‚ğ–‘O‚É“Ç‚İ‚ñ‚Å‚¨‚­
-	Sprite normalEnemy;
-	{
-		int normalEnemyHandle = LoadGraph("Assets/enemy_01.png");
+	TextureImporter importer;
 
-		int w, h;
-		GetGraphSize(normalEnemyHandle, &w, &h);
+	// é€šå¸¸ã®æ•µã‚’äº‹å‰ã«èª­ã¿è¾¼ã‚“ã§ãŠã
+	Texture2D* normalEnemy = importer.Import(L"Assets/enemy_01.png");
 
-		normalEnemy = Sprite{ .handle = normalEnemyHandle, .width = w, .height = h };
-	}
+	// å††é‹å‹•è¡Œã†æ•µã‚‚äº‹å‰ã«èª­ã¿è¾¼ã‚“ã§ãŠã
+	Texture2D* circleEnemy = importer.Import(L"Assets/enemy_02.png");
 
-	// ‰~‰^“®s‚¤“G‚à–‘O‚É“Ç‚İ‚ñ‚Å‚¨‚­
-	Sprite circleEnemy;
-	{
-		int circleEnemyHandle = LoadGraph("Assets/enemy_02.png");
+	// ãƒœã‚¹ã‚ˆã†ã®ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã‚’äº‹å‰ã«èª­ã¿è¾¼ã‚“ã§ãŠã
+	Texture2D* boss = importer.Import(L"Assets/boss-01.png");
 
-		int w, h;
-		GetGraphSize(circleEnemyHandle, &w, &h);
-
-		circleEnemy = Sprite{ .handle = circleEnemyHandle, .width = w, .height = h };
-	}
-
-	// ƒ{ƒX‚æ‚¤‚Ì‰æ‘œƒtƒ@ƒCƒ‹ƒpƒX‚ğ–‘O‚É“Ç‚İ‚ñ‚Å‚¨‚­
-	Sprite boss;
-	{
-		int bossHandle = LoadGraph("Assets/boss-01.png");
-		int w, h;
-		GetGraphSize(bossHandle, &w, &h);
-
-		boss = Sprite{ .handle = bossHandle, .width = w, .height = h };
-	}
-
-	// ƒGƒlƒ~[‚Ì¶¬è‡
-	// ‚Ü‚¸ƒƒCƒ“ƒV[ƒ“‚È‚Ç‚Å EnemySpawnMapiEnemySpawnInfo‚ğŠi”[‚·‚éj‚ğ¶¬‚µ‚Ü‚·B
-	// EnemySpawnerSystem ‚Å EnemySpawnMap ‚Ì’†‚Ì EnemySpawnInfo ‚Ìî•ñ‚ğŠî‚É‘à—ñ‚ğ¶¬‚µ‚Ä‚¢‚«‚Ü‚·B
-	// ‚»‚ÌŒãA‚»‚ê‚¼‚ê‚Ì‘à—ñ‚ª¶¬‚³‚ê‚½ EnemySpawnInfo ‚Ì’†‚©‚ç©•ª‚Ì‘à—ñ‚Ì‚à‚Ì‚ª‚ ‚ê‚Î EnemySpawnInfo
-	// ‚Ìî•ñ‚ğŠî‚ÉEnemy‚ğ¶¬‚µ‚Ü‚·B
-	// ƒGƒlƒ~[¶¬—p‚ÌƒXƒ|ƒi[‚ğì¬
-	Entity enemySpawner = m_world.CreateEntity();
-	Transform* spawnerTransform = m_world.GetComponent<Transform>(enemySpawner);
+	// ã‚¨ãƒãƒŸãƒ¼ã®ç”Ÿæˆæ‰‹é †
+	// ã¾ãšãƒ¡ã‚¤ãƒ³ã‚·ãƒ¼ãƒ³ãªã©ã§ EnemySpawnMapï¼ˆEnemySpawnInfoã‚’æ ¼ç´ã™ã‚‹ï¼‰ã‚’ç”Ÿæˆã—ã¾ã™ã€‚
+	// EnemySpawnerSystem ã§ EnemySpawnMap ã®ä¸­ã® EnemySpawnInfo ã®æƒ…å ±ã‚’åŸºã«éšŠåˆ—ã‚’ç”Ÿæˆã—ã¦ã„ãã¾ã™ã€‚
+	// ãã®å¾Œã€ãã‚Œãã‚Œã®éšŠåˆ—ãŒç”Ÿæˆã•ã‚ŒãŸ EnemySpawnInfo ã®ä¸­ã‹ã‚‰è‡ªåˆ†ã®éšŠåˆ—ã®ã‚‚ã®ãŒã‚ã‚Œã° EnemySpawnInfo
+	// ã®æƒ…å ±ã‚’åŸºã«Enemyã‚’ç”Ÿæˆã—ã¾ã™ã€‚
+	// ã‚¨ãƒãƒŸãƒ¼ç”Ÿæˆç”¨ã®ã‚¹ãƒãƒŠãƒ¼ã‚’ä½œæˆ
+	Entity* enemySpawner = m_world.CreateEntity();
+	Transform* spawnerTransform = m_world.GetComponent<Transform>(*enemySpawner);
 	spawnerTransform->position = Vector3(0, 0, 100);
 	m_world.AddComponent<EnemySpawnMap>
 		(
-			enemySpawner,	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ’Ç‰Á‚·‚éƒGƒ“ƒeƒBƒeƒB‚ğw’è‚·‚é 
-			EnemySpawnMap	// ƒGƒlƒ~[‚Ì¶¬ƒ}ƒbƒv
+			*enemySpawner,	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¿½åŠ ã™ã‚‹ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’æŒ‡å®šã™ã‚‹ 
+			EnemySpawnMap	// ã‚¨ãƒãƒŸãƒ¼ã®ç”Ÿæˆãƒãƒƒãƒ—
 			{
 				.map =
 				{
@@ -96,72 +56,72 @@ void MainScene::Start()
 						.spawnTime = 0.0f,
 						.coolDown = 0.5f,
 						.times = 5,
-						.position = Vector3(960, 0, 50),
+						.position = Vector3(960, 1080, 50),
 						.formation = Formation::Standard,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 7.0f,
 						.coolDown = 0.2f,
 						.times = 7,
-						.position = Vector3(700, 0, 50),
+						.position = Vector3(700, 1080, 50),
 						.formation = Formation::V,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 20.0f,
 						.coolDown = 0.5f,
 						.times = 7,
-						.position = Vector3(1400, 0, 50),
+						.position = Vector3(1400, 1080, 50),
 						.formation = Formation::Standard,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 24.0f,
 						.coolDown = 0.5f,
 						.times = 7,
-						.position = Vector3(1000, 0, 50),
+						.position = Vector3(1000, 1080, 50),
 						.formation = Formation::Standard,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 28.0f,
 						.coolDown = 0.5f,
 						.times = 7,
-						.position = Vector3(600, 0, 50),
+						.position = Vector3(600, 1080, 50),
 						.formation = Formation::Standard,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 32,
 						.coolDown = 0.5f,
 						.times = 7,
-						.position = Vector3(0, -400, 50),
+						.position = Vector3(0, 1480, 50),
 						.formation = Formation::Circle,
-						.enemySprite = circleEnemy
+						.texture = circleEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 36,
 						.coolDown = 0.5f,
 						.times = 6,
-						.position = Vector3(600, 0, 50),
+						.position = Vector3(600, 1080, 50),
 						.formation = Formation::Wave,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 40,
 						.coolDown = 0.5f,
 						.times = 6,
-						.position = Vector3(1500, 0, 50),
+						.position = Vector3(1500, 1080, 50),
 						.formation = Formation::Wave,
-						.enemySprite = normalEnemy,
+						.texture = normalEnemy,
 						.right = false
 					},
 					EnemySpawnInfo
@@ -169,18 +129,18 @@ void MainScene::Start()
 						.spawnTime = 44,
 						.coolDown = 0.5f,
 						.times = 6,
-						.position = Vector3(600, 0, 50),
+						.position = Vector3(600, 1080, 50),
 						.formation = Formation::Wave,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 48,
 						.coolDown = 0.5f,
 						.times = 6,
-						.position = Vector3(1500, 0, 50),
+						.position = Vector3(1500, 1080, 50),
 						.formation = Formation::Wave,
-						.enemySprite = normalEnemy,
+						.texture = normalEnemy,
 						.right = false
 					},
 					EnemySpawnInfo
@@ -188,36 +148,36 @@ void MainScene::Start()
 						.spawnTime = 52.0f,
 						.coolDown = 0.2f,
 						.times = 5,
-						.position = Vector3(1000, 0, 50),
+						.position = Vector3(1000, 1080, 50),
 						.formation = Formation::V,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 54.0f,
 						.coolDown = 0.2f,
 						.times = 5,
-						.position = Vector3(500, 0, 50),
+						.position = Vector3(500, 1080, 50),
 						.formation = Formation::V,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 56.0f,
 						.coolDown = 0.5f,
 						.times = 7,
-						.position = Vector3(1400, 0, 50),
+						.position = Vector3(1400, 1080, 50),
 						.formation = Formation::Standard,
-						.enemySprite = normalEnemy
+						.texture = normalEnemy
 					},
 					EnemySpawnInfo
 					{
 						.spawnTime = 60,
 						.coolDown = 0,
 						.times = 1,
-						.position = Vector3(Screen::GetWidth() / 2, -300, 50),
+						.position = Vector3(Screen::GetWidth() / 2, 1380, 50),
 						.formation = Formation::Boss,
-						.enemySprite = boss,
+						.texture = normalEnemy
 					}
 				}
 			}

@@ -14,7 +14,7 @@ public:
 	/// エンティティを作成します。
 	/// </summary>
 	/// <returns></returns>
-	Entity CreateEntity();
+	Entity* CreateEntity();
 
 	/// <summary>
 	/// エンティティを破壊します。

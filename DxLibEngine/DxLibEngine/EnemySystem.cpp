@@ -43,7 +43,7 @@ void EnemySystem::Update(ComponentManager& cm, World& world)
 
 			Vector3 axis = Vector3::forward;
 			//m_transformSystem->Rotate(transform, axis, angle);
-			m_transformSystem->Translate(transform, Vector3(baseX + offsetX, offsetY, 0) * Time::GetDeltaTime());
+			m_transformSystem->Translate(transform, Vector3(Vector2(baseX + offsetX, offsetY) * Time::GetDeltaTime(), 0));
 
 			break;
 		}

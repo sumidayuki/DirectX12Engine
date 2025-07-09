@@ -17,6 +17,12 @@ public:
 
 	static const Vector2 down;
 
+	// Vector2(MathHelper::NegativeInfinity, MathHelper::NegativeInfinity)‚Æ“™‰¿B
+	static const Vector2 negativeInfinity;
+
+	// Vector2(MathHelper::Infinity, MathHelper::Infinity)‚Æ“™‰¿B
+	static const Vector2 positiveInfinity;
+
 public:
 	union
 	{

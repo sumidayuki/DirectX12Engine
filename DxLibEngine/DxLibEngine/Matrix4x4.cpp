@@ -77,6 +77,17 @@ void Matrix4x4::SetSRT(const Vector3& scale, const Quaternion& rotation, const V
 #endif
 }
 
+Matrix4x4 Matrix4x4::Transpose() const
+{
+    return Matrix4x4
+    (
+        _11, _21, _31, _41,
+        _12, _22, _32, _42,
+        _13, _23, _33, _43,
+        _14, _24, _34, _44
+    );
+}
+
 Matrix4x4 Matrix4x4::Inverse() const
 {
     return XMMatrixInverse(nullptr, ToXMMATRIX());

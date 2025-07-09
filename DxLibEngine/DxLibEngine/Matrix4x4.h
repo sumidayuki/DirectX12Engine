@@ -48,6 +48,9 @@ public:
 
 	void SetSRT(const Vector3& scale, const Quaternion& rotation, const Vector3& translation);
 
+	// この行列の転置行列を返します。
+	Matrix4x4 Transpose() const;
+
 	// この行列で逆行列を返します。
 	Matrix4x4 Inverse() const;
 

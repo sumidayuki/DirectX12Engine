@@ -15,10 +15,21 @@
 // エントリーポイント
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 
 {
+    // 文字列処理時の地域(ロケール)の設定
+    ::setlocale(LC_ALL, "japanese");
+
+    // COM (Component Object Model) の初期化
+    if (::CoInitializeEx(nullptr, COINIT_MULTITHREADED) < 0)
+    {
+        assert(0);
+    }
+
     Screen::SetResolution(1920, 1080, true);
 
     Application::Run();
 
-    DxLib_End();
+    // COMの終了処理
+    ::CoUninitialize();
+
     return 0;
 }

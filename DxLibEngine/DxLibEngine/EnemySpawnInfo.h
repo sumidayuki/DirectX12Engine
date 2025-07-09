@@ -16,7 +16,7 @@ struct EnemySpawnInfo
 	int times;
 	Vector3 position;		// èoåªÇ∑ÇÈà íu
 	Formation formation;	// ë‡óÒ
-	Sprite enemySprite;
+	Texture2D* texture;
 	bool right = true;
 	float timer = 0.0f;
 };

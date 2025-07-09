@@ -34,7 +34,7 @@ struct RenderCommand
 	int orderInLayer = 0;
 
 	RenderType type;
-	Sprite sprite = Sprite{};
+	Sprite sprite;
 	Circle circle = Circle{};
 	Box box = Box{};
 	Triangle triangle = Triangle{};

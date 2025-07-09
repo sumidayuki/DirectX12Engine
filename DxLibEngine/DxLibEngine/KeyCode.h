@@ -1,6 +1,4 @@
 #pragma once
-#include <Windows.h>
-
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 // キーコード列挙型
@@ -79,4 +77,11 @@ enum class KeyCode
     DownArrow = VK_DOWN,
     LeftArrow = VK_LEFT,
     RightArrow = VK_RIGHT,
+
+    Mouse0 = VK_LBUTTON,
+    Mouse1 = VK_RBUTTON,
+    Mouse2 = VK_MBUTTON,
+    Mouse3 = VK_XBUTTON1,
+    Mouse4 = VK_XBUTTON2,
 };
+

@@ -5,13 +5,20 @@ const Vector3 Vector3::zero(0, 0, 0);
 const Vector3 Vector3::one(0, 0, 0);
 const Vector3 Vector3::right(1, 0, 0);
 const Vector3 Vector3::left(-1, 0, 0);
-const Vector3 Vector3::up(0, -1, 0);
-const Vector3 Vector3::down(0, 1, 0);
+const Vector3 Vector3::up(0, 1, 0);
+const Vector3 Vector3::down(0, -1, 0);
 const Vector3 Vector3::forward(0, 0, 1);
 
 Vector3::Vector3(float x, float y, float z)
     : x(x)
     , y(y)
+    , z(z)
+{
+}
+
+Vector3::Vector3(const Vector2& vector2, float z)
+    : x(vector2.x)
+    , y(vector2.y)
     , z(z)
 {
 }
@@ -29,7 +36,7 @@ Vector3 Vector3::Normalized() const
 
 Vector3 Vector3::Scale(const Vector3& a, const Vector3& b)
 {
-    return Vector3(a.x * b.x, a.y * b.y, a.z * a.z);
+    return Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
 }
 
 Vector3& Vector3::operator+() const

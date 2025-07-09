@@ -1,8 +1,46 @@
 #include "TransformSystem.h"
 
+const Matrix4x4& TransformSystem::GetLocalToWorldMatrix(Transform& transform) const
+{
+	// 各種行列を再計算
+	RecalculateMatricesIfNeeded(transform);
+
+	// ワールド変換行列の参照を返す。
+	return transform.localToWorldMatrix;
+}
+
+const Matrix4x4& TransformSystem::GetWorldToLocalMatrix(Transform& transform) const
+{
+	// 各種行列の再計算
+	RecalculateMatricesIfNeeded(transform);
+
+	// ワールド変換行列の逆行列の参照を返す。
+	return transform.warldToLocalMatrix;
+}
+
+void TransformSystem::SetLocalRotation(Transform& transform, const Quaternion& localRotation)
+{
+	transform.rotation = localRotation;
+	transform.dirty = true;
+}
+
+void TransformSystem::SetLocalPosition(Transform& transform, const Vector3& localPosition)
+{
+	transform.position = localPosition;
+	transform.dirty = true;
+}
+
+void TransformSystem::SetLocalPosition(Transform& transform, float x, float y, float z)
+{
+	transform.position.x = x;
+	transform.position.y = y;
+	transform.position.z = z;
+	transform.dirty = true;
+}
+
 void TransformSystem::Translate(Transform& transform, const Vector3& translation)
 {
-	transform.position += translation;
+	transform.position = transform.position + translation;
 	transform.dirty = true;
 }
 
@@ -12,6 +50,32 @@ void TransformSystem::Rotate(Transform& transform, const Vector3 axis, float ang
 
 	transform.rotation = q * transform.rotation;
 	transform.dirty = true;
+}
+
+void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform) const
+{
+	if (transform.dirty)
+	{
+		transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);
+		transform.dirty = false;
+	}
+
+	if (true)
+	{
+		// ワールド変換行列を計算する
+		if (transform.parent != nullptr)
+		{
+			// 親が設定されている時
+			transform.localToWorldMatrix = GetLocalToWorldMatrix(*transform.parent) * transform.localMatrix;
+		}
+		else
+		{
+			transform.localToWorldMatrix = transform.localMatrix;
+		}
+
+		transform.warldToLocalMatrix = transform.localToWorldMatrix.Inverse();
+		transform.hasChanged = false;
+	}
 }
 
 void TransformSystem::Start(ComponentManager& cm, World& world)
@@ -32,25 +96,6 @@ void TransformSystem::Update(ComponentManager& cm, World& world)
 		if (!transform.dirty) continue;
 
 		// スケール・回転・位置からローカル変換行列を計算します。
-		transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);
-
-		// 親エンティティが設定されているなら
-		if (transform.parent != NullEntity)
-		{
-			// 親の Transform を取得します。
-			const auto& parentTransform = world.GetComponent<Transform>(transform.parent);
-
-			// 親のワールド行列を掛けて自身のワールド行列を算出します。
-			transform.worldMatrix = transform.localMatrix * parentTransform->worldMatrix;
-		}
-		// されていないなら
-		else
-		{
-			// ローカル行列をそのままワールド行列に代入します。
-			transform.worldMatrix = transform.localMatrix;
-		}
-
-		// 更新が終わったので dirty フラグを false にする。（次のフレームから更新を掛けられないようにするため）
-		transform.dirty = false;
+		RecalculateMatricesIfNeeded(transform);
 	}
 }

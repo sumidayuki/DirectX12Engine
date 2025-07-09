@@ -1,5 +1,8 @@
 #include "Vector4.h"
 
+// Ã“Iƒƒ“ƒo•Ï”‚ÌÀ‘Ì‚ğéŒ¾
+const Vector4 Vector4::zero(0.0f, 0.0f, 0.0f, 0.0f);
+
 Vector4::Vector4(float x, float y)
 	: x(x)
 	, y(y)

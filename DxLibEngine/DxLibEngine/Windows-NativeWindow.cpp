@@ -111,6 +111,41 @@ namespace Windows
         msg.result = ::DefWindowProc(msg.hWnd, msg.message, msg.wParam, msg.lParam);
     }
 
+    void NativeWindow::SetFullscreen(bool enable)
+    {
+        if (!m_hWnd) return;
+
+        static WINDOWPLACEMENT wpPrev = { sizeof(wpPrev) }; // 前のウィンドウ位置とサイズ
+
+        if (enable)
+        {
+            // 現在のウィンドウ位置・サイズを保存
+            ::GetWindowPlacement(m_hWnd, &wpPrev);
+
+            // ウィンドウスタイルから「枠」と「タイトルバー」を除去
+            LONG style = ::GetWindowLong(m_hWnd, GWL_STYLE);
+            style &= ~(WS_OVERLAPPEDWINDOW);
+            ::SetWindowLong(m_hWnd, GWL_STYLE, style);
+
+            // ウィンドウを最前面＆画面全体に
+            const int screenX = ::GetSystemMetrics(SM_CXSCREEN);
+            const int screenY = ::GetSystemMetrics(SM_CYSCREEN);
+            ::SetWindowPos(m_hWnd, HWND_TOP, 0, 0, screenX, screenY, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        }
+        else
+        {
+            // 元のウィンドウスタイルに戻す
+            LONG style = ::GetWindowLong(m_hWnd, GWL_STYLE);
+            style |= WS_OVERLAPPEDWINDOW;
+            ::SetWindowLong(m_hWnd, GWL_STYLE, style);
+
+            // 元のサイズと位置に戻す
+            ::SetWindowPlacement(m_hWnd, &wpPrev);
+            ::SetWindowPos(m_hWnd, nullptr, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        }
+    }
+
     void NativeWindow::SetClientSize(const Vector2Int& size)
     {
         // ウィンドウスタイルを取得

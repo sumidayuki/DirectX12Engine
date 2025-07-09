@@ -8,7 +8,7 @@ class Application
 {
 private:
 	// ゲーム画面を表示するためのウィンドウ
- 	static inline DxWindow* m_gameWindow;
+ 	static inline Windows::NativeWindow* m_gameWindow;
 
 	// ワーカースレッド実行中は true
 	static inline bool m_isRunning;
@@ -20,14 +20,20 @@ public:
 	// この関数はアプリケーションが終了するまで制御を返しません。
 	static void Run();
 
-private:
-	static void Update();
+	// ゲームウィンドウを取得します。
+	static Windows::NativeWindow* GetGameWindow() { return m_gameWindow; }
 
-	static void Draw();
+private:
+	//static void Update();
+
+	//static void Draw();
+
+	// シーンの追加と起動シーンの設定
+	static void AddScenesAndStartupScene();
 
 	// ワーカースレッドのエントリーポイント関数
-	//static void WorkerThreadEntryPoint();
+	static void WorkerThreadEntryPoint();
 
 	// メッセージキュー内のメッセージを取得して処理します。
-	//static void PumpMessage();
+	static void PumpMessage();
 };

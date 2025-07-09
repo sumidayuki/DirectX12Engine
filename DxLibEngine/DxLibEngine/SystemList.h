@@ -6,9 +6,9 @@
 // ここにインクルードを書く必要がある。
 
 #include "CameraSystem.h"
+#include "SpriteRendererSystem.h"
 #include "InputSystem.h"
 #include "MovementSystem.h"
-#include "RendererSystem.h"
 #include "PlayerSystem.h"
 #include "BulletSystem.h"
 #include "EnemySpawnerSystem.h"

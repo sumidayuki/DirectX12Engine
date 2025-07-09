@@ -6,14 +6,41 @@
 class Mathf
 {
 public:
-	// 円周率 π
+	// 円周率π (float型の有効桁数は7桁)
 	static constexpr float PI = 3.1415926f;
 
+	// πの2倍の値を表します。
+	static constexpr float TwoPI = 6.283185307f;
+
+	// πを2で割った値(π/2)を表します。
+	static constexpr float PIOver2 = 1.570796327f;
+
+	// πを4で割った値(π/4)を表します。
+	static constexpr float PIOver4 = 0.785398163f;
+
+	// 自然対数の底e(ネイピア数)を表します。
+	static constexpr float E = 2.7182818f;
+
+	// 2を底とするeの対数を表します。
+	static constexpr float Log2E = 1.4426950408889634f;
+
+	// 10を底とするeの対数を表します。
+	static constexpr float Log10E = 0.4342944819032518f;
+
 	// 度をラジアンに変換するための係数
-	static constexpr float Deg2Rad = Mathf::PI / 180;
+	static constexpr float Deg2Rad = Mathf::PI / 180.0f;
 
 	// ラジアンを度に変換するための係数
-	static constexpr float Rad2Deg = 180 / Mathf::PI;
+	static constexpr float Rad2Deg = 180.0f / Mathf::PI;
+
+	// 計算機イプシロン (極めて 0 に近い小さな値)
+	static constexpr float Epsilon = std::numeric_limits<float>::epsilon();
+
+	// 正の無限大を表します。
+	static constexpr float Infinity = std::numeric_limits<float>::infinity();
+
+	// 負の無限大を表します。
+	static constexpr float NegativeInfinity = -Infinity;
 
 public:
 	/// <summary>
@@ -67,4 +94,13 @@ public:
 	/// <param name="b"></param>
 	template<typename T>
 	static constexpr void Swap(T& a, T& b) { const T temp = a; a = b; b = temp; }
+
+	/// <summary>
+	/// [a, b]の間でパラメーター t による線形補間します。t に制限はありません。
+	/// </summary>
+	/// <param name="a"></param>
+	/// <param name="b"></param>
+	/// <param name="t"></param>
+	/// <returns></returns>
+	static constexpr float LerpUnclamped(float a, float b, float t) { return a + (b - a) * t; }
 };

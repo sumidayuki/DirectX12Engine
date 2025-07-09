@@ -37,6 +37,8 @@ public:
 
 	Vector3(float x, float y, float z);
 
+	Vector3(const Vector2& vector2, float z);
+
 	float Magnitude() const;
 
 	Vector3 Normalized() const;

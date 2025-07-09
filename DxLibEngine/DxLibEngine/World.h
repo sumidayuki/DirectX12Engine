@@ -1,4 +1,5 @@
 #pragma once
+#include "SystemList.h"
 
 /// <summary>
 /// クラス名：World
@@ -8,16 +9,50 @@
 class World
 {
 private:
-	EntityManager m_em;									
-	ComponentManager m_cm;
-	std::vector<std::unique_ptr<System>> m_systems;
+	EntityManager							m_em;									
+	ComponentManager						m_cm;
+	std::vector<std::unique_ptr<System>>	m_systems;
+	CameraSystem*							m_cameraSystem;
+	std::list<Camera*>						m_allCameras;
 
 public:
 	/// <summary>
 	/// エンティティを作成します。
 	/// </summary>
 	/// <returns>Entity型で値を返します。</returns>
-	Entity CreateEntity();
+	Entity* CreateEntity();
+
+	Entity* CreateWithSprite
+	(
+		const wchar_t* path,
+		const Rect& rect,
+		const Vector2 pivot = Vector2::zero,
+		float pixelsPerUnit = 100.0f,
+		Transform* parent = nullptr,
+		const Vector3& localPosition = Vector3::zero,
+		const Quaternion& localRotation = Quaternion::identity
+	);
+
+	Entity* CreateWithSprite
+	(
+		Texture2D* texture,
+		const Rect& rect,
+		const Vector2 pivot = Vector2::zero,
+		float pixelsPerUnit = 100.0f,
+		Transform* parent = nullptr,
+		const Vector3& localPosition = Vector3::zero,
+		const Quaternion& localRotation = Quaternion::identity
+	);
+
+	Entity* CreateWithSprite
+	(
+		Sprite* sprite,
+		Transform* parent = nullptr,
+		const Vector3& localPosition = Vector3::zero,
+		const Quaternion& localRotation = Quaternion::identity
+		);
+
+	Entity* CreateCamera2D(float viewWidth, float viewHeight, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
 	/// <summary>
 	/// エンティティを破壊します。

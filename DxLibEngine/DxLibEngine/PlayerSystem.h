@@ -9,6 +9,8 @@ private:
 	float m_timer;
 	const float m_coolDown = 0.1;
 
+	Texture2D* m_bulletTex;
+
 	// 体力を表すハートのオブジェクト
 	std::queue<Entity> m_lifeObjects;
 
