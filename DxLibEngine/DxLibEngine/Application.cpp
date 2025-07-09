@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "SpriteRendererSystem.h"
+#include "MeshRendererSystem.h"
 #include "TitleScene.h"
 #include "MainScene.h"
 
@@ -62,6 +63,8 @@ void Application::WorkerThreadEntryPoint()
 
     SpriteRendererSystem::StaticConstructor();
 
+    MeshRendererSystem::StaticConstructor();
+
     // 入力システムの初期化
     InputManager::StaticConstructor(hWnd);
 
@@ -120,6 +123,8 @@ void Application::WorkerThreadEntryPoint()
     Graphics::WaitForCompletionOfPresent();
 
     InputManager::StaticDestructor();
+
+    MeshRendererSystem::StaticDestructor();
 
     // スプライトレンダラーシステムの終了処理
     SpriteRendererSystem::StaticDestructor();

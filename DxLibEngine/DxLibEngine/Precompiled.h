@@ -208,6 +208,7 @@ class Keyboard;
 // アセットインポーター関連
 #include "AssetImporter.h"
 #include "TextureImporter.h"
+#include "ModelImporter.h"
 
 // Entity
 #include "Entity.h"
@@ -230,6 +231,9 @@ class Keyboard;
 #include "Transform.h"
 #include "Camera.h"
 #include "SpriteRenderer.h"
+#include "Mesh.h"
+#include "Material.h"
+#include "MeshRenderer.h"
 
 #include "GeometryUtility.h"
 

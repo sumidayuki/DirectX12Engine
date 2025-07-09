@@ -262,6 +262,21 @@
     <Filter Include="ゲームエンジン\入力\コントロール">
       <UniqueIdentifier>{af687782-c53a-4c91-a942-7070dd8abf3a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセットインポーター\アセット\メッシュ">
+      <UniqueIdentifier>{0fe4e66e-95a2-4581-9dfd-5107c77037de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\メッシュレンダラーシステム">
+      <UniqueIdentifier>{28a1d3ca-4637-4e57-afe6-f1ed28256212}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\Component\MeshRenderer">
+      <UniqueIdentifier>{5b966e98-aaea-4560-9dc8-13a11660b6ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセットインポーター\メッシュ">
+      <UniqueIdentifier>{bdef09f6-b28a-40ad-b2fc-8c750cd7e826}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセットインポーター\アセット\マテリアル">
+      <UniqueIdentifier>{e05911cb-a902-4b02-a6a8-9e9e6dd1632c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -440,6 +455,15 @@
     </ClCompile>
     <ClCompile Include="Gamepad.cpp">
       <Filter>ゲームエンジン\入力\ゲームパッド</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRendererSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\メッシュレンダラーシステム</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelImporter.cpp">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\メッシュ</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\アセット\マテリアル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -725,10 +749,30 @@
     <ClInclude Include="Gamepad.h">
       <Filter>ゲームエンジン\入力\ゲームパッド</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\アセット\メッシュ</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>ゲームエンジン\ECS\Component\MeshRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRendererSystem.h">
+      <Filter>ゲームエンジン\ECS\System\メッシュレンダラーシステム</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelImporter.h">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\メッシュ</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\アセット\マテリアル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
       <Filter>ゲームエンジン\ECS\System\SpriteRendererSystem</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="MeshRenderer.hlsl">
+      <Filter>ゲームエンジン\ECS\System\メッシュレンダラーシステム</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

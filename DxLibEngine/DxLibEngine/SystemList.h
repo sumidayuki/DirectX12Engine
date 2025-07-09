@@ -7,6 +7,7 @@
 
 #include "CameraSystem.h"
 #include "SpriteRendererSystem.h"
+#include "MeshRendererSystem.h"
 #include "InputSystem.h"
 #include "MovementSystem.h"
 #include "PlayerSystem.h"

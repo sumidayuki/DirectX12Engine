@@ -22,7 +22,14 @@ public:
 	/// <returns>Entity型で値を返します。</returns>
 	Entity* CreateEntity();
 
+	/// <summary>
+	/// ComponentManagerへの参照を取得します。
+	/// </summary>
+	/// <returns>ComponentManagerの参照</returns>
+	ComponentManager& GetComponentManager() { return m_cm; }
+
 	Entity* CreateWithSprite
+
 	(
 		const wchar_t* path,
 		const Rect& rect,
@@ -53,6 +60,9 @@ public:
 		);
 
 	Entity* CreateCamera2D(float viewWidth, float viewHeight, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
+
+	Entity* CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
+
 
 	/// <summary>
 	/// エンティティを破壊します。

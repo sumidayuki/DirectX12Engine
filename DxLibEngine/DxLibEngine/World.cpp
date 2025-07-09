@@ -71,6 +71,31 @@ Entity* World::CreateCamera2D(float viewWidth, float viewHeight, const Vector3& 
 	return entity;
 }
 
+Entity* World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition, const Quaternion& localRotation)
+{
+	// 3D向けカメラの作成
+	Entity* entity = CreateEntity();
+	AddComponent<Camera>(*entity, Camera{});
+	Camera* camera = GetComponent<Camera>(*entity);
+
+	camera->orthographic = false;							// 3Dなので orthographic は false にする
+	camera->fieldOfView = fieldOfView;						// 視野角
+	camera->aspect = aspect;								// アスペクト比
+	camera->nearClipPlane = nearClipPlane;					// 近平面
+	camera->farClipPlane = farClipPlane;					// 遠平面
+	camera->clearFlags = CameraClearFlags::SolidColor;		// 背景のクリア方法
+	camera->backgroundColor = Color::cornflowerBlue;		// 背景色
+	camera->viewportRect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
+
+	TransformSystem* transformSystem = GetSystem<TransformSystem>();
+	Transform* transform = GetComponent<Transform>(*entity);
+	transformSystem->SetLocalPosition(*transform, localPosition);
+	transformSystem->SetLocalRotation(*transform, localRotation);
+
+	m_allCameras.push_back(camera);
+	return entity;
+}
+
 void World::DestoryEntity(Entity entity)
 {
 	m_cm.RemoveAllComponents(entity);
