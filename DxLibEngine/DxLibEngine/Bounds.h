@@ -1,5 +1,7 @@
 #pragma once
 
+// 授業で作りました。
+
 // minマクロが定義済みだった場合は無効化する
 #ifdef min
 #undef min

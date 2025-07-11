@@ -1,5 +1,7 @@
 #pragma once
 
+// 授業で作りました。
+
 /// <summary>
 /// 四元数を表すクラスです。
 /// </summary>

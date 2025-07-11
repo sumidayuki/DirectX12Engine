@@ -57,9 +57,26 @@ public:
 		Transform* parent = nullptr,
 		const Vector3& localPosition = Vector3::zero,
 		const Quaternion& localRotation = Quaternion::identity
-		);
+	);
 
 	Entity* CreateCamera2D(float viewWidth, float viewHeight, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
+
+	Entity* CreateWithModel
+	(
+		const std::string& path,
+		Transform* parent,
+		const Vector3& localPosition,
+		const Quaternion& localRotation
+	);
+
+	Entity* CreateWithModel
+	(
+		const std::vector<ComPtr<Mesh>>& meshes,
+		const std::vector<ComPtr<Material>>& materials,
+		Transform* parent,
+		const Vector3& localPosition,
+		const Quaternion& localRotation
+	);
 
 	Entity* CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 

@@ -1,37 +1,46 @@
 #pragma once
 
-#include "AssetImporter.h"
 #include "Mesh.h"
+#include "Material.h"
+#include <string>
+#include <vector>
 
-// Assimpのヘッダをインクルード
+// Forward declarations for Assimp types
+// Assimpの型を前方宣言
 struct aiNode;
 struct aiScene;
 struct aiMesh;
+struct aiMaterial;
 
 /// <summary>
-/// 3Dモデルファイルを読み込み、Meshオブジェクトを生成するクラスです。
+/// Imports Mesh and Material assets from 3D model files.
+/// 3DモデルファイルからMeshとMaterialのアセットを読み込みます。
 /// </summary>
-class ModelImporter : public AssetImporter
+class ModelImporter
 {
 public:
+    std::vector<ComPtr<Mesh>> meshes;
+    std::vector<ComPtr<Material>> materials;
+
+public:
     ModelImporter() = default;
-    ~ModelImporter() = default;
 
     /// <summary>
+    /// Loads a model file from the specified path.
+    /// On success, the loaded meshes and materials are stored in the member variables.
     /// 指定されたパスのモデルファイルを読み込みます。
+    /// 成功すると、読み込んだメッシュとマテリアルがメンバ変数に格納されます。
     /// </summary>
-    /// <param name="path">モデルファイルへのパス</param>
-    /// <returns>読み込んだメッシュのリスト。失敗した場合は空のリストを返します。</returns>
-    std::vector<ComPtr<Mesh>> Import(const std::string& path);
+    /// <param name="path">Path to the model file</param>
+    /// <returns>True on success, false otherwise</returns>
+    bool Import(const std::string& path);
 
 private:
-    /// <summary>
-    /// Assimpのシーンノードを再帰的に処理します。
-    /// </summary>
-    void ProcessNode(aiNode* node, const aiScene* scene, std::vector<ComPtr<Mesh>>& meshes);
+    std::string m_directory;
 
-    /// <summary>
-    /// AssimpのメッシュデータをエンジンのMeshコンポーネントに変換します。
-    /// </summary>
+    void ProcessNode(aiNode* node, const aiScene* scene);
     ComPtr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
+    // Updated to match the new implementation
+    // 新しい実装に合わせて更新
+    ComPtr<Material> ProcessMaterial(aiMaterial* mat);
 };

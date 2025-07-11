@@ -6,11 +6,9 @@
 /// </summary>
 struct MeshRenderer
 {
-    ComPtr<Mesh> mesh = nullptr;
-    ComPtr<Material> material = nullptr;
+    std::vector<ComPtr<Mesh>>     meshes;
+    std::vector<ComPtr<Material>> materials;
 
     // オブジェクトごとの定数バッファ
     ComPtr<GraphicsBuffer> constantBuffer = nullptr;
-
-    bool isStarted = false;
 };

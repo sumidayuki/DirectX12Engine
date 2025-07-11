@@ -71,6 +71,69 @@ Entity* World::CreateCamera2D(float viewWidth, float viewHeight, const Vector3& 
 	return entity;
 }
 
+/// <summary>
+/// 読み込み済みのメッシュとマテリアルから3Dモデルのエンティティを生成します。
+/// </summary>
+/// <param name="meshes">モデルを構成するメッシュの配列</param>
+/// <param name="materials">モデルが使用するマテリアルの配列</param>
+/// <param name="parent">親となるTransform</param>
+/// <param name="localPosition">ローカル座標</param>
+/// <param name="localRotation">ローカル回転</param>
+/// <returns>生成されたエンティティ</returns>
+Entity* World::CreateWithModel(
+	const std::vector<ComPtr<Mesh>>& meshes,
+	const std::vector<ComPtr<Material>>& materials,
+	Transform* parent,
+	const Vector3& localPosition,
+	const Quaternion& localRotation)
+{
+	// 1. 基本的なエンティティを作成（Transformコンポーネントが自動で付与される）
+	Entity* entity = CreateEntity();
+
+	// 2. MeshRendererコンポーネントを作成し、メッシュとマテリアルを設定
+	MeshRenderer renderer;
+	renderer.meshes = meshes;
+	renderer.materials = materials;
+	AddComponent<MeshRenderer>(*entity, renderer);
+
+	// 3. Transformを設定
+	TransformSystem* transformSystem = GetSystem<TransformSystem>();
+	Transform* transform = GetComponent<Transform>(*entity);
+	transformSystem->SetLocalPosition(*transform, localPosition);
+	transformSystem->SetLocalRotation(*transform, localRotation);
+	// TODO: parentの設定処理を追加
+
+	return entity;
+}
+
+/// <summary>
+/// ファイルパスから3Dモデルを読み込み、エンティティを生成します。
+/// </summary>
+/// <param name="path">モデルファイルへのパス (例: "Assets/character.fbx")</param>
+/// <param name="parent">親となるTransform</param>
+/// <param name="localPosition">ローカル座標</param>
+/// <param name="localRotation">ローカル回転</param>
+/// <returns>生成されたエンティティ。読み込みに失敗した場合はnullptr</returns>
+Entity* World::CreateWithModel(
+	const std::string& path,
+	Transform* parent,
+	const Vector3& localPosition,
+	const Quaternion& localRotation)
+{
+	// 1. 作成済みのModelImporterを使ってモデルデータを読み込む
+	ModelImporter importer;
+	if (!importer.Import(path))
+	{
+		// 読み込みに失敗した場合
+		std::string err_msg = "Failed to load model: " + path;
+		OutputDebugStringA(err_msg.c_str());
+		return nullptr;
+	}
+
+	// 2. 読み込んだデータを使って、コアとなる生成関数を呼び出す
+	return CreateWithModel(importer.meshes, importer.materials, parent, localPosition, localRotation);
+}
+
 Entity* World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition, const Quaternion& localRotation)
 {
 	// 3D向けカメラの作成

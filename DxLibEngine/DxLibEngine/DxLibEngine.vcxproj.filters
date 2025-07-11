@@ -318,9 +318,6 @@
     <ClCompile Include="Time.cpp">
       <Filter>ゲームエンジン\システム\時間</Filter>
     </ClCompile>
-    <ClCompile Include="DxWindow.cpp">
-      <Filter>ゲームエンジン\システム\ウィンドウ</Filter>
-    </ClCompile>
     <ClCompile Include="Screen.cpp">
       <Filter>ゲームエンジン\システム\画面解像度</Filter>
     </ClCompile>
@@ -541,9 +538,6 @@
     </ClInclude>
     <ClInclude Include="Time.h">
       <Filter>ゲームエンジン\システム\時間</Filter>
-    </ClInclude>
-    <ClInclude Include="DxWindow.h">
-      <Filter>ゲームエンジン\システム\ウィンドウ</Filter>
     </ClInclude>
     <ClInclude Include="View.h">
       <Filter>ゲームエンジン\ECS</Filter>

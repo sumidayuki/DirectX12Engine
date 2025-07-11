@@ -1,5 +1,7 @@
 #pragma once
 
+// ö‹Æ‚Åì‚è‚Ü‚µ‚½B
+
 class Plane
 {
 private:

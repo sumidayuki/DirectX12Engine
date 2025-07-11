@@ -45,10 +45,10 @@ void PlayerSystem::Start(ComponentManager& cm, World& world)
 	m_transformSystem = world.GetSystem<TransformSystem>();
 
 	TextureImporter importer;
-	m_bulletTex = importer.Import(L"Assets/bullet_01.png");
+	m_bulletTex = importer.Import(L"Assets/images/bullet_01.png");
 
 	// プレイヤーを作成
-	Entity* player = world.CreateWithSprite(L"Assets/player_01.png", Rect(0, 0, 128, 128), Vector2(0.5f, 0.5f), 1.0f, nullptr, Vector3(Screen::GetWidth() / 2, 300, 40));
+	Entity* player = world.CreateWithSprite(L"Assets/images/bc-01.png", Rect(0, 0, 128, 128), Vector2(0.5f, 0.5f), 1.0f, nullptr, Vector3(Screen::GetWidth() / 2, 300, 40));
 	world.AddComponent<Player>(*player, Player{});
 	world.AddComponent<Input>(*player, Input{});
 	world.AddComponent<Velocity>(*player, Velocity{ .speed = 350 });

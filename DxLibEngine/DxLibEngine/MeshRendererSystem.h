@@ -17,8 +17,13 @@ private:
     static void StaticConstructor();
     static void StaticDestructor();
 
+    static inline ComPtr<Texture2D> m_defaultWhiteTexture;
+
     // 定数バッファのレイアウト
     struct ConstantBufferLayout;
+
+public:
+    static Texture2D* GetDefaultWhiteTexture() { return m_defaultWhiteTexture.Get(); }
 
 public:
     /// <summary>
@@ -27,5 +32,7 @@ public:
     void SetMesh(MeshRenderer* renderer, Mesh* mesh);
 
 private:
+    void Start(ComponentManager& cm, World& world) override;
+
     void Draw(ComponentManager& cm, World& world) override;
 };

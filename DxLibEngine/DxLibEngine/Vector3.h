@@ -1,5 +1,10 @@
 #pragma once
 
+// 授業で作りました。
+
+/// <summary>
+/// 三次元ベクトルを表すクラスです。
+/// </summary>
 class Vector3 
 {
 public:

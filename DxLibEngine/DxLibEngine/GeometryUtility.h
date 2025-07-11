@@ -1,5 +1,7 @@
 #pragma once
 
+// 授業で作りました。
+
 // ジオメトリ系の補助クラス
 class GeometryUtility
 {

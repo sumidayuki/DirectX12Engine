@@ -48,8 +48,8 @@ Texture2D* TextureImporter::Import()
 
     if (GetFileAttributesW(assetPath.c_str()) == INVALID_FILE_ATTRIBUTES)
     {
-        OutputDebugStringW((L"File not found: " + assetPath + L"\n").c_str());
-        assert(0);
+        OutputDebugStringW((L"TextureImporter Error: File not found: " + assetPath + L"\n").c_str());
+        return nullptr; // assert(0) Ç©ÇÁïœçX
     }
 
     DirectX::TexMetadata texMetadata;
