@@ -40,7 +40,7 @@ private:
 
     void ProcessNode(aiNode* node, const aiScene* scene);
     ComPtr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    // Updated to match the new implementation
+
     // V‚µ‚¢À‘•‚É‡‚í‚¹‚ÄXV
-    ComPtr<Material> ProcessMaterial(aiMaterial* mat);
+    ComPtr<Material> ProcessMaterial(aiMaterial* mat, const aiScene* scene);
 };

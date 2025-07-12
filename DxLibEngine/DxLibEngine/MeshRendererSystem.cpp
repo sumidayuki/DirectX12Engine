@@ -135,11 +135,6 @@ void MeshRendererSystem::StaticConstructor()
     {
         assert(0);
     }
-
-    TextureImporter importer;
-
-    // TextureImporterを使わずに手動でTexture2Dオブジェクトを作成
-    m_defaultWhiteTexture.Attach(importer.Import(L"Assets/White.png"));
 }
 
 void MeshRendererSystem::StaticDestructor()
@@ -153,6 +148,10 @@ void MeshRendererSystem::StaticDestructor()
 
 void MeshRendererSystem::Start(ComponentManager& cm, World& world)
 {
+    TextureImporter importer;
+
+    // TextureImporterを使わずに手動でTexture2Dオブジェクトを作成
+    m_defaultWhiteTexture.Attach(importer.Import(L"Assets/White.png"));
 }
 
 void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
