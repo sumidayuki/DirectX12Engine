@@ -164,7 +164,6 @@
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="ComponentManager.cpp" />
     <ClCompile Include="DescriptorHeap.cpp" />
-    <ClCompile Include="DxWindow.cpp" />
     <ClCompile Include="EnemyCircleSystem.cpp" />
     <ClCompile Include="EnemySpawnerSystem.cpp" />
     <ClCompile Include="EnemyStandardSystem.cpp" />
@@ -242,7 +241,6 @@
     <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="ComponentStorage.h" />
     <ClInclude Include="DescriptorHeap.h" />
-    <ClInclude Include="DxWindow.h" />
     <ClInclude Include="EnemyCircleSystem.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyFormation.h" />

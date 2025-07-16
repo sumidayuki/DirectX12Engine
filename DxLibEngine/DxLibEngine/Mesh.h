@@ -1,8 +1,9 @@
 #pragma once
 
+// Vector3, Vector2, Bounds, GraphicsBuffer, Reference などのインクルードを想定
 #include "Reference.h"
-#include "GraphicsBuffer.h"
-#include "Bounds.h"
+#include <vector>
+#include <cfloat> // FLT_MAX, -FLT_MAX のために追加
 
 /// <summary>
 /// 3Dモデルのジオメトリデータを表します。
@@ -13,13 +14,13 @@ class Mesh : public Reference
 public:
     /// <summary>
     /// 頂点のレイアウトを定義します。
-    /// 必要に応じて法線、UV座標、カラーなどを追加できます。
     /// </summary>
     struct Vertex
     {
         Vector3 position; // 頂点座標 (x, y, z)
         Vector3 normal;   // 法線
         Vector2 uv;       // テクスチャ座標 (u, v)
+        Vector3 tangent;
     };
 
 private:
@@ -27,24 +28,22 @@ private:
     ComPtr<GraphicsBuffer>  m_indexBuffer;    // インデックスバッファ
     Bounds                  m_bounds;         // モデル空間での境界ボックス
     UINT                    m_indexCount;     // インデックス数
+    int                     m_materialIndex;
 
 public:
-    // コンストラクタ
     Mesh()
         : m_vertexBuffer(nullptr)
         , m_indexBuffer(nullptr)
         , m_indexCount(0)
+        , m_materialIndex(0)
     {
     }
 
-    // 仮想デストラクタ
     virtual ~Mesh() = default;
 
     /// <summary>
     /// 頂点データとインデックスデータからメッシュをセットアップします。
     /// </summary>
-    /// <param name="vertices">頂点データの配列</param>
-    /// <param name="indices">インデックスデータの配列</param>
     void SetupMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
     {
         // 頂点バッファの作成
@@ -61,36 +60,37 @@ public:
             GraphicsBuffer::Target::Index,
             GraphicsBuffer::UsageFlags::None,
             (int)indices.size(),
-            sizeof(uint32_t), // 3Dモデルは頂点数が多いため32bitインデックスを使用
+            sizeof(uint32_t),
             indices.data()
         ));
 
         m_indexCount = (UINT)indices.size();
 
-        // TODO: 頂点データからバウンディングボックスを計算する処理
+        // --- バウンディングボックスの計算を実装 ---
+        if (!vertices.empty())
+        {
+            Vector3 minPoint(FLT_MAX, FLT_MAX, FLT_MAX);
+            Vector3 maxPoint(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+            for (const auto& vertex : vertices)
+            {
+                minPoint.x = std::min(minPoint.x, vertex.position.x);
+                minPoint.y = std::min(minPoint.y, vertex.position.y);
+                minPoint.z = std::min(minPoint.z, vertex.position.z);
+
+                maxPoint.x = std::max(maxPoint.x, vertex.position.x);
+                maxPoint.y = std::max(maxPoint.y, vertex.position.y);
+                maxPoint.z = std::max(maxPoint.z, vertex.position.z);
+            }
+            m_bounds.SetMinMax(minPoint, maxPoint);
+        }
     }
 
-    /// <summary>
-    /// 頂点バッファを取得します。
-    /// </summary>
-    /// <returns>頂点バッファのポインタ</returns>
+    // 以下、ゲッター/セッター関数は変更なし
     GraphicsBuffer* GetVertexBuffer() const { return m_vertexBuffer.Get(); }
-
-    /// <summary>
-    /// インデックスバッファを取得します。
-    /// </summary>
-    /// <returns>インデックスバッファのポインタ</returns>
     GraphicsBuffer* GetIndexBuffer() const { return m_indexBuffer.Get(); }
-
-    /// <summary>
-    /// インデックス数を取得します。
-    /// </summary>
-    /// <returns>インデックス数</returns>
     UINT GetIndexCount() const { return m_indexCount; }
-
-    /// <summary>
-    /// 境界ボックスを取得します。
-    /// </summary>
-    /// <returns>境界ボックス</returns>
     const Bounds& GetBounds() const { return m_bounds; }
+    void SetMaterialIndex(int index) { m_materialIndex = index; }
+    int GetMaterialIndex() const { return m_materialIndex; }
 };

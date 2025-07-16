@@ -15,7 +15,7 @@ public:
 	void Add(Entity entity, const T& component);
 
 	/// <summary>
-	/// 特定のエンティティのコンポーネントを全て削除します。
+	/// 特定のエンティティのコンポーネントを削除します。
 	/// </summary>
 	/// <param name="entity"></param>
 	void Remove(Entity entity) override;
@@ -28,7 +28,7 @@ public:
 	T* Get(Entity entity);
 
 	/// <summary>
-	/// 全てのコンポーネントストレージを取得します。
+	/// このコンポーネントを持っている全てのEntityを取得します。
 	/// </summary>
 	/// <returns></returns>
 	std::unordered_map<Entity, T>& GetAll() { return m_datas; }

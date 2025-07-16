@@ -193,5 +193,16 @@ public:
 
     // 画像ファイルを解析し、テクスチャリソースとしてロードします。
     Texture2D* Import(const wchar_t* path);
+
+    // メモリ上のデータからインポートするための新しい関数を追加
+    Texture2D* Import(const void* data, size_t size);
+
+    // メモリ上の非圧縮データからインポートする
+    Texture2D* Import(
+        int width,
+        int height,
+        DXGI_FORMAT format,
+        const void* initialData,
+        size_t rowPitch);
 };
 

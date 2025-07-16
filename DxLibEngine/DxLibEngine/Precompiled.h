@@ -189,7 +189,6 @@ class Keyboard;
 #include "Resolution.h"
 #include "Screen.h"
 #include "Windows-NativeWindow.h"
-//#include "DxWindow.h"
 #include "Application.h"
 
 // グラフィックス関連

@@ -2,11 +2,13 @@
 #include "TransformSystem.h"
 #include "CameraSystem.h"
 
-// 定数バッファのメモリレイアウト
+// --- CHANGED: シェーダーに渡す定数バッファのレイアウトを拡張 ---
 struct MeshRendererSystem::ConstantBufferLayout
 {
     Matrix4x4 worldMatrix;
-    Color color;
+    Color     diffuseColor;
+    Color     specularColor;
+    // float     shininess; など、他のプロパティも追加可能
 };
 
 // このシステムで共有するグラフィックスリソースを初期化します
@@ -14,51 +16,54 @@ void MeshRendererSystem::StaticConstructor()
 {
     ID3D12Device* d3d12Device = Graphics::GetD3D12Device();
 
-    // 3D用のシェーダーをコンパイルします
+    // シェーダーのコンパイル (変更なし)
     ComPtr<ShaderBytecode> vertexShader;
     vertexShader.Attach(new ShaderBytecode(L"MeshRenderer.hlsl", "VSMain", "vs_5_1"));
 
     ComPtr<ShaderBytecode> pixelShader;
     pixelShader.Attach(new ShaderBytecode(L"MeshRenderer.hlsl", "PSMain", "ps_5_1"));
 
-    // ルートシグネチャを作成します
+    // --- CHANGED: ルートシグネチャをマルチテクスチャ対応に ---
     D3D12_ROOT_PARAMETER rootParameters[3];
     memset(rootParameters, 0, sizeof(rootParameters));
 
-    // register(b0): カメラ定数バッファ
+    // register(b0): カメラ定数バッファ (変更なし)
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[0].Descriptor.ShaderRegister = 0;
     rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // register(b1): オブジェクト定数バッファ
+    // register(b1): オブジェクト・マテリアル定数バッファ (変更なし)
     rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[1].Descriptor.ShaderRegister = 1;
     rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // ディスクリプタテーブルの作成
+    // ディスクリプタテーブル: 複数のテクスチャ (Diffuse, Normal, Specular) を設定
     D3D12_DESCRIPTOR_RANGE ranges[1];
     memset(ranges, 0, sizeof(ranges));
-    ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // シェーダーリソースビュー
-    ranges[0].NumDescriptors = 1;                          // テクスチャは1つ
-    ranges[0].BaseShaderRegister = 0;                      // register(t0) に対応
+    ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    // ここでデスクリプタの数をMaterial::TextureSlotの最大数に設定
+    ranges[0].NumDescriptors = (UINT)Material::TextureSlot::Max;
+    ranges[0].BaseShaderRegister = 0; // register(t0) から始まる
     ranges[0].RegisterSpace = 0;
     ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
     rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(ranges);
     rootParameters[2].DescriptorTable.pDescriptorRanges = ranges;
-    rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーで使う
+    rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
+    // 静的サンプラー
     D3D12_STATIC_SAMPLER_DESC sampler = {};
-    sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // バイリニアフィルタ
+    sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
     sampler.MaxLOD = D3D12_FLOAT32_MAX;
-    sampler.ShaderRegister = 0; // register(s0) に対応
+    sampler.ShaderRegister = 0; // register(s0)
     sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
+    // ルートシグネチャのデスクリプタを完成させる
     D3D12_ROOT_SIGNATURE_DESC rsDesc = {};
     rsDesc.NumParameters = _countof(rootParameters);
     rsDesc.pParameters = rootParameters;
@@ -66,27 +71,34 @@ void MeshRendererSystem::StaticConstructor()
     rsDesc.NumStaticSamplers = 1;
     rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+    // ルートシグネチャをシリアライズ
     ComPtr<ID3DBlob> serializedRootSignature;
     ComPtr<ID3DBlob> errorBlob;
-    if (FAILED(D3D12SerializeRootSignature(&rsDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, serializedRootSignature.ReleaseAndGetAddressOf(), errorBlob.ReleaseAndGetAddressOf())))
+    HRESULT hr = D3D12SerializeRootSignature(&rsDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &serializedRootSignature, &errorBlob);
+    if (FAILED(hr))
     {
-        if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-        assert(0);
-    }
-    if (FAILED(d3d12Device->CreateRootSignature(0, serializedRootSignature->GetBufferPointer(), serializedRootSignature->GetBufferSize(), IID_PPV_ARGS(m_rootSignature.ReleaseAndGetAddressOf()))))
-    {
-        assert(0);
+        if (errorBlob)
+        {
+            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+        }
+        assert(SUCCEEDED(hr));
     }
 
-    // 入力レイアウトを定義します (Mesh.hのVertex構造体と一致させる)
+    // デバイスからルートシグネチャを作成
+    hr = d3d12Device->CreateRootSignature(0, serializedRootSignature->GetBufferPointer(), serializedRootSignature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature));
+    assert(SUCCEEDED(hr));
+
+    // --- CHANGED: 入力レイアウトにTANGENTを追加 ---
     static const D3D12_INPUT_ELEMENT_DESC inputElements[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }, // TANGENT を追加
     };
 
     // グラフィックスパイプラインステートを作成します (PSO)
+
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
     psoDesc.pRootSignature = m_rootSignature.Get();
     psoDesc.VS = { vertexShader->GetBytecodePointer(), vertexShader->GetBytecodeLength() };
@@ -127,86 +139,108 @@ void MeshRendererSystem::StaticConstructor()
 
 void MeshRendererSystem::StaticDestructor()
 {
+    // StaticConstructorで作成した静的リソースを解放します。
+    // ComPtrが自動的にRelease()を呼ぶため、nullptrを代入するだけで十分です。
     m_graphicsPipelineState = nullptr;
     m_rootSignature = nullptr;
+    m_defaultWhiteTexture = nullptr;
 }
 
-void MeshRendererSystem::SetMesh(MeshRenderer* renderer, Mesh* mesh)
+void MeshRendererSystem::Start(ComponentManager& cm, World& world)
 {
-    if (renderer->mesh.Get() != mesh)
-    {
-        renderer->mesh = mesh;
-    }
+    TextureImporter importer;
+
+    // TextureImporterを使わずに手動でTexture2Dオブジェクトを作成
+    m_defaultWhiteTexture.Attach(importer.Import(L"Assets/White.png"));
 }
 
 void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
 {
     View<Transform, MeshRenderer> view(cm);
+    ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
 
-    // フレームリソースとコマンドリストを取得
-    FrameResource* frameResource = Graphics::GetCurrentFrameResource();
-    ID3D12GraphicsCommandList* commandList = frameResource->GetCommandList();
-
-    // 描画設定
+    // 共通の描画設定
     commandList->SetPipelineState(m_graphicsPipelineState.Get());
     commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
-    // カメラバッファをセット
+    // 共通のカメラ情報
     CameraSystem* cameraSystem = world.GetSystem<CameraSystem>();
     Camera* camera = cameraSystem->GetCurrent();
-    if (!camera) return; // カメラがなければ描画しない
+    if (!camera) return;
     commandList->SetGraphicsRootConstantBufferView(0, cameraSystem->GetCameraBuffer(*camera)->GetNativeBufferPtr()->GetGPUVirtualAddress());
 
-    // エンティティをループして描画
+    // 描画対象のエンティティをループ
     for (auto [entity, transform, renderer] : view)
     {
-        if (!renderer.material || !renderer.mesh) continue;
+        // --- CHANGED: ここからロジックを大幅に変更 ---
 
-        // 定数バッファの初期化
-        if (!renderer.isStarted)
-        {
-            renderer.constantBuffer.Attach(new GraphicsBuffer(GraphicsBuffer::Target::Constant, GraphicsBuffer::UsageFlags::LockBufferForWrite, 1, sizeof(ConstantBufferLayout)));
-            renderer.isStarted = true;
-        }
+        // レンダラーがメッシュを持っていない場合はスキップ
+        if (renderer.meshes.empty()) continue;
 
-        // 定数バッファを更新
+        // ワールド行列は、このエンティティの全メッシュで共通
         const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
-        ConstantBufferLayout* lockedPointer = (ConstantBufferLayout*)renderer.constantBuffer->LockBufferForWrite();
-        lockedPointer->worldMatrix = worldMatrix.Transpose();
-        lockedPointer->color = renderer.material.Get()->GetColor();
-        renderer.constantBuffer->UnlockBufferAfterWrite();
 
-        // オブジェクトの定数バッファをセット
-        commandList->SetGraphicsRootConstantBufferView(1, renderer.constantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());
-
-        if (renderer.material->GetMainTexture())
+        // --- このエンティティが持つ全てのメッシュを描画するループ ---
+        for (const auto& meshComponent : renderer.meshes)
         {
-            // ディスクリプタヒープをセット
-            ID3D12DescriptorHeap* heaps[] = { renderer.material->GetDescriptorHeap()->GetNativeHeapPointer() };
-            commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+            Mesh* mesh = meshComponent.Get();
+            if (!mesh) continue;
 
-            // ルートパラメータ2番にディスクリプタテーブルをセット
-            commandList->SetGraphicsRootDescriptorTable(2, renderer.material->GetDescriptorHeap()->GetGPUDescriptorHandle(0));
+            // このメッシュが使用するマテリアルを取得
+            int materialIndex = mesh->GetMaterialIndex();
+            if (materialIndex < 0 || materialIndex >= renderer.materials.size()) continue; // 安全チェック
+
+            Material* material = renderer.materials[materialIndex].Get();
+            if (!material) continue;
+
+            // このメッシュ・マテリアル用の定数バッファがなければ作成
+            if (!renderer.constantBuffer) // NOTE: 本来はメッシュ毎に持つべきだが、簡略化のためRendererで一つ持つ
+            {
+                renderer.constantBuffer.Attach(new GraphicsBuffer(
+                    GraphicsBuffer::Target::Constant,
+                    GraphicsBuffer::UsageFlags::LockBufferForWrite,
+                    1, sizeof(ConstantBufferLayout)
+                ));
+            }
+
+            // 定数バッファの内容を更新
+            ConstantBufferLayout* lockedPointer = (ConstantBufferLayout*)renderer.constantBuffer->LockBufferForWrite();
+            lockedPointer->worldMatrix = worldMatrix.Transpose();
+            lockedPointer->diffuseColor = material->GetDiffuseColor();   // マテリアルから拡散反射色を取得
+            lockedPointer->specularColor = material->GetSpecularColor(); // マテリアルから鏡面反射色を取得
+            renderer.constantBuffer->UnlockBufferAfterWrite();
+
+            // オブジェクト・マテリアル固有の定数バッファをシェーダーにセット
+            commandList->SetGraphicsRootConstantBufferView(1, renderer.constantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());
+
+            // マテリアルのデスクリプタヒープをシェーダーにセット
+            ID3D12DescriptorHeap* descriptorHeap = material->GetDescriptorHeap();
+            if (descriptorHeap)
+            {
+                commandList->SetDescriptorHeaps(1, &descriptorHeap);
+                // ディスクリプタテーブルの開始ハンドルをセット
+                commandList->SetGraphicsRootDescriptorTable(2, material->GetGpuDescriptorHandle(Material::TextureSlot::Diffuse));
+            }
+
+            // メッシュのジオメトリ情報をIAステージにセット
+            GraphicsBuffer* vertexBuffer = mesh->GetVertexBuffer();
+            D3D12_VERTEX_BUFFER_VIEW vbView = {};
+            vbView.BufferLocation = vertexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
+            vbView.StrideInBytes = vertexBuffer->GetStride();
+            vbView.SizeInBytes = vertexBuffer->GetSizeInBytes();
+            commandList->IASetVertexBuffers(0, 1, &vbView);
+
+            GraphicsBuffer* indexBuffer = mesh->GetIndexBuffer();
+            D3D12_INDEX_BUFFER_VIEW ibView = {};
+            ibView.BufferLocation = indexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
+            ibView.SizeInBytes = indexBuffer->GetSizeInBytes();
+            ibView.Format = DXGI_FORMAT_R32_UINT;
+            commandList->IASetIndexBuffer(&ibView);
+
+            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            // 描画！
+            commandList->DrawIndexedInstanced(mesh->GetIndexCount(), 1, 0, 0, 0);
         }
-
-        // IAステージにジオメトリをセット
-        GraphicsBuffer* vertexBuffer = renderer.mesh->GetVertexBuffer();
-        D3D12_VERTEX_BUFFER_VIEW vbView;
-        vbView.BufferLocation = vertexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
-        vbView.StrideInBytes = vertexBuffer->GetStride();
-        vbView.SizeInBytes = vertexBuffer->GetSizeInBytes();
-        commandList->IASetVertexBuffers(0, 1, &vbView);
-
-        GraphicsBuffer* indexBuffer = renderer.mesh->GetIndexBuffer();
-        D3D12_INDEX_BUFFER_VIEW ibView;
-        ibView.BufferLocation = indexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
-        ibView.SizeInBytes = indexBuffer->GetSizeInBytes();
-        ibView.Format = (indexBuffer->GetStride() == 4) ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
-        commandList->IASetIndexBuffer(&ibView);
-
-        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        // 描画コマンド
-        commandList->DrawIndexedInstanced(renderer.mesh->GetIndexCount(), 1, 0, 0, 0);
     }
 }

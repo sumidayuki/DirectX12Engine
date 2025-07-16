@@ -18,6 +18,14 @@ public:
     // 仮想デストラクタ
     virtual ~Texture2D();
 
+    void CreateFromMemory(
+        int width,
+        int height,
+        DXGI_FORMAT format,
+        const void* initialData,
+        size_t rowPitch);
+
+
     // ディスクリプタヒープを取得します。
     ID3D12DescriptorHeap* GetDescriptorHeap() const { return m_descriptorHeap.Get(); }
 

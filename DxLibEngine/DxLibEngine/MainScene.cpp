@@ -10,7 +10,7 @@ void MainScene::Start()
 	m_world.AddSystem(std::make_unique<TransformSystem>());
 	m_world.AddSystem(std::make_unique<InputSystem>());
 	m_world.AddSystem(std::make_unique<CollisionSystem>());
-	m_world.AddSystem(std::make_unique<PlayerSystem>());
+	//m_world.AddSystem(std::make_unique<PlayerSystem>());
 	m_world.AddSystem(std::make_unique<BulletSystem>());
 	m_world.AddSystem(std::make_unique<EnemySystem>());
 	m_world.AddSystem(std::make_unique<EnemySpawnerSystem>());
@@ -18,8 +18,8 @@ void MainScene::Start()
 	m_world.AddSystem(std::make_unique<EnemyStandardSystem>());
 	m_world.AddSystem(std::make_unique<EnemyCircleSystem>());
 	m_world.AddSystem(std::make_unique<EnemyWaveSystem>());
-	//m_world.AddSystem(std::make_unique<BossSystem>());
-	//m_world.AddSystem(std::make_unique<BossBulletSystem>());
+	m_world.AddSystem(std::make_unique<BossSystem>());
+	m_world.AddSystem(std::make_unique<BossBulletSystem>());
 
 	//Entity* camera = m_world.CreateCamera2D(1920, 1080, Vector3(1920 / 2, 1080 / 2, -10));
 	//
@@ -36,16 +36,16 @@ void MainScene::Start()
 	//// ボスようの画像ファイルパスを事前に読み込んでおく
 	//Texture2D* boss = importer.Import(L"Assets/boss-01.png");
 	//
-	//// エネミーの生成手順
-	//// まずメインシーンなどで EnemySpawnMap（EnemySpawnInfoを格納する）を生成します。
-	//// EnemySpawnerSystem で EnemySpawnMap の中の EnemySpawnInfo の情報を基に隊列を生成していきます。
-	//// その後、それぞれの隊列が生成された EnemySpawnInfo の中から自分の隊列のものがあれば EnemySpawnInfo
-	//// の情報を基にEnemyを生成します。
-	//// エネミー生成用のスポナーを作成
-	//Entity* enemySpawner = m_world.CreateEntity();
-	//Transform* spawnerTransform = m_world.GetComponent<Transform>(*enemySpawner);
-	//spawnerTransform->position = Vector3(0, 0, 100);
-	//m_world.AddComponent<EnemySpawnMap>
+	/// エネミーの生成手順
+	/// まずメインシーンなどで EnemySpawnMap（EnemySpawnInfoを格納する）を生成します。
+	/// EnemySpawnerSystem で EnemySpawnMap の中の EnemySpawnInfo の情報を基に隊列を生成していきます。
+	/// その後、それぞれの隊列が生成された EnemySpawnInfo の中から自分の隊列のものがあれば EnemySpawnInfo
+	/// の情報を基にEnemyを生成します。
+	/// エネミー生成用のスポナーを作成
+	//ntity* enemySpawner = m_world.CreateEntity();
+	//ransform* spawnerTransform = m_world.GetComponent<Transform>(*enemySpawner);
+	//pawnerTransform->position = Vector3(0, 0, 100);
+	//_world.AddComponent<EnemySpawnMap>
 	//	(
 	//		*enemySpawner,	// コンポーネントを追加するエンティティを指定する 
 	//		EnemySpawnMap	// エネミーの生成マップ
@@ -184,53 +184,17 @@ void MainScene::Start()
 	//		}
 	//	);
 
-	// --- 3Dカメラの作成 ---
 	float fov = 60.0f;
 	float aspect = (float)Screen::GetWidth() / (float)Screen::GetHeight();
-	float nearPlane = 0.1f; // 非常に近いオブジェクトも描画できるように調整
+	float nearPlane = 0.1f;
 	float farPlane = 1000.0f;
-	Vector3 cameraPos = Vector3(0.0f, 1.5f, -5.0f); // 少し上から、少し手前に引いた位置
-	
+
+	Vector3 cameraPos = Vector3(0.0f, 1.0f, -8.0f);
 	Entity* camera = m_world.CreateCamera3D(fov, aspect, nearPlane, farPlane, cameraPos);
+	// 騎士の顔が見えるように、カメラの向きを少しだけ下げる
+	m_world.GetComponent<Transform>(*camera)->rotation = Quaternion::AngleAxis(5.0f, Vector3::right);
 
-	// 1. TextureImporterを使ってテクスチャをロードする
-	TextureImporter texImporter;
-	ComPtr<Texture2D> rockTexture;
-	rockTexture.Attach(texImporter.Import(L"Assets/player_01.png"));
-
-	// 2. ModelImporterを使ってFBXモデルをロードする
-	ModelImporter modelImporter;
-	// Assimpはマルチバイト文字のパスを扱うので、stringに変換します
-	std::string path = "Assets/Knight.fbx";
-	auto loadedMeshes = modelImporter.Import(path);
-
-	// 3. 読み込みが成功したかチェック
-	if (!loadedMeshes.empty() && rockTexture)
-	{
-		// 4. マテリアルを作成し、ロードしたテクスチャを設定
-		ComPtr<Material> rockMaterial;
-		rockMaterial.Attach(new Material());
-		rockMaterial->SetMainTexture(rockTexture.Get());
-		// テクスチャの色をそのまま使いたいので、マテリアルの色は白のまま
-		rockMaterial->SetColor(Color::white);
-
-		// 5. エンティティを作成し、コンポーネントをアタッチ
-		Entity* rockEntity = m_world.CreateEntity();
-
-		// Transformコンポーネント
-		Transform* rockTransform = m_world.GetComponent<Transform>(*rockEntity);
-		rockTransform->position = Vector3(0.0f, 0.0f, 0.0f);
-		// モデルが大きすぎる/小さすぎる場合があるので、スケールで調整
-		rockTransform->scale = Vector3(0.01f, 0.01f, 0.01f);
-
-		// MeshRendererコンポーネント
-		m_world.AddComponent<MeshRenderer>(*rockEntity, MeshRenderer{});
-		MeshRenderer* rockRenderer = m_world.GetComponent<MeshRenderer>(*rockEntity);
-		// 読み込んだメッシュ（モデルに複数の部品がある場合もあるが、今回は最初の1つ）
-		rockRenderer->mesh = loadedMeshes[0];
-		// 作成したマテリアル
-		rockRenderer->material = rockMaterial;
-	}
+	m_world.CreateWithModel("Assets/Warrok-04.fbx", nullptr, Vector3::zero, Quaternion::identity);
 
 	m_world.Start(m_world);
 }
@@ -240,9 +204,8 @@ void MainScene::Update()
 	View<Transform, MeshRenderer> view(m_world.GetComponentManager());
 	for (auto [entity, transform, renderer] : view)
 	{
-		m_world.GetSystem<TransformSystem>()->Rotate(transform, Vector3(0, 1, 0), 30.0f * Time::GetDeltaTime());
+		m_world.GetSystem<TransformSystem>()->Rotate(transform, Vector3(0, 1, 0), 15.0f * Time::GetDeltaTime());
 	}
-
 
 	m_world.Update(m_world);
 }
