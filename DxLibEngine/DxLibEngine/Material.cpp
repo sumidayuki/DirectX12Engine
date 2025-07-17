@@ -53,6 +53,6 @@ void Material::SetTexture(TextureSlot slot, Texture2D* texture)
         // デバイスを取得してデスクリプタをコピー
         Graphics::GetD3D12Device()->CopyDescriptorsSimple(1, copyTo, copyFrom, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     }
-    // メモ: textureがnullptrの場合、このマテリアルのデスクリプタヒープ内の
+    // メモ: textureがnullptrの場合、このマテリアルのデスクリпタヒープ内の
     // 対応するデスクリプタは更新されませんが、シェーダー側で分岐すれば問題ありません。
 }

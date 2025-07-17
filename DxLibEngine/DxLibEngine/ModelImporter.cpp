@@ -5,9 +5,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-// For robust path handling (C++17)
-// C++17のfilesystemでパスを堅牢に扱う
-#include <filesystem>
+// #include <filesystem> // 不要なため削除
 
 bool ModelImporter::Import(const std::string& path)
 {
@@ -26,9 +24,10 @@ bool ModelImporter::Import(const std::string& path)
         return false;
     }
 
-    m_directory = std::filesystem::path(path).parent_path().string();
+    // m_directory の行を削除。ファイルシステムに依存しないため不要です。
+    // m_directory = std::filesystem::path(path).parent_path().string();
 
-    // マテリアルの読み込み (sceneを渡すように変更)
+    // マテリアルの読み込み
     materials.resize(scene->mNumMaterials);
     for (unsigned int i = 0; i < scene->mNumMaterials; i++)
     {
@@ -77,7 +76,6 @@ ComPtr<Mesh> ModelImporter::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         }
     }
 
-    // --- インデックスの読み込み処理を修正 ---
     std::vector<uint32_t> indices;
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
@@ -110,72 +108,56 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
         newMaterial->SetSpecularColor({ color.r, color.g, color.b, color.a });
     }
 
+    // Diffuseテクスチャの処理
     if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
     {
         aiString path;
         mat->GetTexture(aiTextureType_DIFFUSE, 0, &path);
+
         ComPtr<Texture2D> diffuseTexture;
-        TextureImporter importer; // Importerは一度だけ作成
+        TextureImporter importer;
 
-        if (path.data[0] == '*') // 埋め込みテクスチャ
+        // パス文字列に一致するテクスチャがシーンに埋め込まれているかチェック
+        const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
+
+        if (embeddedTexture != nullptr)
         {
-            int textureIndex = std::stoi(path.C_Str() + 1);
-            aiTexture* embeddedTexture = scene->mTextures[textureIndex];
-
-            if (embeddedTexture->mHeight == 0) // 圧縮形式
+            // 埋め込みテクスチャが見つかった場合
+            if (embeddedTexture->mHeight == 0) // 圧縮形式 (PNG, JPGなど)
             {
-                diffuseTexture.Attach(importer.Import(embeddedTexture->pcData, embeddedTexture->mWidth));
+                diffuseTexture.Attach(importer.Import(
+                    embeddedTexture->pcData, // データ本体へのポインタ
+                    embeddedTexture->mWidth  // データのサイズ (バイト単位)
+                ));
             }
-            else // 非圧縮形式
+            else // 非圧縮形式 (生のピクセルデータ)
             {
-                // ★★★ TextureImporterの新しいImport関数を呼び出す ★★★
                 diffuseTexture.Attach(importer.Import(
                     embeddedTexture->mWidth,
                     embeddedTexture->mHeight,
-                    DXGI_FORMAT_R8G8B8A8_UNORM,
+                    DXGI_FORMAT_R8G8B8A8_UNORM, // AssimpのaiTexelは通常このフォーマット
                     embeddedTexture->pcData,
-                    embeddedTexture->mWidth * sizeof(aiTexel)
+                    embeddedTexture->mWidth * sizeof(aiTexel) // 1行あたりのバイト数
                 ));
             }
         }
-        else // ファイルパス
+        else
         {
-            std::filesystem::path finalPath = std::filesystem::path(m_directory) / std::filesystem::path(path.C_Str()).filename();
-            diffuseTexture.Attach(importer.Import(finalPath.wstring().c_str()));
+            // 埋め込みテクスチャが見つからなかった場合(外部ファイル)は、
+            // エラーの原因になるためファイルを探しに行かない。
+            // 必要であれば警告を出力する。
+            OutputDebugStringA(("Warning: Texture is not embedded, skipping: " + std::string(path.C_Str()) + "\n").c_str());
         }
-        newMaterial->SetTexture(Material::TextureSlot::Diffuse, diffuseTexture.Get());
+
+        if (diffuseTexture) {
+            newMaterial->SetTexture(Material::TextureSlot::Diffuse, diffuseTexture.Get());
+        }
     }
 
-    // フォールバック
+    // フォールバック: テクスチャが設定されなかった場合にデフォルトテクスチャを割り当て
     if (!newMaterial->GetTexture(Material::TextureSlot::Diffuse)) {
         newMaterial->SetTexture(Material::TextureSlot::Diffuse, MeshRendererSystem::GetDefaultWhiteTexture());
     }
 
     return newMaterial;
-}
-
-// 特定の種類のテクスチャをマテリアルから読み込むヘルパー関数
-std::vector<ComPtr<Texture2D>> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& directory)
-{
-    std::vector<ComPtr<Texture2D>> textures;
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-    {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-
-        std::filesystem::path filePath = std::filesystem::path(str.C_Str());
-
-        // 構築したパスをTextureImporterに渡します。
-        //    ファイルが存在しない等の問題は、TextureImporterがnullptrを返して対処します。
-        TextureImporter texImporter;
-        ComPtr<Texture2D> texture;
-        texture.Attach(texImporter.Import(filePath.c_str()));
-
-        // TextureImporterが成功した場合（textureがnullptrでない場合）のみ、リストに追加します。
-        if (texture)
-        {
-            textures.push_back(texture);
-        }
-    }
-    return textures;
 }

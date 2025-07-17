@@ -114,11 +114,7 @@ Entity* World::CreateWithModel(
 /// <param name="localPosition">ローカル座標</param>
 /// <param name="localRotation">ローカル回転</param>
 /// <returns>生成されたエンティティ。読み込みに失敗した場合はnullptr</returns>
-Entity* World::CreateWithModel(
-	const std::string& path,
-	Transform* parent,
-	const Vector3& localPosition,
-	const Quaternion& localRotation)
+Entity* World::CreateWithModel(const std::string& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
 {
 	// 1. 作成済みのModelImporterを使ってモデルデータを読み込む
 	ModelImporter importer;

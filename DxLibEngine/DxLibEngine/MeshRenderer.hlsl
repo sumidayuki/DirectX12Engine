@@ -1,58 +1,88 @@
-// カメラの情報（ビュー行列、プロジェクション行列）を格納する定数バッファ
+// カメラの情報（ビュー行列、プロジェクション行列）
 cbuffer CameraConstants : register(b0)
 {
     float4x4 viewMatrix;
     float4x4 projMatrix;
 };
 
-// オブジェクトごとの情報（ワールド変換行列）を格納する定数バッファ
+// オブジェクトごとの情報（ワールド行列、マテリアルの色など）
 cbuffer ObjectConstants : register(b1)
 {
     float4x4 worldMatrix;
-    float4 color; // オブジェクトの色
+    float4 diffuseColor;
+    float4 specularColor;
 };
 
-// 描画に使うテクスチャ
-Texture2D mainTex : register(t0);
+// テクスチャ
+Texture2D diffuseMap : register(t0); // ディフューズマップ
+// Texture2D normalMap    : register(t1); // 法線マップ（今回は未使用）
+// Texture2D specularMap  : register(t2); // スペキュラマップ（今回は未使用）
 
-// テクスチャをどういう風にサンプリング（読み取り）するかを決める設定
-SamplerState smp : register(s0);
+// サンプラー
+SamplerState linearSampler : register(s0);
 
-// 頂点シェーダーの入力
+// 頂点シェーダーへの入力
 struct VS_INPUT
 {
-    float4 position : POSITION; // 頂点座標 (ローカル空間)
-    float3 normal : NORMAL;     // 法線
-    float2 uv : TEXCOORD0;      // UV座標
+    float3 position : POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD0;
+    float3 tangent : TANGENT;
 };
 
-// 頂点シェーダーの出力（ピクセルシェーダーへの入力）
+// ピクセルシェーダーへの入力
 struct PS_INPUT
 {
-    float4 position : SV_POSITION; // 頂点座標 (クリップ空間)
+    float4 position : SV_POSITION;
     float2 uv : TEXCOORD0;
+    float3 normal : NORMAL;
+    float3 worldPos : TEXCOORD1;
 };
 
+
+// ---------------------------------
 // 頂点シェーダー
+// ---------------------------------
 PS_INPUT VSMain(VS_INPUT input)
 {
     PS_INPUT output = (PS_INPUT) 0;
 
-    // ワールド、ビュー、プロジェクション行列を順番に乗算し、
-    // ローカル座標からクリップ空間座標へ変換する
-    float4 worldPos = mul(input.position, worldMatrix);
-    float4 viewPos = mul(worldPos, viewMatrix);
-    output.position = mul(viewPos, projMatrix);
+    // ワールド、ビュー、プロジェクション行列を順に適用して、頂点をクリップ空間へ変換
+    float4 worldPos = mul(float4(input.position, 1.0f), worldMatrix);
+    output.position = mul(worldPos, viewMatrix);
+    output.position = mul(output.position, projMatrix);
     
+    // ピクセルシェーダーでライティング計算を行うため、法線とワールド座標を渡す
+    output.normal = normalize(mul(float4(input.normal, 0.0f), worldMatrix).xyz);
+    output.worldPos = worldPos.xyz;
+    
+    // UV座標をそのまま渡す
     output.uv = input.uv;
-    
+
     return output;
 }
 
+// ---------------------------------
 // ピクセルシェーダー
+// ---------------------------------
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
-    // mainTex.Sample(smp, input.uv) で、指定されたUV座標の色を取得する
-    // その色と、マテリアルに設定された色を掛け合わせることで、色味の調整も可能にする
-    return mainTex.Sample(smp, input.uv) * color;
+    // テクスチャからディフューズカラーを取得
+    float4 textureColor = diffuseMap.Sample(linearSampler, input.uv);
+
+    // ライティングの仮実装（指向性ライト）
+    float3 lightDir = normalize(float3(0.5f, -1.0f, -0.5f));
+    float3 lightColor = float3(1.0f, 1.0f, 1.0f);
+    
+    // 環境光
+    float3 ambient = float3(0.2f, 0.2f, 0.2f);
+    
+    // 拡散反射光
+    float diff = max(dot(-lightDir, input.normal), 0.0);
+    float3 diffuse = diff * lightColor;
+    
+    // 最終的な色
+    float3 finalColor = (ambient + diffuse) * textureColor.rgb * diffuseColor.rgb;
+    
+    return float4(finalColor, textureColor.a * diffuseColor.a);
 }
