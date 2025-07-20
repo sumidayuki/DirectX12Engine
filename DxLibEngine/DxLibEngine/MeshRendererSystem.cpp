@@ -2,13 +2,12 @@
 #include "TransformSystem.h"
 #include "CameraSystem.h"
 
-// --- CHANGED: シェーダーに渡す定数バッファのレイアウトを拡張 ---
+// CHANGED: シェーダーに渡す定数バッファのレイアウトを拡張
 struct MeshRendererSystem::ConstantBufferLayout
 {
     Matrix4x4 worldMatrix;
     Color     diffuseColor;
     Color     specularColor;
-    // float     shininess; など、他のプロパティも追加可能
 };
 
 // このシステムで共有するグラフィックスリソースを初期化します
@@ -23,7 +22,7 @@ void MeshRendererSystem::StaticConstructor()
     ComPtr<ShaderBytecode> pixelShader;
     pixelShader.Attach(new ShaderBytecode(L"MeshRenderer.hlsl", "PSMain", "ps_5_1"));
 
-    // --- CHANGED: ルートシグネチャをマルチテクスチャ対応に ---
+    // ルートシグネチャをマルチテクスチャ対応に
     D3D12_ROOT_PARAMETER rootParameters[3];
     memset(rootParameters, 0, sizeof(rootParameters));
 
@@ -41,6 +40,7 @@ void MeshRendererSystem::StaticConstructor()
     D3D12_DESCRIPTOR_RANGE ranges[1];
     memset(ranges, 0, sizeof(ranges));
     ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
     // ここでデスクリプタの数をMaterial::TextureSlotの最大数に設定
     ranges[0].NumDescriptors = (UINT)Material::TextureSlot::Max;
     ranges[0].BaseShaderRegister = 0; // register(t0) から始まる
@@ -88,7 +88,7 @@ void MeshRendererSystem::StaticConstructor()
     hr = d3d12Device->CreateRootSignature(0, serializedRootSignature->GetBufferPointer(), serializedRootSignature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature));
     assert(SUCCEEDED(hr));
 
-    // --- CHANGED: 入力レイアウトにTANGENTを追加 ---
+    // 入力レイアウトにTANGENTを追加
     static const D3D12_INPUT_ELEMENT_DESC inputElements[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -172,15 +172,13 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
     // 描画対象のエンティティをループ
     for (auto [entity, transform, renderer] : view)
     {
-        // --- CHANGED: ここからロジックを大幅に変更 ---
-
         // レンダラーがメッシュを持っていない場合はスキップ
         if (renderer.meshes.empty()) continue;
 
         // ワールド行列は、このエンティティの全メッシュで共通
         const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
 
-        // --- このエンティティが持つ全てのメッシュを描画するループ ---
+        // このエンティティが持つ全てのメッシュを描画するループ
         for (const auto& meshComponent : renderer.meshes)
         {
             Mesh* mesh = meshComponent.Get();

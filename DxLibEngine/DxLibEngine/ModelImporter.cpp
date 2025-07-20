@@ -5,8 +5,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-// #include <filesystem> // 不要なため削除
-
 bool ModelImporter::Import(const std::string& path)
 {
     meshes.clear();
@@ -23,9 +21,6 @@ bool ModelImporter::Import(const std::string& path)
         OutputDebugStringA(("ASSIMP_ERROR: " + std::string(importer.GetErrorString())).c_str());
         return false;
     }
-
-    // m_directory の行を削除。ファイルシステムに依存しないため不要です。
-    // m_directory = std::filesystem::path(path).parent_path().string();
 
     // マテリアルの読み込み
     materials.resize(scene->mNumMaterials);
@@ -154,7 +149,7 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
         }
     }
 
-    // フォールバック: テクスチャが設定されなかった場合にデフォルトテクスチャを割り当て
+    // テクスチャが設定されなかった場合にデフォルトテクスチャを割り当て
     if (!newMaterial->GetTexture(Material::TextureSlot::Diffuse)) {
         newMaterial->SetTexture(Material::TextureSlot::Diffuse, MeshRendererSystem::GetDefaultWhiteTexture());
     }
