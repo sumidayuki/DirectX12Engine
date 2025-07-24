@@ -277,6 +277,12 @@
     <Filter Include="ゲームエンジン\リソース\アセットインポーター\アセット\マテリアル">
       <UniqueIdentifier>{e05911cb-a902-4b02-a6a8-9e9e6dd1632c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\ECS\Component\Light">
+      <UniqueIdentifier>{46fe427b-641a-44cd-b9db-5ad0a3c3c63a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\LightSystem">
+      <UniqueIdentifier>{bdec7e2a-2c8e-4a7d-834e-06d729b59c40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -461,6 +467,9 @@
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>ゲームエンジン\リソース\アセットインポーター\アセット\マテリアル</Filter>
+    </ClCompile>
+    <ClCompile Include="LightSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\LightSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -757,6 +766,12 @@
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>ゲームエンジン\リソース\アセットインポーター\アセット\マテリアル</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>ゲームエンジン\ECS\Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="LightSystem.h">
+      <Filter>ゲームエンジン\ECS\System\LightSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

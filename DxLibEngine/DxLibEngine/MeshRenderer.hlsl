@@ -75,7 +75,7 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
     float3 lightColor = float3(1.0f, 1.0f, 1.0f);
     
     // ŠÂ‹«Œõ
-    float3 ambient = float3(0.2f, 0.2f, 0.2f);
+    float3 ambient = float3(1.0f, 1.0f, 1.0f);
     
     // ŠgŽU”½ŽËŒõ
     float diff = max(dot(-lightDir, input.normal), 0.0);

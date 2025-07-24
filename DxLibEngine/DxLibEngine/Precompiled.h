@@ -203,6 +203,8 @@ class Keyboard;
 // アセット関連
 #include "Texture.h"
 #include "Texture2D.h"
+#include "Mesh.h"
+#include "Material.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"
@@ -229,9 +231,8 @@ class Keyboard;
 #include "Target.h"
 #include "Transform.h"
 #include "Camera.h"
+#include "Light.h"
 #include "SpriteRenderer.h"
-#include "Mesh.h"
-#include "Material.h"
 #include "MeshRenderer.h"
 
 #include "GeometryUtility.h"

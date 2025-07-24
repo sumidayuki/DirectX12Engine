@@ -194,7 +194,7 @@ void MainScene::Start()
 	// 騎士の顔が見えるように、カメラの向きを少しだけ下げる
 	m_world.GetComponent<Transform>(*camera)->rotation = Quaternion::AngleAxis(5.0f, Vector3::right);
 
-	m_world.CreateWithModel("Assets/Warrok-01.fbx", nullptr, Vector3(0, -150, 300), Quaternion::identity);
+	m_world.CreateWithModel("Assets/Warrok-04.fbx", nullptr, Vector3(0, -150, 300), Quaternion::identity);
 
 	m_world.Start(m_world);
 }
