@@ -1,6 +1,7 @@
 #include "MeshRendererSystem.h"
 #include "TransformSystem.h"
 #include "CameraSystem.h"
+#include "LightSystem.h"
 
 // CHANGED: シェーダーに渡す定数バッファのレイアウトを拡張
 struct MeshRendererSystem::ConstantBufferLayout
@@ -22,8 +23,8 @@ void MeshRendererSystem::StaticConstructor()
     ComPtr<ShaderBytecode> pixelShader;
     pixelShader.Attach(new ShaderBytecode(L"MeshRenderer.hlsl", "PSMain", "ps_5_1"));
 
-    // ルートシグネチャをマルチテクスチャ対応に
-    D3D12_ROOT_PARAMETER rootParameters[3];
+    // ルートシグネチャ
+    D3D12_ROOT_PARAMETER rootParameters[5];
     memset(rootParameters, 0, sizeof(rootParameters));
 
     // register(b0): カメラ定数バッファ (変更なし)
@@ -51,6 +52,26 @@ void MeshRendererSystem::StaticConstructor()
     rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(ranges);
     rootParameters[2].DescriptorTable.pDescriptorRanges = ranges;
     rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    // ライト情報 (Structured Buffer) を追加
+    D3D12_DESCRIPTOR_RANGE lightRanges[1];
+    memset(lightRanges, 0, sizeof(lightRanges));
+    lightRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    lightRanges[0].NumDescriptors = 1;
+    lightRanges[0].BaseShaderRegister = 3; // register(t3) にバインド
+    lightRanges[0].RegisterSpace = 0;
+    lightRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[3].DescriptorTable.NumDescriptorRanges = _countof(lightRanges);
+    rootParameters[3].DescriptorTable.pDescriptorRanges = lightRanges;
+    rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーで使用
+
+    // SceneConstants (b2) をここに追加
+    rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[4].Descriptor.ShaderRegister = 2; // b2 に対応
+    rootParameters[4].Descriptor.RegisterSpace = 0;
+    rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーで使用
 
     // 静的サンプラー
     D3D12_STATIC_SAMPLER_DESC sampler = {};
@@ -152,71 +173,93 @@ void MeshRendererSystem::Start(ComponentManager& cm, World& world)
 
     // TextureImporterを使わずに手動でTexture2Dオブジェクトを作成
     m_defaultWhiteTexture.Attach(importer.Import(L"Assets/White.png"));
+
+    m_sceneConstantBuffer.Attach(new GraphicsBuffer(
+        GraphicsBuffer::Target::Constant,
+        GraphicsBuffer::UsageFlags::LockBufferForWrite,
+        1,
+        sizeof(SceneConstants) // HLSLのcbufferのサイズ
+    ));
 }
 
 void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
 {
-    View<Transform, MeshRenderer> view(cm);
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
+    DescriptorAllocator* srvAllocator = world.GetSrvAllocator();
 
-    // 共通の描画設定
     commandList->SetPipelineState(m_graphicsPipelineState.Get());
     commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
-    // 共通のカメラ情報
+    // 最初に一度だけ、共有SRVヒープを設定
+    ID3D12DescriptorHeap* heaps[] = { srvAllocator->GetHeap() };
+    commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+    // 共通情報のバインド
     CameraSystem* cameraSystem = world.GetSystem<CameraSystem>();
     Camera* camera = cameraSystem->GetCurrent();
-    if (!camera) return;
+    LightSystem* lightSystem = world.GetSystem<LightSystem>();
+    if (!camera || !lightSystem) return;
+
+    // カメラCBV
     commandList->SetGraphicsRootConstantBufferView(0, cameraSystem->GetCameraBuffer(*camera)->GetNativeBufferPtr()->GetGPUVirtualAddress());
 
-    // 描画対象のエンティティをループ
+    // シーンCBV
+    SceneConstants* sceneData = (SceneConstants*)m_sceneConstantBuffer->LockBufferForWrite();
+    sceneData->activeLightCount = lightSystem->GetActiveLightCount();
+    Entity* currentCameraEntity = cameraSystem->GetCurrentEntity();
+    if (currentCameraEntity)
+    {
+        Transform* cameraTransform = world.GetComponent<Transform>(*currentCameraEntity);
+        sceneData->cameraWorldPosition = Vector4(cameraTransform->position, 1.0f);
+    }
+    m_sceneConstantBuffer->UnlockBufferAfterWrite();
+    commandList->SetGraphicsRootConstantBufferView(4, m_sceneConstantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());
+
+    // ライトSRVテーブル
+    if (lightSystem->GetActiveLightCount() > 0)
+    {
+        commandList->SetGraphicsRootDescriptorTable(3, lightSystem->GetLightBufferGpuHandle());
+    }
+
+    // 各オブジェクトの描画ループ
+    View<Transform, MeshRenderer> view(cm);
     for (auto [entity, transform, renderer] : view)
     {
-        // レンダラーがメッシュを持っていない場合はスキップ
         if (renderer.meshes.empty()) continue;
 
-        // ワールド行列は、このエンティティの全メッシュで共通
         const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
 
-        // このエンティティが持つ全てのメッシュを描画するループ
         for (const auto& meshComponent : renderer.meshes)
         {
             Mesh* mesh = meshComponent.Get();
             if (!mesh) continue;
 
-            // このメッシュが使用するマテリアルを取得
             int materialIndex = mesh->GetMaterialIndex();
-            if (materialIndex < 0 || materialIndex >= renderer.materials.size()) continue; // 安全チェック
-
+            if (materialIndex < 0 || materialIndex >= renderer.materials.size()) continue;
             Material* material = renderer.materials[materialIndex].Get();
             if (!material) continue;
 
-            // このメッシュ・マテリアル用の定数バッファがなければ作成
-            if (!renderer.constantBuffer) // NOTE: 本来はメッシュ毎に持つべきだが、簡略化のためRendererで一つ持つ
+            if (!renderer.constantBuffer)
             {
                 renderer.constantBuffer.Attach(new GraphicsBuffer(
                     GraphicsBuffer::Target::Constant,
                     GraphicsBuffer::UsageFlags::LockBufferForWrite,
-                    1, sizeof(ConstantBufferLayout)
+                    1, sizeof(ObjectConstantsLayout)
                 ));
             }
 
-            // 定数バッファの内容を更新
-            ConstantBufferLayout* lockedPointer = (ConstantBufferLayout*)renderer.constantBuffer->LockBufferForWrite();
+            // Object/Material CBV の更新とバインド
+            ObjectConstantsLayout* lockedPointer = (ObjectConstantsLayout*)renderer.constantBuffer->LockBufferForWrite();
             lockedPointer->worldMatrix = worldMatrix.Transpose();
-            lockedPointer->diffuseColor = material->GetDiffuseColor();   // マテリアルから拡散反射色を取得
-            lockedPointer->specularColor = material->GetSpecularColor(); // マテリアルから鏡面反射色を取得
+            lockedPointer->diffuseColor = material->GetDiffuseColor();
+            lockedPointer->specularColor = material->GetSpecularColor(); // 鏡面反射色を追加
+            lockedPointer->shininess = 64.0f; // 光沢度を追加 (値は仮)
             renderer.constantBuffer->UnlockBufferAfterWrite();
-
-            // オブジェクト・マテリアル固有の定数バッファをシェーダーにセット
             commandList->SetGraphicsRootConstantBufferView(1, renderer.constantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());
 
-            // マテリアルのデスクリプタヒープをシェーダーにセット
-            ID3D12DescriptorHeap* descriptorHeap = material->GetDescriptorHeap();
-            if (descriptorHeap)
+            // Material Textures のバインド
+            if (material->GetGpuDescriptorHandle(Material::TextureSlot::Diffuse).ptr != 0)
             {
-                commandList->SetDescriptorHeaps(1, &descriptorHeap);
-                // ディスクリプタテーブルの開始ハンドルをセット
                 commandList->SetGraphicsRootDescriptorTable(2, material->GetGpuDescriptorHandle(Material::TextureSlot::Diffuse));
             }
 

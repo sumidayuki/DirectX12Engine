@@ -47,6 +47,9 @@ public:
 	/// <param name="w"></param>
 	Quaternion(float x, float y, float z, float w);
 
+	// XMVECTOR型の値で初期化された新しいクォータニオンを作成します。
+	Quaternion(const DirectX::XMVECTOR& xmquat);
+
 	/// <summary>
 	/// Quaternion型からXMVECTOR型に変換します。
 	/// </summary>
@@ -60,6 +63,19 @@ public:
 	/// <param name="axis"></param>
 	/// <returns></returns>
 	[[nodiscard]] static Quaternion AngleAxis(float angle, const Vector3& axis);
+
+	// オイラー角表現でクォータニオンを作成します。 (単位はディグリー)
+	//	Unityの場合 : Z-Y-Xの順で回転
+	//	DirectXの場合 : Z-X-Yの順で回転
+	[[nodiscard]] static Quaternion Euler(float x, float y, float z);
+
+	// オイラー角表現でクォータニオンを作成します。 (単位はディグリー)
+	//  Unityの場合 : Z-Y-Xの順で回転
+	//	DirectXの場合 : Z-X-Yの順で回転
+	[[nodiscard]] static Quaternion Euler(const Vector3& euler);
+
+	// 指定された forward と upwards 方向に回転します。
+	[[nodiscard]] static Quaternion LookRotation(const Vector3& forward, const Vector3& upwards = Vector3::up);
 };
 
 [[nodiscard]] Quaternion operator *(const Quaternion& lhs, const Quaternion& rhs) noexcept;

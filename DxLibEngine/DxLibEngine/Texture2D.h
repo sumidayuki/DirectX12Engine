@@ -31,4 +31,6 @@ public:
 
     // Direct3D12リソースを取得します。
     void* GetNativeTexturePtr() const override { return m_nativeTexture.Get(); }
+
+    ID3D12Resource* GetNativeResource() const { return m_nativeTexture.Get(); }
 };

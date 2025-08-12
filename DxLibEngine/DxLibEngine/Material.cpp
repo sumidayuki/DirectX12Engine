@@ -1,58 +1,55 @@
 #include "Material.h"
+#include "Graphics.h" // GetD3D12Device() のためにインクルード
 
 Material::Material()
-    : m_diffuseColor(Color::white),      // デフォルトの拡散反射色は白
-    m_specularColor(Color(0.f, 0.f, 0.f, 1.f)), // デフォルトの鏡面反射色は黒
-    m_descriptorHeap(nullptr)
+    : m_diffuseColor(Color::white),
+    m_specularColor(Color(0.2f, 0.2f, 0.2f, 1.f)) // デフォルトの鏡面反射色は控えめな灰色に
 {
-    // 全てのテクスチャポインタをnullptrで初期化
+    // 全てのポインタとハンドルをゼロクリア
     for (int i = 0; i < (int)TextureSlot::Max; ++i)
     {
         m_textures[i] = nullptr;
+        m_textureHandles[i] = { 0 };
     }
 }
 
-/// <summary>
-/// 指定されたスロットにテクスチャを設定します。
-/// 内部でデスクリプタヒープを管理し、適切な場所にデスクリプタをコピーします。
-/// </summary>
-/// <param name="slot">テクスチャを設定するスロット</param>
-/// <param name="texture">設定するテクスチャ</param>
-void Material::SetTexture(TextureSlot slot, Texture2D* texture)
+void Material::SetTexture(TextureSlot slot, Texture2D* texture, DescriptorAllocator* allocator)
 {
     int slotIndex = (int)slot;
-    // スロットのインデックスが範囲内かチェック
     if (slotIndex < 0 || slotIndex >= (int)TextureSlot::Max)
     {
-        // 範囲外の場合は何もしない（またはアサート）
+        assert(false);
         return;
     }
 
-    // 1. テクスチャへのポインタを配列の適切な場所に保存
+    // 1. テクスチャへのポインタを更新
     m_textures[slotIndex] = texture;
 
-    // 2. デスクリプタヒープがなければ、全スロット分を確保して作成する
-    if (!m_descriptorHeap)
+    // 2. テクスチャがnullptr、またはアロケータが無効なら、ハンドルをクリアして終了
+    if (!texture || !allocator)
     {
-        m_descriptorHeap.Attach(new DescriptorHeap(
-            DescriptorHeapType::CBV_SRV_UAV,
-            (int)TextureSlot::Max, // 全テクスチャスロット分のサイズを確保
-            true)); // シェーダーから見えるようにする
+        m_textureHandles[slotIndex] = { 0 };
+        return;
     }
 
-    // 3. テクスチャが有効な場合のみ、デスクリプタをコピーする
-    if (m_textures[slotIndex])
+    // 3. SRV（シェーダーリソースビュー）のデスクリプタ（説明書）を作成
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Format = texture->GetNativeResource()->GetDesc().Format; // テクスチャのリソースからフォーマットを取得
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    // 4. アロケータにSRVの作成を依頼し、返されたGPUハンドルを保存
+    m_textureHandles[slotIndex] = allocator->CreateSrv(texture->GetNativeResource(), srvDesc);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE Material::GetGpuDescriptorHandle(TextureSlot slot) const
+{
+    int slotIndex = (int)slot;
+    if (slotIndex < 0 || slotIndex >= (int)TextureSlot::Max)
     {
-        // コピー先のハンドルを、スロットのインデックスを使って計算
-        D3D12_CPU_DESCRIPTOR_HANDLE copyTo = m_descriptorHeap->GetCPUDescriptorHandle(slotIndex);
-
-        // コピー元のハンドルを取得
-        //（各テクスチャが自身のデスクリプタを保持していることを前提とする）
-        D3D12_CPU_DESCRIPTOR_HANDLE copyFrom = m_textures[slotIndex]->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-
-        // デバイスを取得してデスクリプタをコピー
-        Graphics::GetD3D12Device()->CopyDescriptorsSimple(1, copyTo, copyFrom, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        assert(false);
+        return { 0 };
     }
-    // メモ: textureがnullptrの場合、このマテリアルのデスクリпタヒープ内の
-    // 対応するデスクリプタは更新されませんが、シェーダー側で分岐すれば問題ありません。
+    return m_textureHandles[slotIndex];
 }

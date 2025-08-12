@@ -1,7 +1,7 @@
 #include "CollisionSystem.h"
 #include "SpatialHashGrid.h"
 
-void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity entityB)
+void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity* entityB)
 {
 	float dx = transformA.position.x - transformB.position.x;
 	float dy = transformA.position.y - transformB.position.y;
@@ -36,7 +36,7 @@ void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA,
 	// 当たっていない時
 	else
 	{
-		if (a.info.other == entityB || a.info.other == NullEntity)
+		if (a.info.other == entityB || a.info.other == nullptr)
 		{
 			// circleAのステートを確認します。
 			switch (a.info.state)
@@ -63,7 +63,7 @@ void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA,
 	}
 }
 
-void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity entityB)
+void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity* entityB)
 {
 	float halfWidth = b.rect.x / 2.0f;
 	float halfHeight = b.rect.y / 2.0f;
@@ -99,7 +99,7 @@ void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA,
 	// 当たっていない時
 	else
 	{
-		if (a.info.other == entityB || a.info.other == NullEntity)
+		if (a.info.other->id == entityB->id && a.info.other->generation == entityB->generation || a.info.other == nullptr)
 		{
 			// a のステートを確認します。
 			switch (a.info.state)
@@ -126,7 +126,7 @@ void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA,
 	}
 }
 
-void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity entityB)
+void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity* entityB)
 {
 	float dx = std::abs(transformA.position.x - transformB.position.x);
 	float dy = std::abs(transformA.position.y - transformB.position.y);
@@ -159,7 +159,7 @@ void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, Bo
 	// 当たっていない時
 	else
 	{
-		if (a.info.other == entityB || a.info.other == NullEntity)
+		if (a.info.other->id == entityB->id && a.info.other->generation == entityB->generation || a.info.other == nullptr)
 		{
 			// a のステートを確認します。
 			switch (a.info.state)
@@ -186,7 +186,7 @@ void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, Bo
 	}
 }
 
-void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity entityB)
+void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity* entityB)
 {
 	float halfWidth = a.rect.x / 2.0f;
 	float halfHeight = a.rect.y / 2.0f;
@@ -222,7 +222,7 @@ void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, Ci
 	// 当たっていない時
 	else
 	{
-		if (a.info.other == entityB || a.info.other == NullEntity)
+		if (a.info.other == entityB || a.info.other == nullptr)
 		{
 			// a のステートを確認します。
 			switch (a.info.state)
@@ -262,7 +262,7 @@ void CollisionSystem::Update(ComponentManager& cm, World& world)
 
 		if (!world.IsAlive(collider.info.other))
 		{
-			collider.info.other = NullEntity;
+			collider.info.other = nullptr;
 		}
 
 		grid.AddEntity(entity, Vector2{ transform.position.x, transform.position.y });
@@ -280,19 +280,19 @@ void CollisionSystem::Update(ComponentManager& cm, World& world)
 		auto nearEntities = grid.GetNearbyEntities(Vector2{ transformA.position.x, transformA.position.y });
 		for (Entity entityB : nearEntities) 
 		{
-			if (entityA == entityB || !world.IsAlive(entityB)) continue;
+			if (entityA == entityB || !world.IsAlive(&entityB)) continue;
 
 			if (cm.HasComponents<CircleCollider2D, Transform>(entityB)) 
 			{
 				auto* circleB = cm.GetComponent<CircleCollider2D>(entityB);
 				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(circleA, transformA, *circleB, *transformB, entityB);
+				CheckCollision(circleA, transformA, *circleB, *transformB, &entityB);
 			}
 			else if (cm.HasComponents<BoxCollider2D, Transform>(entityB)) 
 			{
 				auto* boxB = cm.GetComponent<BoxCollider2D>(entityB);
 				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(circleA, transformA, *boxB, *transformB, entityB);
+				CheckCollision(circleA, transformA, *boxB, *transformB, &entityB);
 			}
 		}
 	}
@@ -303,19 +303,19 @@ void CollisionSystem::Update(ComponentManager& cm, World& world)
 		auto nearEntities = grid.GetNearbyEntities(Vector2{ transformA.position.x, transformA.position.y });
 		for (Entity entityB : nearEntities) 
 		{
-			if (entityA == entityB || !world.IsAlive(entityB)) continue;
+			if (entityA == entityB || !world.IsAlive(&entityB)) continue;
 
 			if (cm.HasComponents<BoxCollider2D, Transform>(entityB)) 
 			{
 				auto* boxB = cm.GetComponent<BoxCollider2D>(entityB);
 				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(boxA, transformA, *boxB, *transformB, entityB);
+				CheckCollision(boxA, transformA, *boxB, *transformB, &entityB);
 			}
 			else if (cm.HasComponents<CircleCollider2D, Transform>(entityB)) 
 			{
 				auto* circleB = cm.GetComponent<CircleCollider2D>(entityB);
 				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(boxA, transformA, *circleB, *transformB, entityB);
+				CheckCollision(boxA, transformA, *circleB, *transformB, &entityB);
 			}
 		}
 	}

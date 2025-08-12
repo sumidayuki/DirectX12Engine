@@ -7,28 +7,30 @@
 class TransformSystem : public System
 {
 private:
-	std::unique_ptr<View<Transform>> m_view;
+	// 親をキーとして、その直接の子エンティティのリストを保持するマップ
+	std::unordered_map<Entity, std::vector<Entity>> m_hierarchy;
 
-	std::unordered_map<Entity, std::vector<Entity>> m_hierarhy;
+	// ルートとなるエンティティ（親がいないもの）のリスト
+	std::vector<Entity> m_roots;
 
 public:
-	void SetLocalRotation(Transform& transform, const Quaternion& localRotation);
+	static void SetLocalRotation(Transform& transform, const Quaternion& localRotation);
 
-	void SetLocalPosition(Transform& transform, const Vector3& localPosition);
+	static void SetLocalPosition(Transform& transform, const Vector3& localPosition);
 
-	void SetLocalPosition(Transform& transform, float x, float y, float z);
+	static void SetLocalPosition(Transform& transform, float x, float y, float z);
 
 
-	const Matrix4x4& GetLocalToWorldMatrix(Transform& transform) const;
+	static const Matrix4x4& GetLocalToWorldMatrix(Transform& transform);
 
-	const Matrix4x4& GetWorldToLocalMatrix(Transform& transform) const;
+	static const Matrix4x4& GetWorldToLocalMatrix(Transform& transform);
 
 	/// <summary>
 	/// 現在の位置から指定した分だけ移動します。
 	/// </summary>
 	/// <param name="transform">移動させたいtransform</param>
 	/// <param name="translation">移動量</param>
-	void Translate(Transform& transform, const Vector3& translation);
+	static void Translate(Transform& transform, const Vector3& translation);
 
 	/// <summary>
 	/// 指定した回転軸に指定の角度だけ回転させます。
@@ -36,10 +38,10 @@ public:
 	/// <param name="transform">回転させたいtransform</param>
 	/// <param name="axis">回転軸</param>
 	/// <param name="angle">角度</param>
-	void Rotate(Transform& transform, const Vector3 axis, float angle);
+	static void Rotate(Transform& transform, const Vector3 axis, float angle);
 
 private:
-	void RecalculateMatricesIfNeeded(Transform& transform) const;
+	static void RecalculateMatricesIfNeeded(Transform& transform);
 
 public:
 	void Start(ComponentManager& cm, World& world) override;

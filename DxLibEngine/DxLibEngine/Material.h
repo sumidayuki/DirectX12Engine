@@ -23,10 +23,10 @@ private:
     Color m_specularColor;  // 鏡面反射色
 
     // --- Textures ---
+    // テクスチャへのポインタ（参照カウントのため）
     ComPtr<Texture2D> m_textures[(int)TextureSlot::Max];
-
-    // --- DirectX 12 Resources ---
-    ComPtr<DescriptorHeap> m_descriptorHeap;
+    // 各テクスチャのSRVデスクリプタのGPUハンドル
+    D3D12_GPU_DESCRIPTOR_HANDLE m_textureHandles[(int)TextureSlot::Max];
 
 public:
     Material();
@@ -40,16 +40,19 @@ public:
     const Color& GetSpecularColor() const { return m_specularColor; }
 
     // --- Textures ---
-    // C++の実装側で、設定された全テクスチャを元にデスクリプタヒープを再構築する必要がある
-    void SetTexture(TextureSlot slot, Texture2D* texture);
+    /// <summary>
+    /// 指定されたスロットにテクスチャを設定し、アロケータからデスクリプタを確保します。
+    /// </summary>
+    /// <param name="slot">テクスチャを設定するスロット</param>
+    /// <param name="texture">設定するテクスチャ</param>
+    /// <param name="allocator">SRVを確保するためのディスクリプタアロケータ</param>
+    void SetTexture(TextureSlot slot, Texture2D* texture, DescriptorAllocator* allocator);
+
     Texture2D* GetTexture(TextureSlot slot) const { return m_textures[(int)slot].Get(); }
 
     // --- DirectX 12 Getters ---
-    ID3D12DescriptorHeap* GetDescriptorHeap() const { return m_descriptorHeap ? m_descriptorHeap->GetNativeHeapPointer() : nullptr; }
-
-    // 特定スロットのデスクリプタハンドルを取得
-    D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(TextureSlot slot) const
-    {
-        return m_descriptorHeap ? m_descriptorHeap->GetGPUDescriptorHandle((int)slot) : D3D12_GPU_DESCRIPTOR_HANDLE{ 0 };
-    }
+    /// <summary>
+    /// 指定されたスロットのテクスチャに対応するGPUデスクリプタハンドルを取得します。
+    /// </summary>
+    D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(TextureSlot slot) const;
 };

@@ -65,6 +65,12 @@ public:
 	Vector3& operator /=(const float divisor);
 
 	Vector3& operator /=(const Vector3& rhs);
+
+	// 2つのベクトルの外積を返します。
+	static Vector3 Cross(const Vector3& lhs, const Vector3& rhs);
+
+	// 正規化された新しい3次元ベクトルを作成します。
+	static Vector3 Normalize(const Vector3& vector);
 };
 
 Vector3 operator +(const Vector3& lhs, const Vector3& rhs);

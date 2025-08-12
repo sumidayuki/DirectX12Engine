@@ -1,5 +1,22 @@
 #pragma once
 
+struct SceneConstants
+{
+    int activeLightCount;
+    float padding[3];
+    Vector4 cameraWorldPosition;
+};
+
+// オブジェクトごと（マテリアルごと）の定数
+struct ObjectConstantsLayout
+{
+    Matrix4x4 worldMatrix;
+    Color     diffuseColor;
+    Color     specularColor; // 鏡面反射の色
+    float     shininess;     // 光沢度
+    float     obj_padding[3]; // パディング
+};
+
 /// <summary>
 /// 3Dメッシュを描画するシステムです。
 /// </summary>
@@ -21,6 +38,8 @@ private:
 
     // 定数バッファのレイアウト
     struct ConstantBufferLayout;
+
+    ComPtr<GraphicsBuffer> m_sceneConstantBuffer;
 
 public:
     static Texture2D* GetDefaultWhiteTexture() { return m_defaultWhiteTexture.Get(); }

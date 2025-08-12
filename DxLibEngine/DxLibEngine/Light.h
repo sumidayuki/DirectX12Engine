@@ -9,9 +9,9 @@ using float4 = Color;
 
 enum class LightType
 {
-	Directional,	// –³ŒÀ‰“‚©‚ç‹Ïˆê‚ÉŒõ‚ğ“–‚Ä‚é
-	Point,			// “_‚©‚ç‹…ó‚ÉŒõ‚ğ“–‚Ä‚é
-	Spot,			// ‰~ó‚ÉŒõ‚ğ“–‚Ä‚é
+	Directional = 0, 	// –³ŒÀ‰“‚©‚ç‹Ïˆê‚ÉŒõ‚ğ“–‚Ä‚é
+	Point = 1,			// “_‚©‚ç‹…ó‚ÉŒõ‚ğ“–‚Ä‚é
+	Spot = 2,			// ‰~ó‚ÉŒõ‚ğ“–‚Ä‚é
 };
 
 struct Light

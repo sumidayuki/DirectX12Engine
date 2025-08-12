@@ -19,6 +19,8 @@ public:
 	// アプリケーションを起動します。
 	// この関数はアプリケーションが終了するまで制御を返しません。
 	static void Run();
+	
+	static void Shutdown();
 
 	// ゲームウィンドウを取得します。
 	static Windows::NativeWindow* GetGameWindow() { return m_gameWindow; }

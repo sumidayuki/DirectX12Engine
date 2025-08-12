@@ -8,6 +8,9 @@
 /// </summary>
 class SceneManager
 {
+	friend class Application;
+	friend class FrameResource;
+
 private:
 	static inline Scene* m_currentScene = nullptr;
 
@@ -27,9 +30,12 @@ public:
 	/// <param name="name">変更先のシーン名</param>
 	static void ChangeScene(const std::string& name);
 
+private:
+	static void StaticDestructor();
+
 	/// <summary>
-	/// 現在のシーンの開始処理です。
-	/// </summary>
+/// 現在のシーンの開始処理です。
+/// </summary>
 	static void Start();
 
 	/// <summary>

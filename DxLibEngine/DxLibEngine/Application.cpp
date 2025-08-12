@@ -22,6 +22,17 @@ void Application::Run()
 	// ワーカースレッドを終了させて合流
 	m_isRunning = false;
 	workerThread.join();
+
+    Shutdown();
+}
+
+void Application::Shutdown()
+{
+    delete m_sceneManager;
+    m_sceneManager = nullptr;
+
+    delete m_gameWindow;
+    m_gameWindow = nullptr;
 }
 
 void Application::PumpMessage()
@@ -61,8 +72,10 @@ void Application::WorkerThreadEntryPoint()
     Graphics::StaticConstructor(hWnd, resolution);
     //m_gameWindow->SetFullscreen(Screen::IsFullScreen());
 
+    // スプライトレンダラーの初期化
     SpriteRendererSystem::StaticConstructor();
 
+    // メッシュレンダラーシステムの初期化
     MeshRendererSystem::StaticConstructor();
 
     // 入力システムの初期化
@@ -122,8 +135,13 @@ void Application::WorkerThreadEntryPoint()
     // 全てのフレームリソースにおいてPresent()の完了を待つ。
     Graphics::WaitForCompletionOfPresent();
 
+    // シーンマネージャーの終了処理
+    SceneManager::StaticDestructor();
+
+    // インプットマネージャーの終了処理
     InputManager::StaticDestructor();
 
+    // メッシュレンダラーシステムの終了処理
     MeshRendererSystem::StaticDestructor();
 
     // スプライトレンダラーシステムの終了処理

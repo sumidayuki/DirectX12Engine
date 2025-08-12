@@ -12,6 +12,11 @@ Quaternion::Quaternion(float x, float y, float z, float w)
 {
 }
 
+Quaternion::Quaternion(const DirectX::XMVECTOR& xmquat)
+{
+    XMStoreFloat4((XMFLOAT4*)components, xmquat);
+}
+
 DirectX::XMVECTOR Quaternion::ToXMVECTOR() const
 {
     return DirectX::XMVectorSet(x, y, z, w);
@@ -34,6 +39,33 @@ Quaternion Quaternion::AngleAxis(float angle, const Vector3& axis)
     result.z = normalizedAxis.z * s;
     result.w = c;
     return result;
+}
+
+Quaternion Quaternion::Euler(float x, float y, float z)
+{
+    return XMQuaternionRotationRollPitchYaw(x * Mathf::Deg2Rad, y * Mathf::Deg2Rad, z * Mathf::Deg2Rad);
+}
+
+
+Quaternion Quaternion::Euler(const Vector3& euler)
+{
+    return XMQuaternionRotationRollPitchYaw(euler.x * Mathf::Deg2Rad, euler.y * Mathf::Deg2Rad, euler.z * Mathf::Deg2Rad);
+}
+
+Quaternion Quaternion::LookRotation(const Vector3& forward, const Vector3& upwards)
+{
+    const Vector3 zaxis = Vector3::Normalize(forward);
+    const Vector3 xaxis = Vector3::Normalize(Vector3::Cross(upwards, forward));
+    const Vector3 yaxis = Vector3::Cross(zaxis, xaxis);
+    const DirectX::XMMATRIX mat = DirectX::XMMatrixSet
+    (
+        xaxis.x, xaxis.y, xaxis.z, 0.0f,
+        yaxis.x, yaxis.y, yaxis.z, 0.0f,
+        zaxis.x, zaxis.y, zaxis.z, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    );
+
+    return XMQuaternionRotationMatrix(mat);
 }
 
 Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs) noexcept

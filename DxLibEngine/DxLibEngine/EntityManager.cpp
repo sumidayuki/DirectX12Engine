@@ -18,9 +18,9 @@ Entity* EntityManager::CreateEntity()
     return new Entity{ id, m_generations[id] };
 }
 
-void EntityManager::DestroyEntity(Entity entity)
+void EntityManager::DestroyEntity(Entity* entity)
 {
     if (!IsAlive(entity)) return;
-    m_generations[entity.id]++;
-    m_freeIds.push_back(entity.id);
+    m_generations[entity->id]++;
+    m_freeIds.push_back(entity->id);
 }

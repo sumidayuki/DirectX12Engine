@@ -37,3 +37,10 @@ void SceneManager::Draw()
 		m_currentScene->Draw();
 	}
 }
+
+void SceneManager::StaticDestructor()
+{
+	delete m_currentScene;
+	m_currentScene = nullptr;
+	m_scenes.clear();
+}

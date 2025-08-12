@@ -97,6 +97,21 @@ Vector3& Vector3::operator/=(const Vector3& rhs)
     return *this;
 }
 
+Vector3 Vector3::Cross(const Vector3& lhs, const Vector3& rhs)
+{
+    return Vector3
+    (
+        lhs.y * rhs.z - lhs.z * rhs.y,
+        lhs.z * rhs.x - lhs.x * rhs.z,
+        lhs.x * rhs.y - lhs.y * rhs.x
+    );
+}
+
+Vector3 Vector3::Normalize(const Vector3& vector)
+{
+    return vector.Normalized();
+}
+
 Vector3 operator+(const Vector3& lhs, const Vector3& rhs)
 {
     return Vector3(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);

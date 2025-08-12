@@ -193,6 +193,7 @@ class Keyboard;
 
 // グラフィックス関連
 #include "DescriptorHeap.h"
+#include "DescriptorAllocator.h"
 #include "GraphicsBuffer.h"
 #include "FrameResource.h"
 #include "Graphics.h"
@@ -234,21 +235,11 @@ class Keyboard;
 #include "Light.h"
 #include "SpriteRenderer.h"
 #include "MeshRenderer.h"
-
-#include "GeometryUtility.h"
-
-#include "Player.h";
-#include "Bullet.h";
-#include "EnemyFormation.h"
-#include "EnemySpawnInfo.h"
-#include "EnemySpawnMap.h"
-#include "Enemy.h"
 #include "CollisionInfo.h"
 #include "CircleCollider2D.h"
 #include "BoxCollider2D.h"
-#include "status.h"
-#include "Boss.h"
-#include "BossBullet.h"
+
+#include "GeometryUtility.h"
 
 // System
 #include "System.h"

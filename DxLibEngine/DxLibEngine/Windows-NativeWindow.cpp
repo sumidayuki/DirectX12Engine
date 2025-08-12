@@ -97,7 +97,7 @@ namespace Windows
             msg.wParam = wParam;
             msg.lParam = lParam;
             msg.result = 0;
-            nativeWindow->DefWndProc(msg);
+            nativeWindow->WndProc(msg);
             return msg.result;
         }
         else

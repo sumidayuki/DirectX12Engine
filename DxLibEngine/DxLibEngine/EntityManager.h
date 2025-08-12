@@ -20,7 +20,7 @@ public:
 	/// エンティティを破壊します。
 	/// </summary>
 	/// <param name="entity">指定したいEntityの値をuint32_t型で取得します。</param>
-	void DestroyEntity(Entity entity);
+	void DestroyEntity(Entity* entity);
 
-	bool IsAlive(Entity entity) const { return entity.id < m_generations.size() && m_generations[entity.id] == entity.generation; }
+	bool IsAlive(Entity* entity) const { return entity->id < m_generations.size() && m_generations[entity->id] == entity->generation; }
 };

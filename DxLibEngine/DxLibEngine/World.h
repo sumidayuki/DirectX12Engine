@@ -12,10 +12,16 @@ private:
 	EntityManager							m_em;									
 	ComponentManager						m_cm;
 	std::vector<std::unique_ptr<System>>	m_systems;
+	std::unique_ptr<DescriptorAllocator>	m_srvAllocator;
 	CameraSystem*							m_cameraSystem;
+	std::list<Entity*>						m_allCameraEntities;
 	std::list<Camera*>						m_allCameras;
 
 public:
+	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(1024); }
+
+	DescriptorAllocator* GetSrvAllocator() { return m_srvAllocator.get(); }
+
 	/// <summary>
 	/// エンティティを作成します。
 	/// </summary>
@@ -61,22 +67,38 @@ public:
 
 	Entity* CreateCamera2D(float viewWidth, float viewHeight, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
+	/// <summary>
+	/// ファイルパスから3Dモデルを読み込み、エンティティを生成します。
+	/// </summary>
+	/// <param name="path">モデルファイルへのパス (例: "Assets/character.fbx")</param>
+	/// <param name="parent">親となるTransform</param>
+	/// <param name="localPosition">ローカル座標</param>
+	/// <param name="localRotation">ローカル回転</param>
+	/// <returns>生成されたエンティティ。読み込みに失敗した場合はnullptr</returns>
 	Entity* CreateWithModel
 	(
-		const std::string& path,
+		const std::wstring& path,
 		Transform* parent,
 		const Vector3& localPosition,
 		const Quaternion& localRotation
 	);
 
+	/// <summary>
+	/// 読み込み済みのメッシュとマテリアルから3Dモデルのエンティティを生成します。
+	/// </summary>
+	/// <param name="modelData">インポートされたモデルデータ</param>
+	/// <param name="parent">親となるTransform</param>
+	/// <param name="localPosition">ローカル座標</param>
+	/// <param name="localRotation">ローカル回転</param>
+	/// <returns>生成されたエンティティ</returns>
 	Entity* CreateWithModel
 	(
-		const std::vector<ComPtr<Mesh>>& meshes,
-		const std::vector<ComPtr<Material>>& materials,
+		const Model* modelData,
 		Transform* parent,
 		const Vector3& localPosition,
 		const Quaternion& localRotation
 	);
+
 
 	Entity* CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
@@ -85,14 +107,14 @@ public:
 	/// エンティティを破壊します。
 	/// </summary>
 	/// <param name="entity">破壊したいEntity</param>
-	void DestoryEntity(Entity entity);
+	void DestoryEntity(Entity* entity);
 
 	/// <summary>
 	/// 指定したエンティティが生存しているかを確認します。
 	/// </summary>
 	/// <param name="entity">確認したいEntity</param>
 	/// <returns>生存している場合は true、生存していない場合は false を返します。</returns>
-	bool IsAlive(Entity entity)const { return m_em.IsAlive(entity); }
+	bool IsAlive(Entity* entity)const { return m_em.IsAlive(entity); }
 
 	/// <summary>
 	/// 特定のエンティティに指定したコンポーネントを追加します。

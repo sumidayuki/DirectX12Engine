@@ -1,6 +1,6 @@
 #include "TransformSystem.h"
 
-const Matrix4x4& TransformSystem::GetLocalToWorldMatrix(Transform& transform) const
+const Matrix4x4& TransformSystem::GetLocalToWorldMatrix(Transform& transform)
 {
 	// 各種行列を再計算
 	RecalculateMatricesIfNeeded(transform);
@@ -9,13 +9,13 @@ const Matrix4x4& TransformSystem::GetLocalToWorldMatrix(Transform& transform) co
 	return transform.localToWorldMatrix;
 }
 
-const Matrix4x4& TransformSystem::GetWorldToLocalMatrix(Transform& transform) const
+const Matrix4x4& TransformSystem::GetWorldToLocalMatrix(Transform& transform)
 {
 	// 各種行列の再計算
 	RecalculateMatricesIfNeeded(transform);
 
 	// ワールド変換行列の逆行列の参照を返す。
-	return transform.warldToLocalMatrix;
+	return transform.worldToLocalMatrix;
 }
 
 void TransformSystem::SetLocalRotation(Transform& transform, const Quaternion& localRotation)
@@ -52,7 +52,7 @@ void TransformSystem::Rotate(Transform& transform, const Vector3 axis, float ang
 	transform.dirty = true;
 }
 
-void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform) const
+void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform)
 {
 	if (transform.dirty)
 	{
@@ -73,21 +73,20 @@ void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform) const
 			transform.localToWorldMatrix = transform.localMatrix;
 		}
 
-		transform.warldToLocalMatrix = transform.localToWorldMatrix.Inverse();
+		transform.worldToLocalMatrix = transform.localToWorldMatrix.Inverse();
 		transform.hasChanged = false;
 	}
 }
 
 void TransformSystem::Start(ComponentManager& cm, World& world)
 {
-	m_view = std::make_unique<View<Transform>>(cm);
 }
 
 void TransformSystem::Update(ComponentManager& cm, World& world)
 {
-	m_view->Update();
+	View<Transform> view(cm);
 
-	for (auto&& [entity, transform] : *m_view)
+	for (auto [entity, transform] : view)
 	{
 		// entity が enabled ではないならスキップします。（処理を行う必要がないため）
 		if (!entity.enabled) continue;

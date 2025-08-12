@@ -68,35 +68,26 @@ Entity* World::CreateCamera2D(float viewWidth, float viewHeight, const Vector3& 
 	transformSystem->SetLocalRotation(*transform, localRotation);
 
 	m_allCameras.push_back(camera);
+	m_allCameraEntities.push_back(entity);
 	return entity;
 }
 
-/// <summary>
-/// 読み込み済みのメッシュとマテリアルから3Dモデルのエンティティを生成します。
-/// </summary>
-/// <param name="meshes">モデルを構成するメッシュの配列</param>
-/// <param name="materials">モデルが使用するマテリアルの配列</param>
-/// <param name="parent">親となるTransform</param>
-/// <param name="localPosition">ローカル座標</param>
-/// <param name="localRotation">ローカル回転</param>
-/// <returns>生成されたエンティティ</returns>
 Entity* World::CreateWithModel(
-	const std::vector<ComPtr<Mesh>>& meshes,
-	const std::vector<ComPtr<Material>>& materials,
+	const Model* modelData,
 	Transform* parent,
 	const Vector3& localPosition,
 	const Quaternion& localRotation)
 {
-	// 1. 基本的なエンティティを作成（Transformコンポーネントが自動で付与される）
+	//基本的なエンティティを作成（Transformコンポーネントが自動で付与される）
 	Entity* entity = CreateEntity();
 
-	// 2. MeshRendererコンポーネントを作成し、メッシュとマテリアルを設定
+	// MeshRendererコンポーネントを作成し、メッシュとマテリアルを設定
 	MeshRenderer renderer;
-	renderer.meshes = meshes;
-	renderer.materials = materials;
+	renderer.meshes = modelData->m_meshes;
+	renderer.materials = modelData->m_materials;
 	AddComponent<MeshRenderer>(*entity, renderer);
 
-	// 3. Transformを設定
+	// Transformを設定
 	TransformSystem* transformSystem = GetSystem<TransformSystem>();
 	Transform* transform = GetComponent<Transform>(*entity);
 	transformSystem->SetLocalPosition(*transform, localPosition);
@@ -106,28 +97,22 @@ Entity* World::CreateWithModel(
 	return entity;
 }
 
-/// <summary>
-/// ファイルパスから3Dモデルを読み込み、エンティティを生成します。
-/// </summary>
-/// <param name="path">モデルファイルへのパス (例: "Assets/character.fbx")</param>
-/// <param name="parent">親となるTransform</param>
-/// <param name="localPosition">ローカル座標</param>
-/// <param name="localRotation">ローカル回転</param>
-/// <returns>生成されたエンティティ。読み込みに失敗した場合はnullptr</returns>
-Entity* World::CreateWithModel(const std::string& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
+Entity* World::CreateWithModel(const std::wstring& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
 {
-	// 1. 作成済みのModelImporterを使ってモデルデータを読み込む
+	// 1. 新しいModelImporterを使ってモデルデータを読み込む
 	ModelImporter importer;
-	if (!importer.Import(path))
+	ComPtr<Model> modelData = importer.Import(path, *this);
+
+	if (!modelData)
 	{
 		// 読み込みに失敗した場合
-		std::string err_msg = "Failed to load model: " + path;
-		OutputDebugStringA(err_msg.c_str());
+		std::wstring err_msg = L"Failed to load model: " + path + L"\n";
+		OutputDebugStringW(err_msg.c_str());
 		return nullptr;
 	}
 
 	// 2. 読み込んだデータを使って、コアとなる生成関数を呼び出す
-	return CreateWithModel(importer.meshes, importer.materials, parent, localPosition, localRotation);
+	return CreateWithModel(modelData.Get(), parent, localPosition, localRotation);
 }
 
 Entity* World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition, const Quaternion& localRotation)
@@ -152,13 +137,20 @@ Entity* World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPla
 	transformSystem->SetLocalRotation(*transform, localRotation);
 
 	m_allCameras.push_back(camera);
+	m_allCameraEntities.push_back(entity);
+
 	return entity;
 }
 
-void World::DestoryEntity(Entity entity)
+void World::DestoryEntity(Entity* entity)
 {
-	m_cm.RemoveAllComponents(entity);
+	if (!entity || !m_em.IsAlive(entity)) return; // ポインタが有効かチェック
+
+	m_cm.RemoveAllComponents(*entity);
 	m_em.DestroyEntity(entity);
+
+	delete entity; // Entityオブジェクト自体を解放する
+	entity = nullptr;
 }
 
 void World::AddSystem(std::unique_ptr<System> sys)
@@ -186,17 +178,9 @@ void World::Update(World& world)
 
 void World::Draw(World& world)
 {
-	static std::vector<Camera*> validCamera;
-
-	validCamera.clear();
-	for (Camera* camera : m_allCameras)
+	for (Entity* entity : m_allCameraEntities)
 	{
-		validCamera.push_back(camera);
-	}
-
-	for (Camera* camera : validCamera)
-	{
-		m_cameraSystem->SetCurrent(camera);
+		m_cameraSystem->SetCurrent(world.GetComponent<Camera>(*entity), entity);
 	}
 
 	for (auto& sys : m_systems)
@@ -205,5 +189,5 @@ void World::Draw(World& world)
 		sys->Draw(m_cm, world);
 	}
 
-	m_cameraSystem->SetCurrent(nullptr);
+	m_cameraSystem->SetCurrent(nullptr, nullptr);
 }
