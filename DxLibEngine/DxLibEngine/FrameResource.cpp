@@ -1,7 +1,8 @@
 #include "FrameResource.h"
 
-FrameResource::FrameResource(ID3D12Resource* backBuffer, D3D12_CPU_DESCRIPTOR_HANDLE handleRTV)
-	: m_backBuffer(backBuffer)
+FrameResource::FrameResource(UINT frameIndex, ID3D12Resource* backBuffer, D3D12_CPU_DESCRIPTOR_HANDLE handleRTV)
+	: m_frameIndex(frameIndex)
+	, m_backBuffer(backBuffer)
 	, m_handleRTV(handleRTV)
 	, m_descriptorHeapDSV(nullptr)
 	, m_commandList(nullptr)

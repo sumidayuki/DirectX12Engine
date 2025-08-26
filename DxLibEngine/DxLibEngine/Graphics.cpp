@@ -163,7 +163,7 @@ bool Graphics::StaticConstructor(HWND hWnd, const Resolution& resolution)
 		m_d3d12Device->CreateRenderTargetView(backBuffer.Get(), nullptr, handle);
 
 		// フレームリソースの作成
-		m_frameResource[i].Attach(new FrameResource(backBuffer.Get(), handle));
+		m_frameResource[i].Attach(new FrameResource(i, backBuffer.Get(), handle));
 	}
 
 	return true;

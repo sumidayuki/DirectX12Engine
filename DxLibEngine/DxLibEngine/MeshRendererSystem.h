@@ -8,6 +8,7 @@ struct SceneConstants
 };
 
 // オブジェクトごと（マテリアルごと）の定数
+// HLSL側のcbufferと一致させ、256バイトアライメントを考慮したサイズにします
 struct ObjectConstantsLayout
 {
     Matrix4x4 worldMatrix;
@@ -29,16 +30,16 @@ private:
     static inline ComPtr<ID3D12PipelineState> m_graphicsPipelineState;
     static inline ComPtr<ID3D12RootSignature> m_rootSignature;
 
-    // 共有リソースを初期化・終了します
-    // ※これらの関数は今後 Application クラスから呼び出す必要があります。
-    static void StaticConstructor();
-    static void StaticDestructor();
-
     static inline ComPtr<Texture2D> m_defaultWhiteTexture;
 
-    // 定数バッファのレイアウト
-    struct ConstantBufferLayout;
+    // リングバッファとして使用するオブジェクト定数バッファ
+    static inline ComPtr<GraphicsBuffer> m_objectConstantBufferRing;
+    // CPUから書き込むためのマップ済みポインタ
+    static inline BYTE* m_mappedObjectConstants = nullptr;
+    // 現在のフレームで描画したオブジェクトの数（リングバッファのインデックス）
+    static inline UINT m_currentObjectBufferIndex = 0;
 
+    // シーンごとの定数バッファ
     ComPtr<GraphicsBuffer> m_sceneConstantBuffer;
 
 public:
@@ -51,6 +52,11 @@ public:
     void SetMesh(MeshRenderer* renderer, Mesh* mesh);
 
 private:
+    // 共有リソースを初期化・終了します
+    // ※これらの関数は今後 Application クラスから呼び出す必要があります。
+    static void StaticConstructor();
+    static void StaticDestructor();
+
     void Start(ComponentManager& cm, World& world) override;
 
     void Draw(ComponentManager& cm, World& world) override;

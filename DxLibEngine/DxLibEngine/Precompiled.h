@@ -206,6 +206,8 @@ class Keyboard;
 #include "Texture2D.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "Skeleton.h"
+#include "Model.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"
@@ -238,6 +240,8 @@ class Keyboard;
 #include "CollisionInfo.h"
 #include "CircleCollider2D.h"
 #include "BoxCollider2D.h"
+#include "MeshFilter.h"
+#include "Animation.h"
 
 #include "GeometryUtility.h"
 

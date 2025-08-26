@@ -18,7 +18,6 @@ void SceneManager::Start()
 {
 	if (m_currentScene)
 	{
-		m_currentScene->Start();
 	}
 }
 
@@ -26,6 +25,12 @@ void SceneManager::Update()
 {
 	if (m_currentScene)
 	{
+		if (m_currentScene->isDirty)
+		{
+			m_currentScene->Start();
+			m_currentScene->isDirty = false;
+		}
+
 		m_currentScene->Update();
 	}
 }
@@ -40,7 +45,6 @@ void SceneManager::Draw()
 
 void SceneManager::StaticDestructor()
 {
-	delete m_currentScene;
 	m_currentScene = nullptr;
 	m_scenes.clear();
 }

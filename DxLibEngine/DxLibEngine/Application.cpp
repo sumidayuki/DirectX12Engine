@@ -28,10 +28,7 @@ void Application::Run()
 
 void Application::Shutdown()
 {
-    delete m_sceneManager;
     m_sceneManager = nullptr;
-
-    delete m_gameWindow;
     m_gameWindow = nullptr;
 }
 

@@ -185,6 +185,7 @@
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Reference.cpp" />
     <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderBytecode.cpp" />
     <ClCompile Include="SpatialHashGrid.cpp" />
     <ClCompile Include="Sprite.cpp" />
@@ -252,6 +253,7 @@
     <ClInclude Include="Mathf.h" />
     <ClInclude Include="Matrix4x4.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshFilter.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="MeshRendererSystem.h" />
     <ClInclude Include="Model.h" />
@@ -262,6 +264,7 @@
     <ClInclude Include="Reference.h" />
     <ClInclude Include="Resolution.h" />
     <ClInclude Include="Screen.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderBytecode.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SpatialHashGrid.h" />

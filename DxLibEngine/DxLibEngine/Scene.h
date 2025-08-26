@@ -8,6 +8,9 @@
 /// </summary>
 class Scene
 {
+public:
+	bool isDirty = true;
+
 protected:
 	World m_world;
 

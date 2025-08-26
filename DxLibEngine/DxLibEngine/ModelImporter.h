@@ -1,16 +1,10 @@
-// ModelImporter.h
 #pragma once
-#include "AssetImporter.h"
-#include "Model.h" // Modelクラスの定義をインクルード
 
 // Assimpの型を前方宣言
 struct aiNode;
 struct aiScene;
 struct aiMesh;
 struct aiMaterial;
-
-// Worldクラスを前方宣言
-class World;
 
 /// <summary>
 /// 3DモデルファイルからMeshとMaterialのアセットを読み込みます。
@@ -34,7 +28,7 @@ public:
     /// </summary>
     ComPtr<Model> Import(const std::wstring& path, World& world);
 
-    // --- インポート設定 ---
+    // インポート設定
 
     /// <summary> モデル全体のスケールを設定します。 </summary>
     void SetGlobalScale(float scale) { m_globalScale = scale; }
@@ -61,7 +55,7 @@ public:
     bool GetImportMaterials() const { return m_importMaterials; }
 
 private:
-    // --- メンバ変数 ---
+    // メンバ変数
     float m_globalScale;
     bool m_calculateTangents;
     bool m_generateNormals;
@@ -72,6 +66,6 @@ private:
 private:
     // --- ヘルパー関数 ---
     void ProcessNode(aiNode* node, const aiScene* scene, Model* modelData);
-    ComPtr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    ComPtr<Material> ProcessMaterial(aiMaterial* mat, const aiScene* scene, World& world);
+
+    ComPtr<Material> ProcessMaterial(aiMaterial* mat, const aiScene* scene, DescriptorAllocator* srvAllocator);
 };

@@ -1,4 +1,3 @@
-// ModelImporter.cpp
 #include "Precompiled.h"
 #include "ModelImporter.h"
 #include "TextureImporter.h" // 外部テクスチャの読み込みに利用
@@ -74,12 +73,16 @@ ComPtr<Model> ModelImporter::Import(World& world)
         modelData->m_materials.resize(scene->mNumMaterials);
         for (unsigned int i = 0; i < scene->mNumMaterials; i++)
         {
-            modelData->m_materials[i] = ProcessMaterial(scene->mMaterials[i], scene, world);
+            modelData->m_materials[i] = ProcessMaterial(scene->mMaterials[i], scene, world.GetSrvAllocator());
         }
     }
 
-    // ノードとメッシュの処理
+    modelData->m_mesh.Attach(new Mesh());
+
+    // ノードを再帰的に処理し、すべてのメッシュデータを単一のベクトルに集約
     ProcessNode(scene->mRootNode, scene, modelData.Get());
+
+    modelData->m_mesh->SetupMesh();
 
     return modelData;
 }
@@ -87,75 +90,66 @@ ComPtr<Model> ModelImporter::Import(World& world)
 // ノードを再帰的に処理
 void ModelImporter::ProcessNode(aiNode* node, const aiScene* scene, Model* modelData)
 {
+    // このノードに属する全てのメッシュを処理
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        modelData->m_meshes.push_back(ProcessMesh(mesh, scene));
+
+        const UINT startIndex = modelData->m_mesh->GetTotalIndexCount();
+
+        // 頂点とインデックスのデータを一時的に格納するベクトル
+        std::vector<Mesh::Vertex> vertices;
+        std::vector<uint32_t> indices;
+
+        // 頂点を抽出
+        vertices.resize(mesh->mNumVertices);
+        for (unsigned int v = 0; v < mesh->mNumVertices; v++)
+        {
+            vertices[v].position = {
+                mesh->mVertices[v].x * m_globalScale,
+                mesh->mVertices[v].y * m_globalScale,
+                mesh->mVertices[v].z * m_globalScale
+            };
+            if (mesh->HasNormals()) {
+                vertices[v].normal = { mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z };
+            }
+            if (mesh->HasTextureCoords(0)) {
+                vertices[v].uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
+            }
+            if (mesh->HasTangentsAndBitangents()) {
+                vertices[v].tangent = { mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z };
+            }
+        }
+
+        // インデックスを抽出
+        for (unsigned int f = 0; f < mesh->mNumFaces; f++)
+        {
+            aiFace face = mesh->mFaces[f];
+            for (unsigned int j = 0; j < face.mNumIndices; j++)
+            {
+                indices.push_back(face.mIndices[j]);
+            }
+        }
+
+        modelData->m_mesh->AddVertices(vertices);
+        modelData->m_mesh->AddIndices(indices);
+
+        // サブメッシュ情報を新しいMeshに追加
+        modelData->m_mesh->AddSubMesh(startIndex, (UINT)indices.size(), mesh->mMaterialIndex);
     }
 
+    // 子ノードを再帰的に処理
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
         ProcessNode(node->mChildren[i], scene, modelData);
     }
 }
 
-// メッシュデータを抽出
-ComPtr<Mesh> ModelImporter::ProcessMesh(aiMesh* mesh, const aiScene* scene)
-{
-    std::vector<Mesh::Vertex> vertices(mesh->mNumVertices);
-    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-    {
-        // 位置 (グローバルスケールを適用)
-        vertices[i].position = {
-            mesh->mVertices[i].x * m_globalScale,
-            mesh->mVertices[i].y * m_globalScale,
-            mesh->mVertices[i].z * m_globalScale
-        };
-
-        // 法線
-        if (mesh->HasNormals()) {
-            vertices[i].normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-        }
-
-        // UV座標
-        if (mesh->HasTextureCoords(0)) {
-            vertices[i].uv = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-        }
-        else {
-            vertices[i].uv = { 0.0f, 0.0f };
-        }
-
-        // 接線
-        if (mesh->HasTangentsAndBitangents()) {
-            vertices[i].tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
-        }
-    }
-
-    // インデックス
-    std::vector<uint32_t> indices;
-    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-    {
-        aiFace face = mesh->mFaces[i];
-        for (unsigned int j = 0; j < face.mNumIndices; j++)
-        {
-            indices.push_back(face.mIndices[j]);
-        }
-    }
-
-    ComPtr<Mesh> newMesh;
-    newMesh.Attach(new Mesh());
-    newMesh->SetupMesh(vertices, indices);
-    newMesh->SetMaterialIndex(mesh->mMaterialIndex);
-
-    return newMesh;
-}
-
 // マテリアルデータを抽出
-ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* scene, World& world)
+ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* scene, DescriptorAllocator* srvAllocator)
 {
     ComPtr<Material> newMaterial;
     newMaterial.Attach(new Material());
-    DescriptorAllocator* srvAllocator = world.GetSrvAllocator();
 
     // 色のプロパティ
     aiColor4D color;
@@ -202,13 +196,6 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
         if (diffuseTexture) {
             newMaterial->SetTexture(Material::TextureSlot::Diffuse, diffuseTexture.Get(), srvAllocator);
         }
-    }
-
-    // 他のテクスチャタイプ (NORMAL, SPECULARなど) も同様に処理を追加できます。
-
-    // デフォルトテクスチャの設定
-    if (!newMaterial->GetTexture(Material::TextureSlot::Diffuse)) {
-        newMaterial->SetTexture(Material::TextureSlot::Diffuse, MeshRendererSystem::GetDefaultWhiteTexture(), srvAllocator);
     }
 
     return newMaterial;

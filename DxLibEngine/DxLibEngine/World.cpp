@@ -78,12 +78,24 @@ Entity* World::CreateWithModel(
 	const Vector3& localPosition,
 	const Quaternion& localRotation)
 {
-	//基本的なエンティティを作成（Transformコンポーネントが自動で付与される）
+	// モデルデータ、特にメッシュが空でないことを確認
+	if (!modelData || !modelData->m_mesh)
+	{
+		return nullptr;
+	}
+
+	// 基本的なエンティティを作成（Transformコンポーネントが自動で付与される）
 	Entity* entity = CreateEntity();
 
-	// MeshRendererコンポーネントを作成し、メッシュとマテリアルを設定
+	// モデルの最初のメッシュを割り当てるのは正しくない。モデルは複数のサブメッシュを持つ可能性があり、
+	// それぞれが単一のMeshオブジェクトにまとめられている。
+	// このため、MeshFilterにはモデル全体のメッシュを一つだけ割り当てる。
+	MeshFilter filter;
+	filter.mesh = modelData->m_mesh;
+	AddComponent<MeshFilter>(*entity, filter);
+
+	// マテリアルのリストをまとめて設定
 	MeshRenderer renderer;
-	renderer.meshes = modelData->m_meshes;
 	renderer.materials = modelData->m_materials;
 	AddComponent<MeshRenderer>(*entity, renderer);
 
@@ -99,7 +111,7 @@ Entity* World::CreateWithModel(
 
 Entity* World::CreateWithModel(const std::wstring& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
 {
-	// 1. 新しいModelImporterを使ってモデルデータを読み込む
+	// 新しいModelImporterを使ってモデルデータを読み込む
 	ModelImporter importer;
 	ComPtr<Model> modelData = importer.Import(path, *this);
 
@@ -111,7 +123,7 @@ Entity* World::CreateWithModel(const std::wstring& path, Transform* parent, cons
 		return nullptr;
 	}
 
-	// 2. 読み込んだデータを使って、コアとなる生成関数を呼び出す
+	// 読み込んだデータを使って、コアとなる生成関数を呼び出す
 	return CreateWithModel(modelData.Get(), parent, localPosition, localRotation);
 }
 

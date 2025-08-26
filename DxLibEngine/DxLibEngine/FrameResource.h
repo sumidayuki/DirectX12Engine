@@ -12,6 +12,7 @@ private:
     using GPUCompletionEventHandlers = std::vector<GPUCompletionEventHandler>;
 
 private:
+    UINT                                m_frameIndex;                   //このフレームリソースのインデックス
     ComPtr<ID3D12Resource>              m_backBuffer;                   // レンダーターゲット (今回はバックバッファ)
     D3D12_CPU_DESCRIPTOR_HANDLE         m_handleRTV;                    // レンダーターゲットビュー(RTV)のアドレス
     ComPtr<ID3D12Resource>              m_depthStencilBuffer;           // 深度・ステンシルバッファリソース
@@ -25,13 +26,18 @@ private:
 
 private:
     // 引数付きコンストラクタ
-    FrameResource(ID3D12Resource* backBuffer, D3D12_CPU_DESCRIPTOR_HANDLE handleRTV);
+    FrameResource(UINT frameIndex, ID3D12Resource* backBuffer, D3D12_CPU_DESCRIPTOR_HANDLE handleRTV);
 
     void Update();
 
     void Render();
 
 public:
+    /// <summary>
+    /// フレームインデックスを取得します。
+    /// </summary>
+    UINT GetFrameIndex() const { return m_frameIndex; }
+
     /// <summary>
     /// 関連付けられたバックバッファを取得します。
     /// </summary>

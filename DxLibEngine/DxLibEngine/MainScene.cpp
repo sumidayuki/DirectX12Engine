@@ -22,8 +22,10 @@ void MainScene::Start()
 	m_world.GetComponent<Transform>(*camera)->rotation = Quaternion::AngleAxis(5.0f, Vector3::right);
 
 	m_world.CreateWithModel(L"Assets/Warrok-04.fbx", nullptr, Vector3(0, -150, 300), Quaternion::identity);
+	m_world.CreateWithModel(L"Assets/Warrok-04.fbx", nullptr, Vector3(200, -150, 300), Quaternion::identity);
+	m_world.CreateWithModel(L"Assets/Warrok-04.fbx", nullptr, Vector3(-200, -150, 300), Quaternion::identity);
 
-	// 1. 指向性ライト（Directional Light）の作成 (太陽光のような役割)
+	// 指向性ライト（Directional Light）の作成 (太陽光のような役割)
 	{
 		Entity* directionalLightEntity = m_world.CreateEntity();
 	
@@ -35,11 +37,11 @@ void MainScene::Start()
 		// ライトの向きをTransformの回転で制御する
 		Transform* lightTransform = m_world.GetComponent<Transform>(*directionalLightEntity);
 		// 右斜め上から照らすように回転させる
-		lightTransform->rotation = Quaternion::Euler(90.0f, -45.0f, 0.0f);
-		lightTransform->position = Vector3(0, 50, 0);
+		lightTransform->rotation = Quaternion::Euler(90.0f, 0.0f, 90.0f);
+		lightTransform->position = Vector3(0, 1000, -300);
 	}
 
-	// 2. 点光源（Point Light）の作成 (モデルの左側から照らす)
+	// 点光源（Point Light）の作成 (モデルの左側から照らす)
 	{
     Entity* pointLightEntity = m_world.CreateEntity();
 	
@@ -54,9 +56,8 @@ void MainScene::Start()
     // ライトの位置を設定
     Transform* lightTransform = m_world.GetComponent<Transform>(*pointLightEntity);
     // モデルの少し手前、左上に配置
-    lightTransform->position = Vector3(0, -150, 280);
+    lightTransform->position = Vector3(0, -150, -280);
 	}
-
 
 	m_world.Start(m_world);
 }

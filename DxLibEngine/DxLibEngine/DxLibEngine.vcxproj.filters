@@ -223,6 +223,12 @@
     <Filter Include="ゲームエンジン\ECS\コンポーネント\アニメーターコントローラー">
       <UniqueIdentifier>{4822b19f-597b-4f35-a65d-e0ebd7c6571f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセット\シェーダー">
+      <UniqueIdentifier>{396ef0f2-1b2d-44dd-93df-fd3e744c5542}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\メッシュフィルター">
+      <UniqueIdentifier>{ee590dc4-bf36-465d-a5b2-c7c564133287}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -386,6 +392,9 @@
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>ゲームエンジン\リソース\アセット\メッシュ</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -643,6 +652,12 @@
     </ClInclude>
     <ClInclude Include="Skeleton.h">
       <Filter>ゲームエンジン\リソース\アセット\スケルトン</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshFilter.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\メッシュフィルター</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

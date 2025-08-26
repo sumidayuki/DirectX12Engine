@@ -28,5 +28,4 @@ struct Light
 	// HLSLのStructuredBufferの要素は16バイトアライメントされるため、
 	// C++側でもサイズを合わせる
 	float padding[2];
-
 };
