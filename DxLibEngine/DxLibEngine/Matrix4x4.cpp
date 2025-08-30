@@ -192,6 +192,14 @@ Matrix4x4 Matrix4x4::Perspective(float fov, float aspect, float zNear, float zFa
     );
 }
 
+Matrix4x4 Matrix4x4::TRS(const Vector3& translation, const Quaternion& rotation, const Vector3& scale)
+{
+    XMMATRIX s = XMMatrixScaling(scale.x, scale.y, scale.z);
+    XMMATRIX r = XMMatrixRotationQuaternion(rotation.ToXMVECTOR());
+    XMMATRIX t = XMMatrixTranslation(translation.x, translation.y, translation.z);
+    return Matrix4x4(s * r * t);
+}
+
 Matrix4x4 operator*(const Matrix4x4& lhs, const Matrix4x4& rhs)
 {
 #if 0

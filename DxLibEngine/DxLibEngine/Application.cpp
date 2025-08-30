@@ -75,6 +75,8 @@ void Application::WorkerThreadEntryPoint()
     // メッシュレンダラーシステムの初期化
     MeshRendererSystem::StaticConstructor();
 
+    SkinnedMeshRendererSystem::StaticConstructor();
+
     // 入力システムの初期化
     InputManager::StaticConstructor(hWnd);
 
@@ -140,6 +142,8 @@ void Application::WorkerThreadEntryPoint()
 
     // メッシュレンダラーシステムの終了処理
     MeshRendererSystem::StaticDestructor();
+
+    SkinnedMeshRendererSystem::StaticDestructor();
 
     // スプライトレンダラーシステムの終了処理
     SpriteRendererSystem::StaticDestructor();

@@ -69,6 +69,13 @@ public:
 	// 2つのベクトルの外積を返します。
 	static Vector3 Cross(const Vector3& lhs, const Vector3& rhs);
 
+	// 2つの3次元ベクトル間を線形補間し、新しい3次元ベクトルを作成します。
+	static Vector3 Lerp(const Vector3& a, const Vector3& b, float t);
+
+	// 2つの3次元ベクトル間を線形補間し、新しい3次元ベクトルを作成します。
+	static Vector3 LerpUnclamped(const Vector3& a, const Vector3& b, float t);
+
+
 	// 正規化された新しい3次元ベクトルを作成します。
 	static Vector3 Normalize(const Vector3& vector);
 };

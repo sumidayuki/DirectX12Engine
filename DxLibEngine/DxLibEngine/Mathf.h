@@ -98,6 +98,14 @@ public:
 	template<typename T>
 	static constexpr void Swap(T& a, T& b) { const T temp = a; a = b; b = temp; }
 
+	// valueを[minValue, maxValue]の範囲に制限した値を返します。
+	static constexpr float Clamp(float value, float minValue, float maxValue) { return (value < minValue) ? minValue : ((value > maxValue) ? maxValue : value); }
+
+	// [a, b]の間でパラメーター t による線形補間します。t は[0, 1]に制限されます。
+	//「Lerp」は線形補間(Linear Interpolate)の略です。
+	static constexpr float Lerp(float a, float b, float t) { return LerpUnclamped(a, b, Clamp(t, 0, 1)); }
+
+
 	/// <summary>
 	/// [a, b]の間でパラメーター t による線形補間します。t に制限はありません。
 	/// </summary>

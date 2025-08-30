@@ -84,20 +84,40 @@ Entity* World::CreateWithModel(
 		return nullptr;
 	}
 
-	// 基本的なエンティティを作成（Transformコンポーネントが自動で付与される）
 	Entity* entity = CreateEntity();
 
-	// モデルの最初のメッシュを割り当てるのは正しくない。モデルは複数のサブメッシュを持つ可能性があり、
-	// それぞれが単一のMeshオブジェクトにまとめられている。
-	// このため、MeshFilterにはモデル全体のメッシュを一つだけ割り当てる。
-	MeshFilter filter;
-	filter.mesh = modelData->m_mesh;
-	AddComponent<MeshFilter>(*entity, filter);
+	// スケルトンの有無で処理を分岐
+	if (modelData->m_skeleton && modelData->m_skeleton->GetBoneCount() > 0)
+	{
+		// スキニングされるメッシュの場合
+		SkinnedMeshRenderer smr;
+		smr.mesh = modelData->m_mesh;
+		smr.materials = modelData->m_materials;
+		smr.skeleton = modelData->m_skeleton;
+		smr.rootBoneEntity = *entity;
+		AddComponent<SkinnedMeshRenderer>(*entity, smr);
 
-	// マテリアルのリストをまとめて設定
-	MeshRenderer renderer;
-	renderer.materials = modelData->m_materials;
-	AddComponent<MeshRenderer>(*entity, renderer);
+		// Animatorを追加
+		Animator animator;
+		if (!modelData->m_animations.empty())
+		{
+			// 最初のアニメーションをデフォルトでセット
+			animator.animation = modelData->m_animations[0].Get();
+		}
+		AddComponent<Animator>(*entity, animator);
+	}
+	else
+	{
+		// 通常のメッシュの場合
+		MeshFilter filter;
+		filter.mesh = modelData->m_mesh;
+		AddComponent<MeshFilter>(*entity, filter);
+
+		// マテリアルのリストをまとめて設定
+		MeshRenderer renderer;
+		renderer.materials = modelData->m_materials;
+		AddComponent<MeshRenderer>(*entity, renderer);
+	}
 
 	// Transformを設定
 	TransformSystem* transformSystem = GetSystem<TransformSystem>();

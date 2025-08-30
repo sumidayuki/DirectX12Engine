@@ -12,3 +12,5 @@
 #include "TransformSystem.h"
 #include "LightSystem.h"
 #include "InputSystem.h"
+#include "AnimationSystem.h"
+#include "SkinnedMeshRendererSystem.h"

@@ -12,19 +12,20 @@ struct Bone
 {
 	std::string name;
 	Matrix4x4 localTransform;
-	std::vector<Bone> children;
+	std::vector<Bone*> children;
 };
 
 class Skeleton : public Reference
 {
 private:
-	Bone m_rootBone;
+	Bone* m_rootBone;
 	Matrix4x4 m_globalInverseTransform;
 	std::unordered_map<std::string, BoneInfo> m_boneInfoMap;
 	int m_boneCount;
 
 public:
-	Bone& GetMutableRootBone() { return m_rootBone; }
+	Bone* GetMutableRootBone() { return m_rootBone; }
+	void SetRootBone(Bone* root) { m_rootBone = root; }
 
 	std::unordered_map<std::string, BoneInfo>& GetMutableBoneInfoMap() { return m_boneInfoMap; }
 
@@ -32,7 +33,7 @@ public:
 
 	void SetGlobalInverseTransform(const Matrix4x4& transform) { m_globalInverseTransform = transform; }
 
-	const Bone& GetRootBone() const { return m_rootBone; }
+	const Bone* GetRootBone() const { return m_rootBone; }
 
 	const std::unordered_map<std::string, BoneInfo>& GetBoneInfoMap() const { return m_boneInfoMap; }
 	

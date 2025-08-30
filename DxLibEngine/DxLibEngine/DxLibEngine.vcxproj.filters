@@ -193,9 +193,6 @@
     <Filter Include="ゲームエンジン\ECS\コンポーネント\速度">
       <UniqueIdentifier>{7374020e-8140-460f-a5d0-8ca1f40a0ddf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\アニメーション">
-      <UniqueIdentifier>{9527c971-850e-4e97-adc6-74c096d28bfc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\ECS\System\InputSystem">
       <UniqueIdentifier>{63f8284f-05b8-42ba-beeb-243466cbb0fc}</UniqueIdentifier>
     </Filter>
@@ -228,6 +225,21 @@
     </Filter>
     <Filter Include="ゲームエンジン\ECS\コンポーネント\メッシュフィルター">
       <UniqueIdentifier>{ee590dc4-bf36-465d-a5b2-c7c564133287}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\アニメーター">
+      <UniqueIdentifier>{e3ad7aa1-2d11-48d1-b4fb-818a67f8e9a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\スキンドメッシュレンダラー">
+      <UniqueIdentifier>{03fc5827-054e-4375-a095-8ddea0dca213}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\アニメーションシステム">
+      <UniqueIdentifier>{2d0596a7-d828-4f91-8e6a-ec71e7ec25ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム">
+      <UniqueIdentifier>{823eb8d7-26bc-4c6e-989c-0312e2bf7760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセット\アニメーション">
+      <UniqueIdentifier>{9527c971-850e-4e97-adc6-74c096d28bfc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -395,6 +407,15 @@
     </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+    </ClCompile>
+    <ClCompile Include="Skeleton.cpp">
+      <Filter>ゲームエンジン\リソース\アセット\スケルトン</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\アニメーションシステム</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedMeshRendererSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -636,7 +657,7 @@
       <Filter>ゲームエンジン\グラフィックス\ディスクリプタヒープ</Filter>
     </ClInclude>
     <ClInclude Include="Animation.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\アニメーション</Filter>
+      <Filter>ゲームエンジン\リソース\アセット\アニメーション</Filter>
     </ClInclude>
     <ClInclude Include="TitleScene.h">
       <Filter>ゲーム</Filter>
@@ -659,6 +680,18 @@
     <ClInclude Include="MeshFilter.h">
       <Filter>ゲームエンジン\ECS\コンポーネント\メッシュフィルター</Filter>
     </ClInclude>
+    <ClInclude Include="Animator.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\アニメーター</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedMeshRenderer.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\スキンドメッシュレンダラー</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedMeshRendererSystem.h">
+      <Filter>ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationSystem.h">
+      <Filter>ゲームエンジン\ECS\System\アニメーションシステム</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
@@ -668,6 +701,9 @@
   <ItemGroup>
     <FxCompile Include="MeshRenderer.hlsl">
       <Filter>ゲームエンジン\ECS\System\メッシュレンダラーシステム</Filter>
+    </FxCompile>
+    <FxCompile Include="SkinnedMeshRenderer.hlsl">
+      <Filter>ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

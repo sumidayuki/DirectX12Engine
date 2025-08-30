@@ -68,6 +68,11 @@ Quaternion Quaternion::LookRotation(const Vector3& forward, const Vector3& upwar
     return XMQuaternionRotationMatrix(mat);
 }
 
+Quaternion Quaternion::Slerp(const Quaternion& a, const Quaternion& b, float t)
+{
+    return XMQuaternionSlerp(a.ToXMVECTOR(), b.ToXMVECTOR(), Mathf::Clamp(t, 0.0f, 1.0f));
+}
+
 Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs) noexcept
 {
 #if 1

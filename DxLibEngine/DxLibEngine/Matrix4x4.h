@@ -80,6 +80,8 @@ public:
 
 	// 透視投影を表すプロジェクション変換行列を作成します。
 	static Matrix4x4 Perspective(float fov, float aspect, float zNear, float zFar);
+
+	static Matrix4x4 TRS(const Vector3& translation, const Quaternion& rotation, const Vector3& scale);
 };
 
 Matrix4x4 operator *(const Matrix4x4& lhs, const Matrix4x4& rhs);

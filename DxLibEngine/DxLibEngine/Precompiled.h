@@ -207,6 +207,7 @@ class Keyboard;
 #include "Mesh.h"
 #include "Material.h"
 #include "Skeleton.h"
+#include "Animation.h"
 #include "Model.h"
 
 // アセットインポーター関連
@@ -241,7 +242,8 @@ class Keyboard;
 #include "CircleCollider2D.h"
 #include "BoxCollider2D.h"
 #include "MeshFilter.h"
-#include "Animation.h"
+#include "Animator.h"
+#include "SkinnedMeshRenderer.h"
 
 #include "GeometryUtility.h"
 

@@ -107,6 +107,26 @@ Vector3 Vector3::Cross(const Vector3& lhs, const Vector3& rhs)
     );
 }
 
+Vector3 Vector3::Lerp(const Vector3& a, const Vector3& b, float t)
+{
+    return Vector3
+    (
+        Mathf::Lerp(a.x, b.x, t),
+        Mathf::Lerp(a.y, b.y, t),
+        Mathf::Lerp(a.z, b.z, t)
+    );
+}
+
+Vector3 Vector3::LerpUnclamped(const Vector3& a, const Vector3& b, float t)
+{
+    return Vector3
+    (
+        Mathf::LerpUnclamped(a.x, b.x, t),
+        Mathf::LerpUnclamped(a.y, b.y, t),
+        Mathf::LerpUnclamped(a.z, b.z, t)
+    );
+}
+
 Vector3 Vector3::Normalize(const Vector3& vector)
 {
     return vector.Normalized();

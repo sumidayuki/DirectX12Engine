@@ -2,12 +2,6 @@
 
 #define MAX_BONE_INFLUENCE 4 // 1頂点あたりが影響を受けるボーンの最大数
 
-struct BoneWeights
-{
-    int boneIndex[MAX_BONE_INFLUENCE];
-    float weight[MAX_BONE_INFLUENCE];
-};
-
 struct SubMesh
 {
     UINT startIndex;
@@ -27,10 +21,12 @@ public:
     /// </summary>
     struct Vertex
     {
-        Vector3 position;   // 頂点座標 (x, y, z)
-        Vector3 normal;     // 法線
-        Vector2 uv;         // テクスチャ座標 (u, v)
-        Vector3 tangent;    // 接線
+        Vector3 position;                                               // 頂点座標 (x, y, z)
+        Vector3 normal;                                                 // 法線
+        Vector2 uv;                                                     // テクスチャ座標 (u, v)
+        Vector3 tangent;                                                // 接線
+        int boneIDs[MAX_BONE_INFLUENCE] = { -1, -1, -1, -1 };           // ボーンID
+        float weights[MAX_BONE_INFLUENCE] = { 0.0f, 0.0f, 0.0f, 0.0f }; // ウェイト
     };
 
 private:
@@ -39,7 +35,7 @@ private:
     Bounds                  m_bounds;         // モデル空間での境界ボックス
     std::vector<SubMesh>    m_subMeshes;      // サブメッシュのリスト
 
-    // CHANGES: 一時的な頂点/インデックスデータを保持する
+    // 一時的な頂点/インデックスデータを保持する
     std::vector<Vertex> m_vertices;
     std::vector<uint32_t> m_indices;
 

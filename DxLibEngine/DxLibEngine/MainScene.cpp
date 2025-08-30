@@ -7,7 +7,9 @@ void MainScene::Start()
 	m_world.AddSystem(std::make_unique<CameraSystem>());
 	m_world.AddSystem(std::make_unique<SpriteRendererSystem>());
 	m_world.AddSystem(std::make_unique<MeshRendererSystem>());
+	m_world.AddSystem(std::make_unique<SkinnedMeshRendererSystem>());
 	m_world.AddSystem(std::make_unique<TransformSystem>());
+	m_world.AddSystem(std::make_unique<AnimationSystem>());
 	m_world.AddSystem(std::make_unique<LightSystem>());
 	m_world.AddSystem(std::make_unique<CollisionSystem>());
 
@@ -21,9 +23,7 @@ void MainScene::Start()
 	// 騎士の顔が見えるように、カメラの向きを少しだけ下げる
 	m_world.GetComponent<Transform>(*camera)->rotation = Quaternion::AngleAxis(5.0f, Vector3::right);
 
-	m_world.CreateWithModel(L"Assets/Warrok-04.fbx", nullptr, Vector3(0, -150, 300), Quaternion::identity);
-	m_world.CreateWithModel(L"Assets/Warrok-04.fbx", nullptr, Vector3(200, -150, 300), Quaternion::identity);
-	m_world.CreateWithModel(L"Assets/Warrok-04.fbx", nullptr, Vector3(-200, -150, 300), Quaternion::identity);
+	m_world.CreateWithModel(L"Assets/Warrok-01.fbx", nullptr, Vector3(0, -100, 300), Quaternion::identity);
 
 	// 指向性ライト（Directional Light）の作成 (太陽光のような役割)
 	{
@@ -64,7 +64,7 @@ void MainScene::Start()
 
 void MainScene::Update()
 {
-	View<Transform, MeshRenderer> view(m_world.GetComponentManager());
+	View<Transform, SkinnedMeshRenderer> view(m_world.GetComponentManager());
 	for (auto [entity, transform, renderer] : view)
 	{
 		m_world.GetSystem<TransformSystem>()->Rotate(transform, Vector3(0, 1, 0), 15.0f * Time::GetDeltaTime());

@@ -12,6 +12,16 @@ struct aiMaterial;
 /// </summary>
 class ModelImporter : public AssetImporter
 {
+private:
+    float m_globalScale;
+    bool m_calculateTangents;
+    bool m_generateNormals;
+    bool m_flipUVs;
+    bool m_joinIdenticalVertices;
+    bool m_importMaterials;
+
+    static std::unordered_map<std::wstring, ComPtr<Model>> s_modelCache;
+
 public:
     ModelImporter();
     virtual ~ModelImporter() override = default;
@@ -28,7 +38,7 @@ public:
     /// </summary>
     ComPtr<Model> Import(const std::wstring& path, World& world);
 
-    // インポート設定
+    static void ClearCache();
 
     /// <summary> モデル全体のスケールを設定します。 </summary>
     void SetGlobalScale(float scale) { m_globalScale = scale; }
@@ -55,17 +65,16 @@ public:
     bool GetImportMaterials() const { return m_importMaterials; }
 
 private:
-    // メンバ変数
-    float m_globalScale;
-    bool m_calculateTangents;
-    bool m_generateNormals;
-    bool m_flipUVs;
-    bool m_joinIdenticalVertices;
-    bool m_importMaterials;
-
-private:
     // --- ヘルパー関数 ---
     void ProcessNode(aiNode* node, const aiScene* scene, Model* modelData);
+
+    void ProcessMesh(aiMesh* mesh, const aiScene* scene, Model* modelData);
+
+    void ProcessAnimations(const aiScene* scene, Model* modelData);
+
+    void ReadSkeletonHierarchy(Bone* parentBone, const aiNode* node);
+
+    void LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh, Skeleton* skeleton);
 
     ComPtr<Material> ProcessMaterial(aiMaterial* mat, const aiScene* scene, DescriptorAllocator* srvAllocator);
 };

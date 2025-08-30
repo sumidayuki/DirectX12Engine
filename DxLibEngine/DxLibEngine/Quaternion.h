@@ -76,6 +76,11 @@ public:
 
 	// 指定された forward と upwards 方向に回転します。
 	[[nodiscard]] static Quaternion LookRotation(const Vector3& forward, const Vector3& upwards = Vector3::up);
+
+	// 四元数 a と b の間をパラメーター t を使って球面線形補間した後、その結果を正規化した四元数を返します。
+	// パラメーター t は[0,1]の範囲にクランプされます。
+	[[nodiscard]] static Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t);
+
 };
 
 [[nodiscard]] Quaternion operator *(const Quaternion& lhs, const Quaternion& rhs) noexcept;
