@@ -9,16 +9,24 @@
 class Scene
 {
 public:
-	bool isDirty = true;
+	bool isStart;
 
 protected:
 	World m_world;
 
-public:
-	// デストラクタ
-	virtual ~Scene() {}
-
 	virtual void Start() = 0;	// シーンが始まった時
 	virtual void Update() = 0;	// シーンの更新処理
 	virtual void Draw() = 0;	// シーンの描画処理
+
+public:
+	Scene();
+
+	// デストラクタ
+	virtual ~Scene() {}
+
+	void OnStart();
+
+	void OnUpdate();
+
+	void OnDraw();
 };

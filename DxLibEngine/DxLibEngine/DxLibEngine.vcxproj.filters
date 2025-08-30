@@ -417,6 +417,9 @@
     <ClCompile Include="SkinnedMeshRendererSystem.cpp">
       <Filter>ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム</Filter>
     </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>ゲームエンジン\シーン</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h">

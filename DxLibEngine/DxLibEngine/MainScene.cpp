@@ -58,8 +58,6 @@ void MainScene::Start()
     // モデルの少し手前、左上に配置
     lightTransform->position = Vector3(0, -150, -280);
 	}
-
-	m_world.Start(m_world);
 }
 
 void MainScene::Update()
@@ -69,11 +67,8 @@ void MainScene::Update()
 	{
 		m_world.GetSystem<TransformSystem>()->Rotate(transform, Vector3(0, 1, 0), 15.0f * Time::GetDeltaTime());
 	}
-
-	m_world.Update(m_world);
 }
 
 void MainScene::Draw()
 {
-	m_world.Draw(m_world);
 }

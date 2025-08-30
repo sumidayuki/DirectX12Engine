@@ -10,14 +10,6 @@ void SceneManager::ChangeScene(const std::string& name)
 	if (m_scenes.contains(name))
 	{
 		m_currentScene = m_scenes[name].get();
-		Start();
-	}
-}
-
-void SceneManager::Start()
-{
-	if (m_currentScene)
-	{
 	}
 }
 
@@ -25,13 +17,13 @@ void SceneManager::Update()
 {
 	if (m_currentScene)
 	{
-		if (m_currentScene->isDirty)
+		if (!m_currentScene->isStart)
 		{
-			m_currentScene->Start();
-			m_currentScene->isDirty = false;
+			m_currentScene->OnStart();
+			m_currentScene->isStart = true;
 		}
 
-		m_currentScene->Update();
+		m_currentScene->OnUpdate();
 	}
 }
 
@@ -39,7 +31,7 @@ void SceneManager::Draw()
 {
 	if (m_currentScene)
 	{
-		m_currentScene->Draw();
+		m_currentScene->OnDraw();
 	}
 }
 
