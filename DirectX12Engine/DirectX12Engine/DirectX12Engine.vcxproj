@@ -22,8 +22,9 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{25e29963-d9e4-459e-8100-fef4e29238df}</ProjectGuid>
-    <RootNamespace>DxLibEngine</RootNamespace>
+    <RootNamespace>DirectX12Engine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>DirectX12Engine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -119,12 +120,12 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Precompiled.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>"C:\Users\sumid\OneDrive\デスクトップ\DxLibEngine\DxLibEngine\External\Assimp\include";%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>"$(SolutionDir)External\Assimp\include";%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>"C:\Users\sumid\OneDrive\デスクトップ\DxLibEngine\DxLibEngine\External\Assimp\lib\Debug"</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>"$(SolutionDir)External\Assimp\lib\Debug"</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
