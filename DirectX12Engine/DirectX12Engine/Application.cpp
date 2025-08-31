@@ -67,7 +67,7 @@ void Application::WorkerThreadEntryPoint()
     resolution.height = Screen::GetHeight();
     resolution.refreshRate = 60;
     Graphics::StaticConstructor(hWnd, resolution);
-    m_gameWindow->SetFullscreen(Screen::IsFullScreen());
+    //m_gameWindow->SetFullscreen(Screen::IsFullScreen());
 
     // スプライトレンダラーの初期化
     SpriteRendererSystem::StaticConstructor();

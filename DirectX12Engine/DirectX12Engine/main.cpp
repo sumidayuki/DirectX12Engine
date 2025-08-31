@@ -24,7 +24,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         assert(0);
     }
 
-    Screen::SetResolution(1920, 1080, true);
+    Screen::SetResolution(1920, 1080, false);
 
     Application::Run();
 
