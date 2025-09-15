@@ -26,7 +26,7 @@ public:
 	/// エンティティを作成します。
 	/// </summary>
 	/// <returns>Entity型で値を返します。</returns>
-	Entity* CreateEntity();
+	Entity* CreateEntity(const std::string& name = "空のエンティティ");
 
 	/// <summary>
 	/// ComponentManagerへの参照を取得します。
@@ -83,23 +83,6 @@ public:
 		const Quaternion& localRotation
 	);
 
-	/// <summary>
-	/// 読み込み済みのメッシュとマテリアルから3Dモデルのエンティティを生成します。
-	/// </summary>
-	/// <param name="modelData">インポートされたモデルデータ</param>
-	/// <param name="parent">親となるTransform</param>
-	/// <param name="localPosition">ローカル座標</param>
-	/// <param name="localRotation">ローカル回転</param>
-	/// <returns>生成されたエンティティ</returns>
-	Entity* CreateWithModel
-	(
-		const Model* modelData,
-		Transform* parent,
-		const Vector3& localPosition,
-		const Quaternion& localRotation
-	);
-
-
 	Entity* CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
 
@@ -107,7 +90,7 @@ public:
 	/// エンティティを破壊します。
 	/// </summary>
 	/// <param name="entity">破壊したいEntity</param>
-	void DestoryEntity(Entity* entity);
+	void DestroyEntity(Entity* entity);
 
 	/// <summary>
 	/// 指定したエンティティが生存しているかを確認します。

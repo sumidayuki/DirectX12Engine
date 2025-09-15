@@ -1,13 +1,11 @@
-#include "Precompiled.h"
+ï»¿#include "ModelImporter.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <filesystem> // C++17 filesystem: ƒpƒX‘€ì‚É•Ö—˜
+#include <filesystem>
 
-std::unordered_map<std::wstring, ComPtr<Model>> ModelImporter::s_modelCache;
-
-// string (UTF-8) ‚Æ wstring ‚ğ‘ŠŒİ•ÏŠ·‚·‚éƒ†[ƒeƒBƒŠƒeƒB
+// ãƒ¯ã‚¤ãƒ‰æ–‡å­—åˆ— (wstring) ã‚’UTF-8æ–‡å­—åˆ— (std::string) ã«å¤‰æ›ã™ã‚‹ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°
 static std::string WStringToString(const std::wstring& wstr)
 {
     if (wstr.empty()) return std::string();
@@ -17,6 +15,7 @@ static std::string WStringToString(const std::wstring& wstr)
     return strTo;
 }
 
+// Assimpã®è¡Œåˆ—ã‚’è‡ªä½œã®Matrix4x4å‹ã«å¤‰æ›
 static Matrix4x4 ConvertMatrix(const aiMatrix4x4& from)
 {
     Matrix4x4 to;
@@ -27,7 +26,7 @@ static Matrix4x4 ConvertMatrix(const aiMatrix4x4& from)
     return to;
 }
 
-// ƒfƒtƒHƒ‹ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 ModelImporter::ModelImporter()
     : m_globalScale(1.0f)
     , m_calculateTangents(true)
@@ -38,15 +37,15 @@ ModelImporter::ModelImporter()
 {
 }
 
-// ƒpƒX‚ğw’è‚µ‚ÄƒCƒ“ƒ|[ƒg‚·‚éƒ†[ƒeƒBƒŠƒeƒBŠÖ”
-ComPtr<Model> ModelImporter::Import(const std::wstring& path, World& world)
+// æŒ‡å®šã•ã‚ŒãŸãƒ‘ã‚¹ã‹ã‚‰ãƒ¢ãƒ‡ãƒ«ã‚’ã‚¤ãƒ³ãƒãƒ¼ãƒˆã™ã‚‹ä¾¿åˆ©ãªé–¢æ•°
+Entity* ModelImporter::Import(const std::wstring& path, World& world)
 {
     SetAssetPath(path.c_str());
     return Import(world);
 }
 
-// ƒƒCƒ“‚ÌƒCƒ“ƒ|[ƒgŠÖ”
-ComPtr<Model> ModelImporter::Import(World& world)
+// ãƒ¢ãƒ‡ãƒ«ã®ã‚¤ãƒ³ãƒãƒ¼ãƒˆå‡¦ç†æœ¬ä½“
+Entity* ModelImporter::Import(World& world)
 {
     const std::wstring& path = GetAssetPath();
     if (path.empty())
@@ -54,20 +53,14 @@ ComPtr<Model> ModelImporter::Import(World& world)
         return nullptr;
     }
 
-    auto it = s_modelCache.find(path);
-    if (it != s_modelCache.end())
-    {
-        return it->second;
-    }
-
     Assimp::Importer importer;
 
-    // İ’è‚ÉŠî‚Ã‚¢‚Ä“®“I‚É‘Oˆ—ƒtƒ‰ƒO‚ğ\’z
+    // ç¾åœ¨ã®è¨­å®šã«åŸºã¥ã„ã¦ã‚¤ãƒ³ãƒãƒ¼ãƒˆãƒ•ãƒ©ã‚°ã‚’è¨­å®š
     unsigned int flags = aiProcess_Triangulate;
-    if (m_flipUVs)                 flags |= aiProcess_FlipUVs;
-    if (m_generateNormals)         flags |= aiProcess_GenSmoothNormals;
-    if (m_calculateTangents)       flags |= aiProcess_CalcTangentSpace;
-    if (m_joinIdenticalVertices)   flags |= aiProcess_JoinIdenticalVertices;
+    if (m_flipUVs)              flags |= aiProcess_FlipUVs;
+    if (m_generateNormals)        flags |= aiProcess_GenSmoothNormals;
+    if (m_calculateTangents)      flags |= aiProcess_CalcTangentSpace;
+    if (m_joinIdenticalVertices)  flags |= aiProcess_JoinIdenticalVertices;
 
     const std::string path_s = WStringToString(path);
     if (path_s.empty())
@@ -78,64 +71,99 @@ ComPtr<Model> ModelImporter::Import(World& world)
 
     const aiScene* scene = importer.ReadFile(path_s, flags);
 
+    // ã‚¤ãƒ³ãƒãƒ¼ãƒˆã‚¨ãƒ©ãƒ¼ã®å‡¦ç†
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         OutputDebugStringA(("ASSIMP_ERROR: " + std::string(importer.GetErrorString()) + "\n").c_str());
         return nullptr;
     }
 
-    ComPtr<Model> modelData;
-    modelData.Attach(new Model());
+    ComPtr<Mesh> mesh = nullptr;
+    mesh.Attach(new Mesh());
 
-    modelData->m_mesh.Attach(new Mesh());
-    modelData->m_skeleton.Attach(new Skeleton());
+    ComPtr<Skeleton> skeleton = nullptr;
+    skeleton.Attach(new Skeleton());
 
-    modelData->m_skeleton->SetGlobalInverseTransform(ConvertMatrix(scene->mRootNode->mTransformation).Inverse());
+    std::vector<ComPtr<Animation>> animations;
 
-    // ƒ}ƒeƒŠƒAƒ‹‚Ì“Ç‚İ‚İ
+    skeleton->SetGlobalInverseTransform(ConvertMatrix(scene->mRootNode->mTransformation).Inverse());
+
+    std::vector<ComPtr<Material>> materials;
+
+    // ãƒãƒ†ãƒªã‚¢ãƒ«ãŒå­˜åœ¨ã™ã‚Œã°ãƒ­ãƒ¼ãƒ‰
     if (m_importMaterials && scene->mNumMaterials > 0)
     {
-        modelData->m_materials.resize(scene->mNumMaterials);
+        materials.resize(scene->mNumMaterials);
         for (unsigned int i = 0; i < scene->mNumMaterials; i++)
         {
-            modelData->m_materials[i] = ProcessMaterial(scene->mMaterials[i], scene, world.GetSrvAllocator());
+            materials[i] = ProcessMaterial(scene->mMaterials[i], scene, world.GetSrvAllocator());
         }
     }
 
-    modelData->m_mesh.Attach(new Mesh());
-
-    // ƒm[ƒh‚ğÄ‹A“I‚Éˆ—‚µA‚·‚×‚Ä‚ÌƒƒbƒVƒ…ƒf[ƒ^‚ğ’Pˆê‚ÌƒxƒNƒgƒ‹‚ÉW–ñ
-    ProcessNode(scene->mRootNode, scene, modelData.Get());
+    // ãƒãƒ¼ãƒ‰ã‚’å†å¸°çš„ã«å‡¦ç†ã—ã€ã™ã¹ã¦ã®ãƒ¡ãƒƒã‚·ãƒ¥ãƒ‡ãƒ¼ã‚¿ã‚’å˜ä¸€ã®ãƒ™ã‚¯ã‚¿ãƒ¼ã«é›†ç´„
+    ProcessNode(scene->mRootNode, scene, mesh.Get(), skeleton.Get());
 
     Bone* rootBone = new Bone();
-    modelData->m_skeleton->SetRootBone(rootBone);
+    skeleton->SetRootBone(rootBone);
     ReadSkeletonHierarchy(rootBone, scene->mRootNode);
 
-    ProcessAnimations(scene, modelData.Get());
+    ProcessAnimations(scene, animations);
 
-    modelData->m_mesh->SetupMesh();
+    mesh->SetupMesh();
 
-    s_modelCache[path] = modelData;
+    Entity* entity = world.CreateEntity();
 
-    return modelData;
+    if (scene->HasAnimations())
+    {
+        SkinnedMeshRenderer skinnedMeshRenderer;
+        skinnedMeshRenderer.mesh = mesh;
+        skinnedMeshRenderer.materials = materials;
+        skinnedMeshRenderer.skeleton = skeleton;
+        skinnedMeshRenderer.rootBoneEntity = *entity;
+        world.AddComponent<SkinnedMeshRenderer>(*entity, skinnedMeshRenderer);
+
+        Animator animator;
+        for (const auto& anim : animations)
+        {
+            animator.clips[anim->GetName()] = anim;
+        }
+        if (!animator.clips.empty())
+        {
+            const auto& firstClip = animations[0];
+            animator.currentClip = firstClip;
+            animator.currentClipName = firstClip->GetName();
+        }
+        world.AddComponent<Animator>(*entity, animator);
+    }
+    else
+    {
+        MeshFilter filter;
+        filter.mesh = mesh;
+        world.AddComponent<MeshFilter>(*entity, filter);
+        MeshRenderer renderer;
+        renderer.materials = materials;
+        world.AddComponent<MeshRenderer>(*entity, renderer);
+    }
+
+    return entity;
 }
 
-// ƒm[ƒh‚ğÄ‹A“I‚Éˆ—
-void ModelImporter::ProcessNode(aiNode* node, const aiScene* scene, Model* modelData)
+// ãƒãƒ¼ãƒ‰ã¨ãã®å­ãƒãƒ¼ãƒ‰ã‚’å†å¸°çš„ã«å‡¦ç†
+void ModelImporter::ProcessNode(aiNode* node, const aiScene* scene, Mesh* aMesh, Skeleton* skeleton)
 {
-    // ‚±‚Ìƒm[ƒh‚É‘®‚·‚é‘S‚Ä‚ÌƒƒbƒVƒ…‚ğˆ—
+    // ç¾åœ¨ã®ãƒãƒ¼ãƒ‰ã«å‰²ã‚Šå½“ã¦ã‚‰ã‚Œã¦ã„ã‚‹ã™ã¹ã¦ã®ãƒ¡ãƒƒã‚·ãƒ¥ã‚’å‡¦ç†
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-        const UINT baseVertexLocation = modelData->m_mesh->GetVertexCount();
-        const UINT startIndex = modelData->m_mesh->GetTotalIndexCount();
+        const UINT baseVertexLocation = aMesh->GetVertexCount();
+        const UINT startIndex = aMesh->GetTotalIndexCount();
 
-        // ’¸“_‚ÆƒCƒ“ƒfƒbƒNƒX‚Ìƒf[ƒ^‚ğˆê“I‚ÉŠi”[‚·‚éƒxƒNƒgƒ‹
+        // ç¾åœ¨ã®ãƒ¡ãƒƒã‚·ãƒ¥ã®é ‚ç‚¹ãŠã‚ˆã³ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ã‚’ä¸€æ™‚çš„ã«æ ¼ç´
         std::vector<Mesh::Vertex> vertices;
         std::vector<uint32_t> indices;
 
-        // ’¸“_‚ğ’Šo
+        // é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã‚’æŠ½å‡º
         vertices.resize(mesh->mNumVertices);
         for (unsigned int v = 0; v < mesh->mNumVertices; v++)
         {
@@ -155,38 +183,36 @@ void ModelImporter::ProcessNode(aiNode* node, const aiScene* scene, Model* model
             }
         }
 
+        // ãƒœãƒ¼ãƒ³ãƒ‡ãƒ¼ã‚¿ãŒå­˜åœ¨ã™ã‚Œã°ãƒ­ãƒ¼ãƒ‰
         if (mesh->HasBones())
         {
-            LoadBones(vertices, mesh, modelData->m_skeleton.Get());
+            LoadBones(vertices, mesh, skeleton);
         }
 
-        // ƒCƒ“ƒfƒbƒNƒX‚ğ’Šo
+        // ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ã‚’æŠ½å‡º
         for (unsigned int f = 0; f < mesh->mNumFaces; f++)
         {
             aiFace face = mesh->mFaces[f];
             for (unsigned int j = 0; j < face.mNumIndices; j++)
             {
-                indices.push_back(face.mIndices[j]);
+                indices.push_back(face.mIndices[j] + baseVertexLocation);
             }
         }
 
-        modelData->m_mesh->AddVertices(vertices);
-        modelData->m_mesh->AddIndices(indices);
-        modelData->m_mesh->AddSubMesh(startIndex, (UINT)indices.size(), mesh->mMaterialIndex);
+        // å‡¦ç†ã—ãŸãƒ‡ãƒ¼ã‚¿ã‚’ãƒ¢ãƒ‡ãƒ«ã®ãƒ¡ã‚¤ãƒ³ãƒ¡ãƒƒã‚·ãƒ¥ã«è¿½åŠ 
+        aMesh->AddVertices(vertices);
+        aMesh->AddIndices(indices);
+        aMesh->AddSubMesh(startIndex, (UINT)indices.size(), mesh->mMaterialIndex);
     }
 
-    // qƒm[ƒh‚ğÄ‹A“I‚Éˆ—
+    // å­ãƒãƒ¼ãƒ‰ã‚’å†å¸°çš„ã«å‡¦ç†
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        ProcessNode(node->mChildren[i], scene, modelData);
+        ProcessNode(node->mChildren[i], scene, aMesh, skeleton);
     }
 }
 
-void ModelImporter::ProcessMesh(aiMesh* mesh, const aiScene* scene, Model* modelData)
-{
-}
-
-void ModelImporter::ProcessAnimations(const aiScene* scene, Model* modelData)
+void ModelImporter::ProcessAnimations(const aiScene* scene, std::vector<ComPtr<Animation>>& animations)
 {
     if (!scene->HasAnimations())
     {
@@ -197,7 +223,7 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, Model* modelData)
     {
         aiAnimation* animation = scene->mAnimations[i];
 
-        // animationƒ|ƒCƒ“ƒ^‚ª—LŒø‚©ƒ`ƒFƒbƒN
+        // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒã‚¤ãƒ³ã‚¿ã‚’æ¤œè¨¼
         if (!animation)
         {
             return;
@@ -206,23 +232,35 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, Model* modelData)
         ComPtr<Animation> newAnimation;
         newAnimation.Attach(new Animation());
 
-        newAnimation->SetName(animation->mName.C_Str());
+        // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åã‹ã‚‰ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ï¼ˆä¾‹ï¼šBlenderç”±æ¥ã®'|'ï¼‰ã‚’å‰Šé™¤ã—ã¦è¨­å®š
+        std::string originalName = animation->mName.C_Str();
+        size_t pipePos = originalName.find('|');
+        if (pipePos != std::string::npos)
+        {
+            newAnimation->SetName(originalName.substr(pipePos + 1));
+        }
+        else
+        {
+            newAnimation->SetName(originalName);
+        }
+
         newAnimation->SetDuration((float)animation->mDuration);
 
-        // mTicksPerSecond‚ª0‚Ìê‡AƒfƒtƒHƒ‹ƒg’li—á: 24.0fj‚ğİ’è
-        newAnimation->SetTicksPerSecond(animation->mTicksPerSecond !=  0 ? (float)animation->mTicksPerSecond : 24.0f);
+        // ticks per secondã‚’è¨­å®šã€‚æŒ‡å®šãŒãªã„å ´åˆã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®24.0fã‚’ä½¿ç”¨
+        newAnimation->SetTicksPerSecond(animation->mTicksPerSecond != 0 ? (float)animation->mTicksPerSecond : 24.0f);
 
-        // ƒAƒjƒ[ƒVƒ‡ƒ“ƒ`ƒƒƒ“ƒlƒ‹‚ª‘¶İ‚·‚é‚©ƒ`ƒFƒbƒN
+        // æœ‰åŠ¹ãªã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒãƒ£ãƒ³ãƒãƒ«ãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèª
         if (animation->mNumChannels == 0 || !animation->mChannels)
         {
             continue;
         }
 
+        // å„ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒãƒ£ãƒ³ãƒãƒ«ï¼ˆãƒœãƒ¼ãƒ³ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ï¼‰ã‚’å‡¦ç†
         for (unsigned int j = 0; j < animation->mNumChannels; j++)
         {
             aiNodeAnim* channel = animation->mChannels[j];
 
-            // channelƒ|ƒCƒ“ƒ^‚ª—LŒø‚©ƒ`ƒFƒbƒN
+            // ãƒãƒ£ãƒ³ãƒãƒ«ãƒã‚¤ãƒ³ã‚¿ã‚’æ¤œè¨¼
             if (!channel || !channel->mNodeName.C_Str())
             {
                 continue;
@@ -230,7 +268,7 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, Model* modelData)
 
             BoneAnimation boneAnim;
 
-            // ˆÊ’uƒL[ƒtƒŒ[ƒ€‚Ì“Ç‚İ‚İ
+            // ä½ç½®ã®ã‚­ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ãƒ­ãƒ¼ãƒ‰
             if (channel->mNumPositionKeys > 0 && channel->mPositionKeys)
             {
                 for (unsigned int k = 0; k < channel->mNumPositionKeys; k++)
@@ -240,7 +278,7 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, Model* modelData)
                 }
             }
 
-            // ‰ñ“]ƒL[ƒtƒŒ[ƒ€‚Ì“Ç‚İ‚İ
+            // å›è»¢ã®ã‚­ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ãƒ­ãƒ¼ãƒ‰
             if (channel->mNumRotationKeys > 0 && channel->mRotationKeys)
             {
                 for (unsigned int k = 0; k < channel->mNumRotationKeys; k++)
@@ -250,7 +288,7 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, Model* modelData)
                 }
             }
 
-            // ƒXƒP[ƒ‹ƒL[ƒtƒŒ[ƒ€‚Ì“Ç‚İ‚İ
+            // ã‚¹ã‚±ãƒ¼ãƒªãƒ³ã‚°ã®ã‚­ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ãƒ­ãƒ¼ãƒ‰
             if (channel->mNumScalingKeys > 0 && channel->mNumScalingKeys)
             {
                 for (unsigned int k = 0; k < channel->mNumScalingKeys; k++)
@@ -260,21 +298,25 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, Model* modelData)
                 }
             }
 
-            // ‚±‚Ìƒ{[ƒ“‚É—LŒø‚ÈƒL[ƒtƒŒ[ƒ€1‚Â‚Å‚à‚ ‚ê‚ÎAƒAƒjƒ[ƒVƒ‡ƒ“‚É’Ç‰Á
+            // 1ã¤ä»¥ä¸Šã®ã‚­ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒã‚ã‚Œã°ã€ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã«è¿½åŠ 
             if (!boneAnim.positions.empty() || !boneAnim.rotations.empty() || !boneAnim.scales.empty())
             {
                 newAnimation->GetMutableBoneAnimations()[channel->mNodeName.C_Str()] = boneAnim;
             }
         }
 
-        // ‚±‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒNƒŠƒbƒv‚É—LŒø‚Èƒ{[ƒ“ƒAƒjƒ[ƒVƒ‡ƒ“‚ª1‚Â‚Å‚à‚ ‚ê‚ÎAƒ‚ƒfƒ‹‚É’Ç‰Á
+        // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¯ãƒªãƒƒãƒ—ã«1ã¤ä»¥ä¸Šã®ãƒœãƒ¼ãƒ³ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒã‚ã‚Œã°ã€ãƒ¢ãƒ‡ãƒ«ã«è¿½åŠ 
         if (newAnimation->GetBoneAnimations().size() > 0)
         {
-            modelData->m_animations.push_back(newAnimation);
+            animations.push_back(newAnimation);
         }
     }
+
+    std::wstring debugMsg = L"ModelImporter: Processed " + std::to_wstring(animations.size()) + L" animations for model.\\n";
+    OutputDebugStringW(debugMsg.c_str());
 }
 
+// Assimpã®ãƒãƒ¼ãƒ‰æ§‹é€ ã‹ã‚‰ã‚¹ã‚±ãƒ«ãƒˆãƒ³éšå±¤ã‚’å†å¸°çš„ã«èª­ã¿è¾¼ã‚€
 void ModelImporter::ReadSkeletonHierarchy(Bone* parentBone, const aiNode* node)
 {
     assert(parentBone);
@@ -290,6 +332,7 @@ void ModelImporter::ReadSkeletonHierarchy(Bone* parentBone, const aiNode* node)
     }
 }
 
+// ãƒœãƒ¼ãƒ³ã‚¦ã‚§ã‚¤ãƒˆã¨IDã‚’å„é ‚ç‚¹ã«ãƒ­ãƒ¼ãƒ‰ã™ã‚‹
 void ModelImporter::LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh, Skeleton* skeleton)
 {
     auto& boneInfoMap = skeleton->GetMutableBoneInfoMap();
@@ -301,6 +344,7 @@ void ModelImporter::LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh,
         std::string boneName = bone->mName.C_Str();
         int boneIndex = 0;
 
+        // ã¾ã ãƒãƒƒãƒ—ã«å­˜åœ¨ã—ãªã„ãƒœãƒ¼ãƒ³ã§ã‚ã‚Œã°è¿½åŠ 
         if (boneInfoMap.find(boneName) == boneInfoMap.end())
         {
             BoneInfo newBoneInfo;
@@ -315,12 +359,14 @@ void ModelImporter::LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh,
             boneIndex = boneInfoMap[boneName].id;
         }
 
+        // ãƒœãƒ¼ãƒ³ã‚¦ã‚§ã‚¤ãƒˆã‚’å¯¾å¿œã™ã‚‹é ‚ç‚¹ã«å‰²ã‚Šå½“ã¦
         for (unsigned int j = 0; j < bone->mNumWeights; j++)
         {
             const aiVertexWeight& weight = bone->mWeights[j];
             unsigned int vertexId = weight.mVertexId;
             float vertexWeight = weight.mWeight;
 
+            // é ‚ç‚¹ã®ãƒœãƒ¼ãƒ³ãƒ‡ãƒ¼ã‚¿ã«ç©ºãã‚¹ãƒ­ãƒƒãƒˆã‚’è¦‹ã¤ã‘ã¦æ ¼ç´
             for (int k = 0; k < MAX_BONE_INFLUENCE; k++)
             {
                 if (vertices[vertexId].weights[k] == 0.0f)
@@ -335,19 +381,19 @@ void ModelImporter::LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh,
     skeleton->SetBoneCount(boneCount);
 }
 
-// ƒ}ƒeƒŠƒAƒ‹ƒf[ƒ^‚ğ’Šo
+// ãƒãƒ†ãƒªã‚¢ãƒ«ãƒ‡ãƒ¼ã‚¿ã¨ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’å‡¦ç†ã—ã¦ãƒ­ãƒ¼ãƒ‰
 ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* scene, DescriptorAllocator* srvAllocator)
 {
     ComPtr<Material> newMaterial;
     newMaterial.Attach(new Material());
 
-    // F‚ÌƒvƒƒpƒeƒB
+    // ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºã‚«ãƒ©ãƒ¼ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’èª­ã¿è¾¼ã‚€
     aiColor4D color;
     if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color) == AI_SUCCESS) {
         newMaterial->SetDiffuseColor({ color.r, color.g, color.b, color.a });
     }
 
-    // DiffuseƒeƒNƒXƒ`ƒƒ‚Ìˆ—
+    // ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºãƒ†ã‚¯ã‚¹ãƒãƒ£ãŒå­˜åœ¨ã™ã‚Œã°ãƒ­ãƒ¼ãƒ‰
     if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
     {
         aiString path;
@@ -358,11 +404,11 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
         const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
         if (embeddedTexture)
         {
-            // –„‚ß‚İƒeƒNƒXƒ`ƒƒ‚ğƒƒ‚ƒŠ‚©‚çƒ[ƒh
-            if (embeddedTexture->mHeight == 0) { // ˆ³kŒ`®
+            // åŸ‹ã‚è¾¼ã¿ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ãƒ­ãƒ¼ãƒ‰ï¼ˆåœ§ç¸®ã¾ãŸã¯éåœ§ç¸®ï¼‰
+            if (embeddedTexture->mHeight == 0) { // åœ§ç¸®å½¢å¼
                 diffuseTexture.Attach(textureImporter.Import(embeddedTexture->pcData, embeddedTexture->mWidth));
             }
-            else { // ”ñˆ³kŒ`®
+            else { // éåœ§ç¸®å½¢å¼
                 diffuseTexture.Attach(textureImporter.Import(
                     embeddedTexture->mWidth, embeddedTexture->mHeight, DXGI_FORMAT_R8G8B8A8_UNORM,
                     embeddedTexture->pcData, embeddedTexture->mWidth * sizeof(aiTexel)));
@@ -370,7 +416,7 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
         }
         else
         {
-            // ŠO•”ƒeƒNƒXƒ`ƒƒ‚ğƒtƒ@ƒCƒ‹ƒpƒX‚©‚ç‰ğŒˆ‚µ‚Äƒ[ƒh
+            // å¤–éƒ¨ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã‹ã‚‰ãƒ­ãƒ¼ãƒ‰
             std::filesystem::path modelPath = GetAssetPath();
             std::filesystem::path texturePath = modelPath.parent_path() / path.C_Str();
 

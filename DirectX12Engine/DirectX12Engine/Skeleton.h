@@ -4,7 +4,7 @@
 struct BoneInfo
 {
 	int id;						// ボーンのインデックス
-	Matrix4x4 offsetMatrix;		// Tポーズからボーンのローカル空間への変換行列
+	Matrix4x4 offsetMatrix;
 };
 
 // ボーンの階層構造

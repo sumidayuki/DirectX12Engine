@@ -184,7 +184,7 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
     }
     m_sceneConstantBuffer->UnlockBufferAfterWrite();
     commandList->SetGraphicsRootConstantBufferView(4, m_sceneConstantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());
-    
+
     if (lightSystem->GetActiveLightCount() > 0)
     {
         commandList->SetGraphicsRootDescriptorTable(3, lightSystem->GetLightBufferGpuHandle());
@@ -205,7 +205,7 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
             continue;
         }
-        
+
         const Matrix4x4& worldMatrix = TransformSystem::GetLocalToWorldMatrix(transform);
 
         GraphicsBuffer* vertexBuffer = smr.mesh->GetVertexBuffer();
@@ -250,7 +250,7 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
                 constants.boneMatrices[j] = animator.finalBoneMatrices[j].Transpose();
             }
 
-            const UINT bufferOffsetForFrame = frameIndex + MAX_SKINNED_OBJECTS_PER_FRAME;
+            const UINT bufferOffsetForFrame = frameIndex * MAX_SKINNED_OBJECTS_PER_FRAME;
             BYTE* dest = m_mappedObjectConstants + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
             memcpy(dest, &constants, sizeof(SkinnedObjectConstantsLayout));
 

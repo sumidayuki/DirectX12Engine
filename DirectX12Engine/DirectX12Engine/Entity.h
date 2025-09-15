@@ -9,5 +9,6 @@ struct Entity
 {
 	EntitySize id;
 	EntitySize generation;
+	std::string name;
 	bool enabled = true;
 };

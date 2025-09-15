@@ -31,14 +31,12 @@ public:
     /// </summary>
     /// <param name="world">マテリアルのSRVアロケータ等を取得するために使用します。</param>
     /// <returns>成功した場合はModelへのComPtr、失敗した場合はnullptrを返します。</returns>
-    ComPtr<Model> Import(World& world);
+    Entity* Import(World& world);
 
     /// <summary>
     /// パスを直接指定してモデルファイルを読み込むためのユーティリティ関数です。
     /// </summary>
-    ComPtr<Model> Import(const std::wstring& path, World& world);
-
-    static void ClearCache();
+    Entity* Import(const std::wstring& path, World& world);
 
     /// <summary> モデル全体のスケールを設定します。 </summary>
     void SetGlobalScale(float scale) { m_globalScale = scale; }
@@ -66,11 +64,9 @@ public:
 
 private:
     // --- ヘルパー関数 ---
-    void ProcessNode(aiNode* node, const aiScene* scene, Model* modelData);
+    void ProcessNode(aiNode* node, const aiScene* scene, Mesh* mesh, Skeleton* skeleton);
 
-    void ProcessMesh(aiMesh* mesh, const aiScene* scene, Model* modelData);
-
-    void ProcessAnimations(const aiScene* scene, Model* modelData);
+    void ProcessAnimations(const aiScene* scene, std::vector<ComPtr<Animation>>& animations);
 
     void ReadSkeletonHierarchy(Bone* parentBone, const aiNode* node);
 

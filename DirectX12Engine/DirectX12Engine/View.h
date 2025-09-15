@@ -1,57 +1,64 @@
 #pragma once
 
-template<typename First, typename... Rest>
+#include "Entity.h"
+#include "ComponentManager.h"
+#include <vector>
+#include <tuple>
+#include <type_traits>
+
+template<typename... Components>
 class View
 {
 private:
-	std::vector<Entity> m_entities;
-	ComponentManager& m_cm;
+    ComponentManager& m_cm;
+    const std::deque<Entity>& m_entityList;
 
 public:
-	View(ComponentManager& cm)
-		: m_cm(cm)
-	{
-		Update();
-	}
+    View(ComponentManager& cm)
+        : m_cm(cm),
+        m_entityList(cm.GetEntities<std::tuple_element_t<0, std::tuple<Components...>>>()) {
+    }
 
-	void Update()
-	{
-		m_entities.clear();
+    class Iterator
+    {
+    private:
+        size_t m_index;
+        const View* m_view;
 
-		const auto& firstMap = m_cm.GetAllComponents<First>();
+    public:
+        Iterator(size_t index, const View* view) : m_index(index), m_view(view) {}
 
-		for (const auto& [entity, _] : firstMap)
-		{
-			if (!entity.enabled) continue;
-			if (m_cm.HasComponents<First, Rest...>(entity))
-			{
-				m_entities.push_back(entity);
-			}
-		}
-	}
+        auto operator*() const
+        {
+            Entity currentEntity = m_view->m_entityList[m_index];
+            return std::tuple<Entity, Components&...>(
+                currentEntity,
+                *m_view->m_cm.GetComponent<Components>(currentEntity)...
+            );
+        }
 
-	// éÊìæÇÃÇ›ÇµÇΩÇ¢èÍçáóp
-	const std::vector<Entity>& GetEntities() const { return m_entities; }
+        Iterator& operator++()
+        {
+            do {
+                ++m_index;
+            } while (m_index < m_view->m_entityList.size() &&
+                !m_view->m_cm.HasComponents<Components...>(m_view->m_entityList[m_index]));
+            return *this;
+        }
 
-	struct Iterator
-	{
-		size_t index;
-		View* view;
+        bool operator!=(const Iterator& other) const { return m_index != other.m_index; }
+    };
 
-		auto operator*() const
-		{
-			Entity e = view->m_entities[index];
-			return std::tuple<Entity, First&, Rest&...>(
-				e,
-				*(view->m_cm.GetComponent<First>(e)),
-				*(view->m_cm.GetComponent<Rest>(e))...
-			);
-		}
+    Iterator begin() const
+    {
+        size_t firstValidIndex = 0;
+        while (firstValidIndex < m_entityList.size() &&
+            !m_cm.HasComponents<Components...>(m_entityList[firstValidIndex]))
+        {
+            ++firstValidIndex;
+        }
+        return Iterator(firstValidIndex, this);
+    }
 
-		Iterator& operator++() { ++index; return *this; }
-		bool operator!=(const Iterator& other) const { return index != other.index; }
-	};
-
-	Iterator begin() { return Iterator{ 0, this }; }
-	Iterator end() { return Iterator{ m_entities.size(), this }; }
+    Iterator end() const { return Iterator(m_entityList.size(), this); }
 };

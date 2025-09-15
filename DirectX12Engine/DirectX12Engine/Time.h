@@ -23,7 +23,7 @@ private:
 	static inline float		m_fixedDeltaTime;
 	static inline float		m_fixedUnscaledTime;
 	static inline float		m_fixedUnscaledDeltaTime;
-	static inline float		m_inFixedTimeStep;
+	static inline bool		m_inFixedTimeStep;
 
 	// 可変時間ステップ
 	static inline float m_time;

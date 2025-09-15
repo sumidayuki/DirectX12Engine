@@ -5,6 +5,14 @@
 /// </summary>
 class AnimationSystem : public System
 {
+public:
+	/// <summary>
+	/// 指定されたAnimatorで、名前で指定されたアニメーションクリップの再生を開始します
+	/// </summary>
+	/// <param name="animator">対象のAnimatorコンポーネント</param>
+	/// <param name="clipName">再生したいアニメーションクリップの名前</param>
+	static void Play(Animator& animator, const std::string& clipName);
+
 private:
 	/// <summary>
 	/// 指定された時間における、2つのキーフレーム間の補間された値を見つけます。

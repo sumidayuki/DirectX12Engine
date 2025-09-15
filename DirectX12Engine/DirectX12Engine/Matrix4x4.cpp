@@ -73,8 +73,24 @@ void Matrix4x4::SetSRT(const Vector3& scale, const Quaternion& rotation, const V
     _43 = translation.z;
 
 #else
-    *this = Scale(scale) * Rotate(rotation) * Translate(translation);
+    * this = Matrix4x4(XMMatrixTranspose(s * r * t)); 
 #endif
+}
+
+bool Matrix4x4::Decompose(Vector3& scale, Quaternion& rotation, Vector3& translation) const
+{
+    DirectX::XMVECTOR xmscale;
+    DirectX::XMVECTOR xmrotation;
+    DirectX::XMVECTOR xmtranslation;
+    if (DirectX::XMMatrixDecompose(&xmscale, &xmrotation, &xmtranslation, Transpose().ToXMMATRIX())) 
+    {
+        scale = xmscale;
+        rotation = xmrotation;
+        translation = xmtranslation;
+        return true;
+    }
+
+    return false;
 }
 
 Matrix4x4 Matrix4x4::Transpose() const

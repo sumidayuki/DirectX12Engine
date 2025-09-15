@@ -89,6 +89,8 @@ public:
 	/// <returns></returns>
 	static float Sqrt(float value) { return sqrt(value); }
 
+	static float Swap(float& a, float& b) { const float temp = a; a = b; b = temp; }
+
 	/// <summary>
 	/// 2‚Â‚Ì’l‚ğŒğŠ·‚µ‚Ü‚·B
 	/// </summary>

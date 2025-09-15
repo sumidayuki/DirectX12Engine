@@ -16,11 +16,11 @@ private:
 	ComPtr<Mesh>					m_mesh;
 	std::vector<ComPtr<Material>>	m_materials;
 	ComPtr<Skeleton>				m_skeleton;
-	std::vector<ComPtr<Animation>>			m_animations;
+	std::vector<ComPtr<Animation>>	m_animations;
 
 public:
 	Model() = default;
 	virtual ~Model() override = default;
 
-
+	std::vector<ComPtr<Animation>>& GetAnimations() { return m_animations; }
 };

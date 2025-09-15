@@ -5,8 +5,16 @@
 /// </summary>
 struct Animator
 {
+	// このAnimatorが利用可能な全てのアニメーションクリップのマップ
+	// キーはアニメーション名です。
+	std::unordered_map<std::string, ComPtr<Animation>> clips;
+
 	// 再生するアニメーションクリップ
-	Animation* animation = nullptr;
+	ComPtr<Animation> currentClip = nullptr;
+
+	// 再生したいアニメーションクリップの名前
+	// この名前を基にAnimationSystemがcurrentClipを切り替えます。
+	std::string currentClipName;
 
 	// 現在の再生時間
 	float currentTime = 0.0f;

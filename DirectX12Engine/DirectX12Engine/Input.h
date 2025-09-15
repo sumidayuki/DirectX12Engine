@@ -10,8 +10,10 @@ struct Input
 	bool moveLeft;		// 左方向
 	bool moveRight;		// 右方向
 	bool shot;			// ショット
+	bool dash;
+	bool attack;
 
 	float horizontal;
 	float vartical;
-	Vector3 direction;
+	Vector2 direction;
 };

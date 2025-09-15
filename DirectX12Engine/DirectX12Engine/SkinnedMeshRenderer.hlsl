@@ -18,7 +18,7 @@ struct SkinnedObjectConstantsLayout
     float4 specularColor;
     float shininess;
     float3 padding;
-    float4x4 boneMatrices[128];
+    float4x4 boneMatrices[256];
 };
 
 // ƒJƒƒ‰î•ñ

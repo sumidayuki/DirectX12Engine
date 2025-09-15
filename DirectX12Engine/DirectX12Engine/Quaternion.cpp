@@ -87,3 +87,14 @@ Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs) noexcept
     return XMQuaternionMultiply(lhs.ToXMVECTOR(), rhs.ToXMVECTOR());
 #endif
 }
+
+Vector3 operator*(const Quaternion& q, const Vector3& v)
+{
+    Quaternion v_quat(v.x, v.y, v.z, 0.0f);
+
+    Quaternion q_inv(-q.x, -q.y, -q.z, q.w);
+
+    Quaternion result_quat = q * v_quat * q_inv;
+
+    return Vector3(result_quat.x, result_quat.y, result_quat.z);
+}

@@ -18,16 +18,52 @@ const Matrix4x4& TransformSystem::GetWorldToLocalMatrix(Transform& transform)
 	return transform.worldToLocalMatrix;
 }
 
+void TransformSystem::SetParent(Transform& transform, Transform* parent)
+{
+	// 既存の親子関係を解除
+	if (transform.parent != nullptr) {
+		UnsetParent(transform);
+	}
+
+	transform.parent = parent;
+	if (parent != nullptr) {
+		parent->children.push_back(&transform);
+	}
+
+	transform.dirty = true;
+}
+
+void TransformSystem::UnsetParent(Transform& transform)
+{
+	if (transform.parent != nullptr) {
+		transform.parent->children.remove(&transform);
+		transform.parent = nullptr;
+		transform.dirty = true;
+	}
+}
+
+Transform* TransformSystem::GetRoot(Transform& transform)
+{
+	Transform* root = &transform;
+	
+	while (root->parent)
+	{
+		root = root->parent;
+	}
+
+	return root;
+}
+
 void TransformSystem::SetLocalRotation(Transform& transform, const Quaternion& localRotation)
 {
 	transform.rotation = localRotation;
-	transform.dirty = true;
+	SetDirtyRecursively(transform);
 }
 
 void TransformSystem::SetLocalPosition(Transform& transform, const Vector3& localPosition)
 {
 	transform.position = localPosition;
-	transform.dirty = true;
+	SetDirtyRecursively(transform);
 }
 
 void TransformSystem::SetLocalPosition(Transform& transform, float x, float y, float z)
@@ -35,13 +71,30 @@ void TransformSystem::SetLocalPosition(Transform& transform, float x, float y, f
 	transform.position.x = x;
 	transform.position.y = y;
 	transform.position.z = z;
-	transform.dirty = true;
+	SetDirtyRecursively(transform);
+}
+
+void TransformSystem::RotateAround(Transform& transform, Vector3 point, Vector3 axis, float angle)
+{
+	// 指定された軸と角度で回転するクォータニオンを作成
+	Quaternion rot = Quaternion::AngleAxis(angle, axis);
+
+	// 位置を更新
+	Vector3 dir = transform.position - point;
+	dir = rot * dir; // クォータニオンで方向ベクトルを回転
+	transform.position = point + dir;
+
+	// 回転を更新
+	transform.rotation = rot * transform.rotation;
+
+	// 行列の再計算を予約
+	SetDirtyRecursively(transform);
 }
 
 void TransformSystem::Translate(Transform& transform, const Vector3& translation)
 {
 	transform.position = transform.position + translation;
-	transform.dirty = true;
+	SetDirtyRecursively(transform);
 }
 
 void TransformSystem::Rotate(Transform& transform, const Vector3 axis, float angle)
@@ -49,7 +102,22 @@ void TransformSystem::Rotate(Transform& transform, const Vector3 axis, float ang
 	const Quaternion q = Quaternion::AngleAxis(angle, axis);
 
 	transform.rotation = q * transform.rotation;
+	SetDirtyRecursively(transform);
+}
+
+void TransformSystem::SetDirtyRecursively(Transform& transform)
+{
 	transform.dirty = true;
+
+	if (transform.children.empty())
+	{
+		return;
+	}
+
+	for (auto* child : transform.children)
+	{
+		SetDirtyRecursively(*child);
+	}
 }
 
 void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform)
@@ -59,7 +127,7 @@ void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform)
 		transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);
 		transform.dirty = false;
 	}
-
+	
 	if (true)
 	{
 		// ワールド変換行列を計算する
@@ -72,7 +140,7 @@ void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform)
 		{
 			transform.localToWorldMatrix = transform.localMatrix;
 		}
-
+	
 		transform.worldToLocalMatrix = transform.localToWorldMatrix.Inverse();
 		transform.hasChanged = false;
 	}

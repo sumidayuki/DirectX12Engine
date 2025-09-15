@@ -184,6 +184,8 @@
     <ClCompile Include="ModelImporter.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="PlayerCameraSystem.cpp" />
+    <ClCompile Include="PlayerSystem.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Reference.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -265,8 +267,14 @@
     <ClInclude Include="MeshRendererSystem.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelImporter.h" />
+    <ClInclude Include="ModelImporterSettings.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="PlayerTag.h" />
+    <ClInclude Include="PlayerCamera.h" />
+    <ClInclude Include="PlayerCameraSystem.h" />
+    <ClInclude Include="PlayerMove.h" />
+    <ClInclude Include="PlayerSystem.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Reference.h" />
     <ClInclude Include="Resolution.h" />
@@ -280,6 +288,7 @@
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="SpriteRendererSystem.h" />
+    <ClInclude Include="StringUtility.h" />
     <ClInclude Include="Tag.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Texture2D.h" />

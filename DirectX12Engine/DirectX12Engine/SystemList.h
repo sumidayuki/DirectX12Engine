@@ -14,3 +14,5 @@
 #include "InputSystem.h"
 #include "AnimationSystem.h"
 #include "SkinnedMeshRendererSystem.h"
+#include "PlayerSystem.h"
+#include "PlayerCameraSystem.h"

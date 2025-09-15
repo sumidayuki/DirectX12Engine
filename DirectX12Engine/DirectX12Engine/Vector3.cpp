@@ -23,9 +23,43 @@ Vector3::Vector3(const Vector2& vector2, float z)
 {
 }
 
+Vector3::Vector3(const DirectX::XMVECTOR& xmvector)
+{
+    DirectX::XMStoreFloat3(reinterpret_cast<DirectX::XMFLOAT3*>(components), xmvector);
+}
+
+
+Vector3::Vector3(const DirectX::XMFLOAT3& xmvector)
+    : x(xmvector.x)
+    , y(xmvector.y)
+    , z(xmvector.z)
+{
+}
+
+
+void Vector3::Set(float newX, float newY, float newZ)
+{
+    x = newX;
+    y = newY;
+    z = newZ;
+}
+
+
+DirectX::XMVECTOR Vector3::ToXMVECTOR() const
+{
+    return DirectX::XMVectorSet(x, y, z, 0);
+}
+
+
 float Vector3::Magnitude() const
 {
     return Mathf::Sqrt(x * x + y * y + z * z);
+}
+
+float Vector3::SqrMagnitude() const
+{
+    // ÉmÉãÉÄÇÃ2èÊ = x^2 + y^2 + z^2
+    return x * x + y * y + z * z;
 }
 
 Vector3 Vector3::Normalized() const
@@ -97,6 +131,27 @@ Vector3& Vector3::operator/=(const Vector3& rhs)
     return *this;
 }
 
+Vector3 Vector3::ClampMagnitude(const Vector3& vector, float minValue, float maxValue)
+{
+    const float normSq = vector.SqrMagnitude();
+    if (normSq < 0.00001f)
+    {
+        return vector;
+    }
+    else if (normSq < (minValue * minValue))
+    {
+        return vector * (minValue / Mathf::Sqrt(normSq));
+    }
+    else if (normSq > (maxValue * maxValue))
+    {
+        return vector * (maxValue / Mathf::Sqrt(normSq));
+    }
+    else
+    {
+        return vector;
+    }
+}
+
 Vector3 Vector3::Cross(const Vector3& lhs, const Vector3& rhs)
 {
     return Vector3
@@ -142,9 +197,14 @@ Vector3 operator-(const Vector3& lhs, const Vector3& rhs)
     return Vector3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 
+Vector3 operator*(const Vector3& lhs, const Vector3& rhs)
+{
+    return Vector3(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+}
+
 Vector3 operator*(const Vector3& vector, float scalar)
 {
-    return Vector3(vector.x * scalar, vector.y * scalar, vector.x * scalar);
+    return Vector3(vector.x * scalar, vector.y * scalar, vector.z * scalar);
 }
 
 Vector3 operator*(float scalar, const Vector3& vector)

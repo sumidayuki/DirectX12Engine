@@ -143,7 +143,6 @@ class ShapeRendererSystem;
 
 // WorldŠÖ˜A
 class World;
-template<typename First, typename... Rest> class View;
 
 // WindowŠÖ˜A
 class DxWindow;

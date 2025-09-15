@@ -1,4 +1,4 @@
-#include "Mesh.h"
+ï»¿#include "Mesh.h"
 #include <algorithm> // std::min, std::max
 
 Mesh::Mesh()
@@ -9,7 +9,7 @@ Mesh::Mesh()
 
 void Mesh::SetupMesh()
 {
-    // ’¸“_ƒoƒbƒtƒ@‚Ìì¬
+    // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
     m_vertexBuffer.Attach(new GraphicsBuffer(
         GraphicsBuffer::Target::Vertex,
         GraphicsBuffer::UsageFlags::None,
@@ -18,7 +18,7 @@ void Mesh::SetupMesh()
         m_vertices.data()
     ));
 
-    // ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚Ìì¬
+    // ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
     m_indexBuffer.Attach(new GraphicsBuffer(
         GraphicsBuffer::Target::Index,
         GraphicsBuffer::UsageFlags::None,
@@ -27,7 +27,7 @@ void Mesh::SetupMesh()
         m_indices.data()
     ));
 
-    // ƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚ÌŒvZ‚ğÀ‘•
+    // ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã®è¨ˆç®—ã‚’å®Ÿè£…
     if (!m_vertices.empty())
     {
         Vector3 minPoint(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -42,8 +42,7 @@ void Mesh::SetupMesh()
             maxPoint.y = std::max(maxPoint.y, vertex.position.y);
             maxPoint.z = std::max(maxPoint.z, vertex.position.z);
         }
-        m_bounds.SetCenter((minPoint + maxPoint) * 0.5f);
-        m_bounds.SetExtents((maxPoint - minPoint) * 0.5f);
+        m_bounds.SetMinMax(minPoint, maxPoint);
     }
 }
 

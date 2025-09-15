@@ -1,12 +1,17 @@
 #include "World.h"
 
-Entity* World::CreateEntity()
+Entity* World::CreateEntity(const std::string& name)
 {
 	// Entity を entityManager を使用してエンティティを生成します。
 	Entity* entity = m_em.CreateEntity();
 
+	entity->name = name;
+
+	Transform transform;
+	transform.entity = entity;
+
 	// Entity に Transform コンポーネントを付けておきます。
-	m_cm.AddComponent<Transform>(*entity, Transform{});
+	m_cm.AddComponent<Transform>(*entity, transform);
 
 	return entity;
 }
@@ -72,79 +77,19 @@ Entity* World::CreateCamera2D(float viewWidth, float viewHeight, const Vector3& 
 	return entity;
 }
 
-Entity* World::CreateWithModel(
-	const Model* modelData,
-	Transform* parent,
-	const Vector3& localPosition,
-	const Quaternion& localRotation)
-{
-	// モデルデータ、特にメッシュが空でないことを確認
-	if (!modelData || !modelData->m_mesh)
-	{
-		return nullptr;
-	}
-
-	Entity* entity = CreateEntity();
-
-	// スケルトンの有無で処理を分岐
-	if (modelData->m_skeleton && modelData->m_skeleton->GetBoneCount() > 0)
-	{
-		// スキニングされるメッシュの場合
-		SkinnedMeshRenderer smr;
-		smr.mesh = modelData->m_mesh;
-		smr.materials = modelData->m_materials;
-		smr.skeleton = modelData->m_skeleton;
-		smr.rootBoneEntity = *entity;
-		AddComponent<SkinnedMeshRenderer>(*entity, smr);
-
-		// Animatorを追加
-		Animator animator;
-		if (!modelData->m_animations.empty())
-		{
-			// 最初のアニメーションをデフォルトでセット
-			animator.animation = modelData->m_animations[0].Get();
-		}
-		AddComponent<Animator>(*entity, animator);
-	}
-	else
-	{
-		// 通常のメッシュの場合
-		MeshFilter filter;
-		filter.mesh = modelData->m_mesh;
-		AddComponent<MeshFilter>(*entity, filter);
-
-		// マテリアルのリストをまとめて設定
-		MeshRenderer renderer;
-		renderer.materials = modelData->m_materials;
-		AddComponent<MeshRenderer>(*entity, renderer);
-	}
-
-	// Transformを設定
-	TransformSystem* transformSystem = GetSystem<TransformSystem>();
-	Transform* transform = GetComponent<Transform>(*entity);
-	transformSystem->SetLocalPosition(*transform, localPosition);
-	transformSystem->SetLocalRotation(*transform, localRotation);
-	// TODO: parentの設定処理を追加
-
-	return entity;
-}
-
 Entity* World::CreateWithModel(const std::wstring& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
 {
 	// 新しいModelImporterを使ってモデルデータを読み込む
 	ModelImporter importer;
-	ComPtr<Model> modelData = importer.Import(path, *this);
+	Entity* entity = importer.Import(path, *this);
 
-	if (!modelData)
-	{
-		// 読み込みに失敗した場合
-		std::wstring err_msg = L"Failed to load model: " + path + L"\n";
-		OutputDebugStringW(err_msg.c_str());
-		return nullptr;
-	}
+	TransformSystem* transformSystem = GetSystem<TransformSystem>();
+	Transform* transform = GetComponent<Transform>(*entity);
+	transformSystem->SetLocalPosition(*transform, localPosition);
+	transformSystem->SetLocalRotation(*transform, localRotation);
 
 	// 読み込んだデータを使って、コアとなる生成関数を呼び出す
-	return CreateWithModel(modelData.Get(), parent, localPosition, localRotation);
+	return entity;
 }
 
 Entity* World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition, const Quaternion& localRotation)
@@ -174,15 +119,27 @@ Entity* World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPla
 	return entity;
 }
 
-void World::DestoryEntity(Entity* entity)
+void World::DestroyEntity(Entity* entity)
 {
-	if (!entity || !m_em.IsAlive(entity)) return; // ポインタが有効かチェック
+	if (!entity || !m_em.IsAlive(entity)) return;
+
+	// 親子関係を解除する
+	// Transformコンポーネントがあれば
+	Transform* transform = GetComponent<Transform>(*entity);
+	if (transform)
+	{
+		// TransformSystemのUnsetParentを呼び出して、親のchildrenリストから自分を削除
+		for (auto* child : transform->children)
+		{
+			child->parent = nullptr;
+			child->dirty = true;
+		}
+
+		GetSystem<TransformSystem>()->UnsetParent(*transform);
+	}
 
 	m_cm.RemoveAllComponents(*entity);
 	m_em.DestroyEntity(entity);
-
-	delete entity; // Entityオブジェクト自体を解放する
-	entity = nullptr;
 }
 
 void World::AddSystem(std::unique_ptr<System> sys)

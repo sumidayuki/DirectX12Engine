@@ -50,6 +50,9 @@ public:
 
 	void SetSRT(const Vector3& scale, const Quaternion& rotation, const Vector3& translation);
 
+	// この行列をSRT行列と見なし、各成分(スケール、回転、平行移動)を取得します。
+	bool Decompose(Vector3& scale, Quaternion& rotation, Vector3& translation) const;
+
 	// この行列の転置行列を返します。
 	Matrix4x4 Transpose() const;
 

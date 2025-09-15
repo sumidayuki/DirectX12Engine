@@ -6,7 +6,9 @@
 /// </summary>
 struct Transform
 {
+	Entity* entity;
 	Transform* parent = nullptr;
+	std::list<Transform*> children = {};
 
 	Vector3 position = Vector3(0.0f, 0.0f, 0.0f);
 	Quaternion rotation = Quaternion::identity;

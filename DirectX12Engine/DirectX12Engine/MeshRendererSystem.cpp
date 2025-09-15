@@ -24,10 +24,12 @@ void MeshRendererSystem::StaticConstructor()
 
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[0].Descriptor.ShaderRegister = 0;
+    rootParameters[0].Descriptor.RegisterSpace = 0;
     rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[1].Descriptor.ShaderRegister = 1;
+    rootParameters[1].Descriptor.RegisterSpace = 0;
     rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     D3D12_DESCRIPTOR_RANGE ranges[1];
@@ -294,10 +296,6 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
             if (textureHandle.ptr != 0)
             {
                 commandList->SetGraphicsRootDescriptorTable(2, textureHandle);
-            }
-            else
-            {
-                // TODO: デフォルトテクスチャのハンドルを取得してバインドする
             }
 
             commandList->DrawIndexedInstanced(subMesh.indexCount, 1, subMesh.startIndex, 0, 0);

@@ -84,3 +84,5 @@ public:
 };
 
 [[nodiscard]] Quaternion operator *(const Quaternion& lhs, const Quaternion& rhs) noexcept;
+
+[[nodescard]] Vector3 operator *(const Quaternion& q, const Vector3& v);

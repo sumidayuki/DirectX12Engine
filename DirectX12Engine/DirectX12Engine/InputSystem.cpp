@@ -2,52 +2,44 @@
 
 void InputSystem::Update(ComponentManager& cm, World& world)
 {
-	View<Input> view(cm);
+    View<Input> view(cm);
 
-	// inputsをentityとinputに分けて探索します。
-	for (auto [entity, input] : view)
-	{
-		// 各指定のキーが押されたら押されていることをそれに対応するinputに伝えます。
-		input.moveDown = Keyboard::GetKeyState(KeyCode::S).IsPressed();
-		input.moveUp = Keyboard::GetKeyState(KeyCode::W).IsPressed();
-		input.moveLeft = Keyboard::GetKeyState(KeyCode::A).IsPressed();
-		input.moveRight = Keyboard::GetKeyState(KeyCode::D).IsPressed();
-		input.shot = Keyboard::GetKeyState(KeyCode::Space).IsPressed();
+    for (auto [entity, input] : view)
+    {
+        // キーの状態を更新
+        input.moveDown = Keyboard::GetKeyState(KeyCode::S).IsPressed();
+        input.moveUp = Keyboard::GetKeyState(KeyCode::W).IsPressed();
+        input.moveLeft = Keyboard::GetKeyState(KeyCode::A).IsPressed();
+        input.moveRight = Keyboard::GetKeyState(KeyCode::D).IsPressed();
+        input.shot = Keyboard::GetKeyState(KeyCode::Space).IsPressed();
+        input.dash = Keyboard::GetKeyState(KeyCode::LeftShift).IsPressed();
+        input.attack = Mouse::GetButtonState(MouseButton::Left).WasPressedThisFrame();
 
-		// moveDown 又は moveUpが押されている時 vartical の値を変更します。
-		if (input.moveDown || input.moveUp)
-		{
-			if (input.moveDown)
-			{
-				input.vartical = 1;
-			}
+        // 垂直方向の入力を計算
+        // Wキーが押されている場合は1.0f、Sキーが押されている場合は-1.0f、両方またはどちらも押されていない場合は0.0f
+        float vertical = 0.0f;
+        if (input.moveUp && !input.moveDown) {
+            vertical = 1.0f;
+        }
+        else if (!input.moveUp && input.moveDown) {
+            vertical = -1.0f;
+        }
 
-			if (input.moveUp)
-			{
-				input.vartical = -1;
-			}
-		}
-		else
-		{
-			input.vartical = 0;
-		}
-		
-		// moveRight 又は moveLeftが押されている時 horizontal の値を変更します。
-		if (input.moveRight || input.moveLeft)
-		{
-			if (input.moveRight)
-			{
-				input.horizontal = 1;
-			}
+        // 水平方向の入力を計算
+        // Dキーが押されている場合は1.0f、Aキーが押されている場合は-1.0f、両方またはどちらも押されていない場合は0.0f
+        float horizontal = 0.0f;
+        if (input.moveRight && !input.moveLeft) {
+            horizontal = 1.0f;
+        }
+        else if (!input.moveRight && input.moveLeft) {
+            horizontal = -1.0f;
+        }
 
-			if (input.moveLeft)
-			{
-				input.horizontal = -1;
-			}
-		}
-		else
-		{
-			input.horizontal = 0;
-		}
-	}
+        // directionベクトルを更新
+        input.direction = Vector2(horizontal, vertical);
+
+        // その他の入力は元のまま
+        input.vartical = vertical;
+        input.horizontal = horizontal;
+    }
 }

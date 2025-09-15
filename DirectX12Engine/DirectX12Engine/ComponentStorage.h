@@ -1,54 +1,54 @@
 #pragma once
 
+#include "IComponentStorage.h"
+#include <vector>
+#include <unordered_map>
+
 template <typename T>
-class  ComponentStorage : public IComponentStorage
+class ComponentStorage : public IComponentStorage
 {
-private: 
-	std::unordered_map<Entity, T> m_datas;
+private:
+	std::deque<T> m_datas;
+	std::unordered_map<Entity, size_t> m_entityToIndex;
+	std::deque<Entity> m_indexToEntity;
 
 public:
-	/// <summary>
-	/// 特定のエンティティに指定したコンポーネントを追加します。
-	/// </summary>
-	/// <param name="entity"></param>
-	/// <param name="component"></param>
-	void Add(Entity entity, const T& component);
+	void Add(Entity entity, const T& component)
+	{
+		size_t newIndex = m_datas.size();
+		m_datas.push_back(component);
+		m_entityToIndex[entity] = newIndex;
+		m_indexToEntity.push_back(entity);
+	}
 
-	/// <summary>
-	/// 特定のエンティティのコンポーネントを削除します。
-	/// </summary>
-	/// <param name="entity"></param>
-	void Remove(Entity entity) override;
+	void Remove(Entity entity) override
+	{
+		auto it = m_entityToIndex.find(entity);
+		if (it == m_entityToIndex.end()) return;
 
-	/// <summary>
-	/// 特定のエンティティのコンポーネントストレージを取得します。
-	/// </summary>
-	/// <param name="entity"></param>
-	/// <returns></returns>
-	T* Get(Entity entity);
+		size_t indexToRemove = it->second;
+		size_t lastIndex = m_datas.size() - 1;
 
-	/// <summary>
-	/// このコンポーネントを持っている全てのEntityを取得します。
-	/// </summary>
-	/// <returns></returns>
-	std::unordered_map<Entity, T>& GetAll() { return m_datas; }
+		if (indexToRemove != lastIndex)
+		{
+			m_datas[indexToRemove] = std::move(m_datas.back());
+			Entity entityOfLastElement = m_indexToEntity.back();
+			m_entityToIndex[entityOfLastElement] = indexToRemove;
+			m_indexToEntity[indexToRemove] = entityOfLastElement;
+		}
+
+		m_datas.pop_back();
+		m_entityToIndex.erase(it);
+		m_indexToEntity.pop_back();
+	}
+
+	T* Get(Entity entity)
+	{
+		auto it = m_entityToIndex.find(entity);
+		if (it == m_entityToIndex.end()) return nullptr;
+		return &m_datas[it->second];
+	}
+
+	const std::deque<T>& GetAll() const { return m_datas; }
+	const std::deque<Entity>& GetEntities() const { return m_indexToEntity; }
 };
-
-template<typename T>
-inline void ComponentStorage<T>::Add(Entity entity, const T& component)
-{
-	m_datas[entity] = component;
-}
-
-template<typename T>
-inline void ComponentStorage<T>::Remove(Entity entity)
-{
-	m_datas.erase(entity);
-}
-
-template<typename T>
-inline T* ComponentStorage<T>::Get(Entity entity)
-{
-	auto it = m_datas.find(entity);
-	return it != m_datas.end() ? &it->second : nullptr;
-}
