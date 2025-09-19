@@ -13,6 +13,8 @@ Entity* World::CreateEntity(const std::string& name)
 	// Entity に Transform コンポーネントを付けておきます。
 	m_cm.AddComponent<Transform>(*entity, transform);
 
+	m_allEntities.push_back(entity);
+
 	return entity;
 }
 

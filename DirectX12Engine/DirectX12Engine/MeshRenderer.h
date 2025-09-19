@@ -7,5 +7,5 @@ struct MeshRenderer
 {
     // 描画に使用するマテリアルのリスト。
     // Meshのサブメッシュインデックスと対応します。
-    std::vector<ComPtr<Material>> materials;
+    std::vector<Material*> materials;
 };

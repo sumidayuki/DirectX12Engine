@@ -7,10 +7,13 @@ struct Animator
 {
 	// このAnimatorが利用可能な全てのアニメーションクリップのマップ
 	// キーはアニメーション名です。
-	std::unordered_map<std::string, ComPtr<Animation>> clips;
+	std::unordered_map<std::string, Animation*> clips;
 
 	// 再生するアニメーションクリップ
-	ComPtr<Animation> currentClip = nullptr;
+	Animation* currentClip = nullptr;
+
+	// メッシュに対応するスケルトン
+	Skeleton* skeleton = nullptr;
 
 	// 再生したいアニメーションクリップの名前
 	// この名前を基にAnimationSystemがcurrentClipを切り替えます。

@@ -5,5 +5,5 @@
 /// </summary>
 struct MeshFilter
 {
-	ComPtr<Mesh> mesh = nullptr;
+	Mesh* mesh = nullptr;
 };

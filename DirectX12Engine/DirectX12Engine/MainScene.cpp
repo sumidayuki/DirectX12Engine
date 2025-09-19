@@ -15,27 +15,21 @@ void MainScene::Start()
 	m_world.AddSystem(std::make_unique<PlayerSystem>());
 	m_world.AddSystem(std::make_unique<PlayerCameraSystem>());
 
-	m_model = m_world.CreateWithModel(L"Assets/Warrok-00.fbx", nullptr, Vector3(300, -100, 500), Quaternion::identity);
-
-	m_animator = m_world.GetComponent<Animator>(*m_model);
+	//指向性ライト（Directional Light）の作成 (太陽光のような役割)
+	{
+		Entity* directionalLightEntity = m_world.CreateEntity();
 	
-	m_animator->isLoop = false;
-
-	////指向性ライト（Directional Light）の作成 (太陽光のような役割)
-	//{
-	//	Entity* directionalLightEntity = m_world.CreateWithModel(warrokModel.Get(), nullptr, Vector3(0, 0, 0), Quaternion::identity);
-	//
-	//	Light light;
-	//	light.type = LightType::Directional;
-	//	light.color = Color(1.0f, 0.9f, 0.7f, 1.0f); // 少し暖かい白色
-	//	m_world.AddComponent<Light>(*directionalLightEntity, light);
-	//
-	//	// ライトの向きをTransformの回転で制御する
-	//	Transform* lightTransform = m_world.GetComponent<Transform>(*directionalLightEntity);
-	//	// 右斜め上から照らすように回転させる
-	//	lightTransform->rotation = Quaternion::Euler(90.0f, 180.0f, 0.0f);
-	//	lightTransform->position = Vector3(0, 2000, 0);
-	//}
+		Light light;
+		light.type = LightType::Directional;
+		light.color = Color(1.0f, 0.9f, 0.7f, 1.0f); // 少し暖かい白色
+		m_world.AddComponent<Light>(*directionalLightEntity, light);
+	
+		// ライトの向きをTransformの回転で制御する
+		Transform* lightTransform = m_world.GetComponent<Transform>(*directionalLightEntity);
+		// 右斜め上から照らすように回転させる
+		lightTransform->rotation = Quaternion::Euler(90.0f, 180.0f, 0.0f);
+		lightTransform->position = Vector3(0, 2000, 0);
+	}
 
 	// 点光源（Point Light）の作成 (モデルの左側から照らす)
 	{
@@ -124,21 +118,7 @@ void MainScene::Start()
 
 void MainScene::Update()
 {	
-	if (Keyboard::GetKeyState(KeyCode::Enter).WasPressedThisFrame())
-	{
-		if (m_animator)
-		{
-			// 現在再生中のアニメーションに応じて切り替え
-			if (m_animator->currentClipName == "Tpose")
-			{
-				AnimationSystem::Play(*m_animator, "Swing");
-			}
-			else
-			{
-				AnimationSystem::Play(*m_animator, "Tpose");
-			}
-		}
-	}
+
 }
 
 void MainScene::Draw()

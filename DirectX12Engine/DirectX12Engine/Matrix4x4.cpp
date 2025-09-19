@@ -82,7 +82,7 @@ bool Matrix4x4::Decompose(Vector3& scale, Quaternion& rotation, Vector3& transla
     DirectX::XMVECTOR xmscale;
     DirectX::XMVECTOR xmrotation;
     DirectX::XMVECTOR xmtranslation;
-    if (DirectX::XMMatrixDecompose(&xmscale, &xmrotation, &xmtranslation, Transpose().ToXMMATRIX())) 
+    if (DirectX::XMMatrixDecompose(&xmscale, &xmrotation, &xmtranslation, ToXMMATRIX()))
     {
         scale = xmscale;
         rotation = xmrotation;

@@ -247,6 +247,12 @@
     <Filter Include="ゲームエンジン\システム\文字列">
       <UniqueIdentifier>{b0e5c635-8c8a-4c79-b19e-44cda4824f08}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\システム\配列">
+      <UniqueIdentifier>{7f42d159-aa2f-4c87-ba54-baf84872bcc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲーム\Character\Player\Arrow">
+      <UniqueIdentifier>{25869f04-c3aa-4a90-aa6a-48e8455436a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -727,6 +733,15 @@
     </ClInclude>
     <ClInclude Include="StringUtility.h">
       <Filter>ゲームエンジン\システム\文字列</Filter>
+    </ClInclude>
+    <ClInclude Include="List.h">
+      <Filter>ゲームエンジン\システム\配列</Filter>
+    </ClInclude>
+    <ClInclude Include="Arrow.h">
+      <Filter>ゲーム\Character\Player\Arrow</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowSystem.h">
+      <Filter>ゲーム\Character\Player\Arrow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

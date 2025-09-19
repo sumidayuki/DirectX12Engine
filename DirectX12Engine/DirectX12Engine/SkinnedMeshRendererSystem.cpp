@@ -196,8 +196,8 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
     const UINT alignedObjectConstantsSize = m_objectConstantBufferRing->GetStride();
     const D3D12_GPU_VIRTUAL_ADDRESS gpuAddressBase = m_objectConstantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
 
-    View<SkinnedMeshRenderer, Animator, Transform> view(cm);
-    for (auto [entity, smr, animator, transform] : view)
+    View<SkinnedMeshRenderer, Transform> view(cm);
+    for (auto [entity, smr, transform] : view)
     {
         if (!smr.mesh || m_currentObjectBufferIndex >= MAX_SKINNED_OBJECTS_PER_FRAME)
         {
@@ -205,6 +205,8 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
             continue;
         }
+
+        Animator* animator = world.GetComponent<Animator>(*TransformSystem::GetRoot(transform)->entity);
 
         const Matrix4x4& worldMatrix = TransformSystem::GetLocalToWorldMatrix(transform);
 
@@ -235,7 +237,7 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
             const auto& submesh = smr.mesh->GetSubMesh(i);
             if (submesh.materialIndex >= smr.materials.size()) continue;
-            Material* material = smr.materials[submesh.materialIndex].Get();
+            Material* material = smr.materials[submesh.materialIndex];
             if (!material) continue;
 
             SkinnedObjectConstantsLayout constants;
@@ -244,10 +246,10 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
             constants.specularColor = material->GetSpecularColor();
             constants.shininess = 64.0f;
 
-            const size_t boneCount = std::min(smr.skeleton->GetBoneCount(), SkinnedObjectConstantsLayout::MAX_BONES);
+            const size_t boneCount = std::min(animator->skeleton->GetBoneCount(), SkinnedObjectConstantsLayout::MAX_BONES);
             for (size_t j = 0; j < boneCount; ++j)
             {
-                constants.boneMatrices[j] = animator.finalBoneMatrices[j].Transpose();
+                constants.boneMatrices[j] = animator->finalBoneMatrices[j].Transpose();
             }
 
             const UINT bufferOffsetForFrame = frameIndex * MAX_SKINNED_OBJECTS_PER_FRAME;

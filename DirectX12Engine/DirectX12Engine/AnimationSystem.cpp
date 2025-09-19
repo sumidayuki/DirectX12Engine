@@ -111,9 +111,9 @@ void AnimationSystem::CalculateBoneTransform(const Bone* bone, const Matrix4x4& 
 
 void AnimationSystem::Update(ComponentManager& cm, World& world)
 {
-	View<Animator, SkinnedMeshRenderer> view(cm);
+	View<Animator> view(cm);
 
-	for (auto [entity, animator, smr] : view)
+	for (auto [entity, animator] : view)
 	{
 		// クリップの切り替え処理
 		if (!animator.currentClip || animator.currentClip->GetName() != animator.currentClipName)
@@ -155,23 +155,23 @@ void AnimationSystem::Update(ComponentManager& cm, World& world)
 			}
 		}
 
-		if (!smr.skeleton)
+		if (!animator.skeleton)
 		{
 			continue;
 		}
 
 		std::unordered_map<std::string, Matrix4x4> boneTransforms;
-		CalculateBoneTransform(smr.skeleton->GetRootBone(), Matrix4x4::identity, animator.currentClip.Get(), animator.currentTime, boneTransforms);
+		CalculateBoneTransform(animator.skeleton->GetRootBone(), Matrix4x4::identity, animator.currentClip, animator.currentTime, boneTransforms);
 
 		// 最終的な行列を計算
-		animator.finalBoneMatrices.resize(smr.skeleton->GetBoneCount());
-		for (const auto& [boneName, boneInfo] : smr.skeleton->GetBoneInfoMap())
+		animator.finalBoneMatrices.resize(animator.skeleton->GetBoneCount());
+		for (const auto& [boneName, boneInfo] : animator.skeleton->GetBoneInfoMap())
 		{
 			auto it = boneTransforms.find(boneName);
 			if (it != boneTransforms.end())
 			{
 				// グローバル逆変換行列 * グローバルボーン変換行列 * ボーンのオフセット行列
-				animator.finalBoneMatrices[boneInfo.id] = boneInfo.offsetMatrix * it->second * smr.skeleton->GetGlobalInverseTransform();
+				animator.finalBoneMatrices[boneInfo.id] = boneInfo.offsetMatrix * it->second * animator.skeleton->GetGlobalInverseTransform();
 			}
 		}
 	}

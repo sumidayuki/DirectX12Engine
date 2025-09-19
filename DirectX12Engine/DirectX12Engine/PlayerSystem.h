@@ -11,6 +11,9 @@ class PlayerSystem : public System
 private:
 	PlayerState m_currentState;
 
+	Transform* m_cameraTransform;
+	Transform* m_bowTransform;
+
 	float m_stateTimer;
 
 	float m_currentSpeed;

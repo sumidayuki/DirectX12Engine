@@ -30,6 +30,14 @@ public:
 
 	static Transform* GetRoot(Transform& transform);
 
+	// 子Transformの個数を取得します。
+	static int GetChildCount(Transform* transform) { return (int)transform->children.size(); }
+
+	// index番目の子Transformを取得します。
+	static Transform* GetChild(Transform* transform, int index);
+
+	static Transform* FindChild(Transform* transform, const std::string& name);
+
 	static void SetLocalRotation(Transform& transform, const Quaternion& localRotation);
 
 	static void SetLocalPosition(Transform& transform, const Vector3& localPosition);
@@ -38,9 +46,39 @@ public:
 
 	static void RotateAround(Transform& transform, Vector3 point, Vector3 axis, float angle);
 
+	static Vector3 GetPosition(Transform& transform);
+
 	static const Matrix4x4& GetLocalToWorldMatrix(Transform& transform);
 
 	static const Matrix4x4& GetWorldToLocalMatrix(Transform& transform);
+
+	// ローカル空間からワールド空間へ direction を変換します。
+	// この変換は「スケール」「位置」の影響を受けません。
+	// 返されるベクトルは direction と同じ長さになります。
+	static Vector3 TransformDirection(Transform& transform, const Vector3& direction);
+	 
+	// ローカル空間からワールド空間へ vector を変換します。
+	// この変換は「スケール」の影響を受けますが「位置」の影響は受けません。
+	// 返されるベクトルの長さは、vector とは異なる場合があります。
+	static Vector3 TransformVector(Transform& transform, const Vector3& vector);
+
+	// ローカル空間からワールド空間へ position を変換します。
+	// この変換は「スケール」「回転」「位置」の影響を受けます。
+	static Vector3 TransformPoint(Transform& transform, const Vector3& position);
+
+	// ワールド空間からローカル空間へ direction を変換します。
+	// この変換は「スケール」「位置」の影響を受けません。
+	// 返されるベクトルは direction と同じ長さになります。
+	static Vector3 InverseTransformDirection(Transform& transform, const Vector3& direction);
+
+	// ワールド空間からローカル空間へ vector を変換します。
+	// この変換は「スケール」の影響を受けますが「位置」の影響は受けません。
+	// 返されるベクトルの長さは、vector とは異なる場合があります。
+	static Vector3 InverseTransformVector(Transform& transform, const Vector3& vector);
+
+	// ワールド空間からローカル空間へ position を変換します。
+	// この変換は「スケール」「回転」「位置」の影響を受けます。
+	static Vector3 InverseTransformPoint(Transform& transform, const Vector3& position);
 
 	/// <summary>
 	/// 現在の位置から指定した分だけ移動します。
@@ -58,8 +96,6 @@ public:
 	static void Rotate(Transform& transform, const Vector3 axis, float angle);
 
 private:
-	static void SetDirtyRecursively(Transform& transform);
-
 	static void RecalculateMatricesIfNeeded(Transform& transform);
 
 public:

@@ -4,21 +4,29 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <filesystem>
+#include <vector>
+#include <string>
 
 // ワイド文字列 (wstring) をUTF-8文字列 (std::string) に変換するヘルパー関数
+// WinAPIのWideCharToMultiByte関数を使用
 static std::string WStringToString(const std::wstring& wstr)
 {
     if (wstr.empty()) return std::string();
+    // 変換に必要なバッファサイズを計算
     int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
     std::string strTo(size_needed, 0);
+    // 実際に変換を実行
     WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
     return strTo;
 }
 
 // Assimpの行列を自作のMatrix4x4型に変換
+// Assimpは行メジャー、自作クラスは列メジャーの場合があるため注意が必要
 static Matrix4x4 ConvertMatrix(const aiMatrix4x4& from)
 {
     Matrix4x4 to;
+    // Assimpの行列から自作クラスの行列に要素をコピー
+    // m[列][行]の形式でコピー
     to.m[0][0] = from.a1; to.m[1][0] = from.a2; to.m[2][0] = from.a3; to.m[3][0] = from.a4;
     to.m[0][1] = from.b1; to.m[1][1] = from.b2; to.m[2][1] = from.b3; to.m[3][1] = from.b4;
     to.m[0][2] = from.c1; to.m[1][2] = from.c2; to.m[2][2] = from.c3; to.m[3][2] = from.c4;
@@ -56,11 +64,12 @@ Entity* ModelImporter::Import(World& world)
     Assimp::Importer importer;
 
     // 現在の設定に基づいてインポートフラグを設定
+    // aiProcess_Triangulate: すべてのプリミティブを三角形に変換
     unsigned int flags = aiProcess_Triangulate;
-    if (m_flipUVs)              flags |= aiProcess_FlipUVs;
-    if (m_generateNormals)        flags |= aiProcess_GenSmoothNormals;
-    if (m_calculateTangents)      flags |= aiProcess_CalcTangentSpace;
-    if (m_joinIdenticalVertices)  flags |= aiProcess_JoinIdenticalVertices;
+    if (m_flipUVs)           flags |= aiProcess_FlipUVs;            // UV座標をY軸で反転
+    if (m_generateNormals)    flags |= aiProcess_GenSmoothNormals;   // スムーズ法線を生成
+    if (m_calculateTangents)  flags |= aiProcess_CalcTangentSpace;   // 接線と従法線を計算
+    if (m_joinIdenticalVertices) flags |= aiProcess_JoinIdenticalVertices; // 重複した頂点を結合
 
     const std::string path_s = WStringToString(path);
     if (path_s.empty())
@@ -69,6 +78,7 @@ Entity* ModelImporter::Import(World& world)
         return nullptr;
     }
 
+    // Assimpでファイルを読み込み
     const aiScene* scene = importer.ReadFile(path_s, flags);
 
     // インポートエラーの処理
@@ -78,19 +88,12 @@ Entity* ModelImporter::Import(World& world)
         return nullptr;
     }
 
-    ComPtr<Mesh> mesh = nullptr;
-    mesh.Attach(new Mesh());
+    std::filesystem::path modelPath(path);
+    // モデルのファイル名からルートエンティティを作成
+    Entity* rootEntity = world.CreateEntity(modelPath.stem().string());
 
-    ComPtr<Skeleton> skeleton = nullptr;
-    skeleton.Attach(new Skeleton());
-
-    std::vector<ComPtr<Animation>> animations;
-
-    skeleton->SetGlobalInverseTransform(ConvertMatrix(scene->mRootNode->mTransformation).Inverse());
-
-    std::vector<ComPtr<Material>> materials;
-
-    // マテリアルが存在すればロード
+    std::vector<Material*> materials;
+    // マテリアルをインポートする設定の場合、マテリアルを処理
     if (m_importMaterials && scene->mNumMaterials > 0)
     {
         materials.resize(scene->mNumMaterials);
@@ -100,119 +103,152 @@ Entity* ModelImporter::Import(World& world)
         }
     }
 
-    // ノードを再帰的に処理し、すべてのメッシュデータを単一のベクターに集約
-    ProcessNode(scene->mRootNode, scene, mesh.Get(), skeleton.Get());
+    Skeleton* skeleton = new Skeleton();
 
-    Bone* rootBone = new Bone();
-    skeleton->SetRootBone(rootBone);
-    ReadSkeletonHierarchy(rootBone, scene->mRootNode);
-
-    ProcessAnimations(scene, animations);
-
-    mesh->SetupMesh();
-
-    Entity* entity = world.CreateEntity();
-
+    // アニメーションが存在する場合、スケルトンとアニメーションを処理
     if (scene->HasAnimations())
     {
-        SkinnedMeshRenderer skinnedMeshRenderer;
-        skinnedMeshRenderer.mesh = mesh;
-        skinnedMeshRenderer.materials = materials;
-        skinnedMeshRenderer.skeleton = skeleton;
-        skinnedMeshRenderer.rootBoneEntity = *entity;
-        world.AddComponent<SkinnedMeshRenderer>(*entity, skinnedMeshRenderer);
+        // グローバル逆変換行列を設定
+        skeleton->SetGlobalInverseTransform(ConvertMatrix(scene->mRootNode->mTransformation).Inverse());
+
+        Bone* rootBone = new Bone();
+        skeleton->SetRootBone(rootBone);
+        // Assimpのノード構造からスケルトン階層を再帰的に読み込む
+        ReadSkeletonHierarchy(rootBone, scene->mRootNode);
+
+        std::vector<Animation*> animations;
+        // アニメーションデータを処理
+        ProcessAnimations(scene, animations);
 
         Animator animator;
+        animator.skeleton = skeleton;
+
+        // アニメーションクリップをAnimatorに追加
         for (const auto& anim : animations)
         {
             animator.clips[anim->GetName()] = anim;
         }
+        // 最初のアニメーションをデフォルトのクリップとして設定
         if (!animator.clips.empty())
         {
             const auto& firstClip = animations[0];
             animator.currentClip = firstClip;
             animator.currentClipName = firstClip->GetName();
         }
-        world.AddComponent<Animator>(*entity, animator);
+        world.AddComponent<Animator>(*rootEntity, animator);
     }
-    else
-    {
-        MeshFilter filter;
-        filter.mesh = mesh;
-        world.AddComponent<MeshFilter>(*entity, filter);
-        MeshRenderer renderer;
-        renderer.materials = materials;
-        world.AddComponent<MeshRenderer>(*entity, renderer);
-    }
+    // ルートノードから再帰的にノードを処理してメッシュを生成
+    ProcessNode(scene->mRootNode, scene, world, rootEntity, materials, skeleton);
 
-    return entity;
+    // インポートされた階層構造をデバッグ出力
+    PrintHierarchy(world.GetComponent<Transform>(*rootEntity), 0);
+
+    return rootEntity;
 }
 
-// ノードとその子ノードを再帰的に処理
-void ModelImporter::ProcessNode(aiNode* node, const aiScene* scene, Mesh* aMesh, Skeleton* skeleton)
+// ノードとそれに付随するメッシュを処理する再帰関数
+void ModelImporter::ProcessNode(aiNode* node, const aiScene* scene, World& world, Entity* parentEntity, const std::vector<Material*>& materials, Skeleton* skeleton)
 {
-    // 現在のノードに割り当てられているすべてのメッシュを処理
+    Entity* nodeEntity = world.CreateEntity(node->mName.C_Str());
+
+    Transform* transform = world.GetComponent<Transform>(*nodeEntity);
+
+    // 親子関係を設定
+    if (parentEntity)
+    {
+        Transform* parentTransform = world.GetComponent<Transform>(*parentEntity);
+        TransformSystem::SetParent(*transform, parentTransform);
+    }
+
+    // Assimpのノードのローカル変換行列から、位置、回転、スケールを分解して設定
+    Matrix4x4 localTransform = ConvertMatrix(node->mTransformation);
+    localTransform.Decompose(transform->scale, transform->rotation, transform->position);
+
+    // このノードに付随するすべてのメッシュを処理
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        Mesh* newMesh = new Mesh();
 
-        const UINT baseVertexLocation = aMesh->GetVertexCount();
-        const UINT startIndex = aMesh->GetTotalIndexCount();
-
-        // 現在のメッシュの頂点およびインデックスデータを一時的に格納
         std::vector<Mesh::Vertex> vertices;
         std::vector<uint32_t> indices;
 
-        // 頂点データを抽出
+        // 頂点データのロード
         vertices.resize(mesh->mNumVertices);
         for (unsigned int v = 0; v < mesh->mNumVertices; v++)
         {
-            vertices[v].position = {
-                mesh->mVertices[v].x * m_globalScale,
-                mesh->mVertices[v].y * m_globalScale,
-                mesh->mVertices[v].z * m_globalScale
-            };
-            if (mesh->HasNormals()) {
+            vertices[v].position = { mesh->mVertices[v].x * m_globalScale, mesh->mVertices[v].y * m_globalScale, mesh->mVertices[v].z * m_globalScale };
+            if (mesh->HasNormals())
+            {
                 vertices[v].normal = { mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z };
             }
-            if (mesh->HasTextureCoords(0)) {
+            if (mesh->HasTextureCoords(0))
+            {
                 vertices[v].uv = { mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y };
             }
-            if (mesh->HasTangentsAndBitangents()) {
+            if (mesh->HasTangentsAndBitangents())
+            {
                 vertices[v].tangent = { mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z };
             }
         }
 
-        // ボーンデータが存在すればロード
-        if (mesh->HasBones())
+        // ボーンウェイトのロード
+        if (skeleton && mesh->HasBones())
         {
             LoadBones(vertices, mesh, skeleton);
         }
 
-        // インデックスデータを抽出
+        // インデックスデータのロード（メッシュの面情報）
         for (unsigned int f = 0; f < mesh->mNumFaces; f++)
         {
             aiFace face = mesh->mFaces[f];
             for (unsigned int j = 0; j < face.mNumIndices; j++)
             {
-                indices.push_back(face.mIndices[j] + baseVertexLocation);
+                indices.push_back(face.mIndices[j]);
             }
         }
 
-        // 処理したデータをモデルのメインメッシュに追加
-        aMesh->AddVertices(vertices);
-        aMesh->AddIndices(indices);
-        aMesh->AddSubMesh(startIndex, (UINT)indices.size(), mesh->mMaterialIndex);
+        // 独自のMeshクラスにデータを設定
+        newMesh->AddVertices(vertices);
+        newMesh->AddIndices(indices);
+        newMesh->AddSubMesh(0, (UINT)indices.size(), 0);
+        newMesh->SetupMesh();
+
+        // ボーンがあればSkinnedMeshRendererを、なければMeshRendererとMeshFilterを追加
+        if (skeleton && mesh->HasBones())
+        {
+            SkinnedMeshRenderer renderer;
+            renderer.mesh = newMesh;
+            if (mesh->mMaterialIndex < materials.size())
+            {
+                renderer.materials.push_back(materials[mesh->mMaterialIndex]);
+            }
+            world.AddComponent<SkinnedMeshRenderer>(*nodeEntity, renderer);
+        }
+        else
+        {
+            MeshFilter filter;
+            filter.mesh = newMesh;
+            world.AddComponent<MeshFilter>(*nodeEntity, filter);
+
+            MeshRenderer renderer;
+            if (mesh->mMaterialIndex < materials.size())
+            {
+                renderer.materials.push_back(materials[mesh->mMaterialIndex]);
+            }
+            world.AddComponent<MeshRenderer>(*nodeEntity, renderer);
+        }
     }
 
     // 子ノードを再帰的に処理
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        ProcessNode(node->mChildren[i], scene, aMesh, skeleton);
+        ProcessNode(node->mChildren[i], scene, world, nodeEntity, materials, skeleton);
     }
 }
 
-void ModelImporter::ProcessAnimations(const aiScene* scene, std::vector<ComPtr<Animation>>& animations)
+// アニメーションを処理して独自のAnimationクラスに変換
+void ModelImporter::ProcessAnimations(const aiScene* scene, std::vector<Animation*>& animations)
 {
     if (!scene->HasAnimations())
     {
@@ -229,8 +265,7 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, std::vector<ComPtr<A
             return;
         }
 
-        ComPtr<Animation> newAnimation;
-        newAnimation.Attach(new Animation());
+        Animation* newAnimation = new Animation();
 
         // アニメーション名からプレフィックス（例：Blender由来の'|'）を削除して設定
         std::string originalName = animation->mName.C_Str();
@@ -312,7 +347,7 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, std::vector<ComPtr<A
         }
     }
 
-    std::wstring debugMsg = L"ModelImporter: Processed " + std::to_wstring(animations.size()) + L" animations for model.\\n";
+    std::wstring debugMsg = L"ModelImporter: Processed " + std::to_wstring(animations.size()) + L" animations for model.\n";
     OutputDebugStringW(debugMsg.c_str());
 }
 
@@ -344,7 +379,7 @@ void ModelImporter::LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh,
         std::string boneName = bone->mName.C_Str();
         int boneIndex = 0;
 
-        // まだマップに存在しないボーンであれば追加
+        // まだマップに存在しないボーンであれば、新規に情報を追加
         if (boneInfoMap.find(boneName) == boneInfoMap.end())
         {
             BoneInfo newBoneInfo;
@@ -382,10 +417,9 @@ void ModelImporter::LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh,
 }
 
 // マテリアルデータとテクスチャを処理してロード
-ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* scene, DescriptorAllocator* srvAllocator)
+Material* ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* scene, DescriptorAllocator* srvAllocator)
 {
-    ComPtr<Material> newMaterial;
-    newMaterial.Attach(new Material());
+    Material* newMaterial = new Material();
 
     // ディフューズカラーのプロパティを読み込む
     aiColor4D color;
@@ -398,7 +432,7 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
     {
         aiString path;
         mat->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-        ComPtr<Texture2D> diffuseTexture;
+        Texture2D* diffuseTexture = new Texture2D();
         TextureImporter textureImporter;
 
         const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
@@ -406,12 +440,12 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
         {
             // 埋め込みテクスチャをロード（圧縮または非圧縮）
             if (embeddedTexture->mHeight == 0) { // 圧縮形式
-                diffuseTexture.Attach(textureImporter.Import(embeddedTexture->pcData, embeddedTexture->mWidth));
+                diffuseTexture = textureImporter.Import(embeddedTexture->pcData, embeddedTexture->mWidth);
             }
             else { // 非圧縮形式
-                diffuseTexture.Attach(textureImporter.Import(
+                diffuseTexture = textureImporter.Import(
                     embeddedTexture->mWidth, embeddedTexture->mHeight, DXGI_FORMAT_R8G8B8A8_UNORM,
-                    embeddedTexture->pcData, embeddedTexture->mWidth * sizeof(aiTexel)));
+                    embeddedTexture->pcData, embeddedTexture->mWidth * sizeof(aiTexel));
             }
         }
         else
@@ -421,17 +455,36 @@ ComPtr<Material> ModelImporter::ProcessMaterial(aiMaterial* mat, const aiScene* 
             std::filesystem::path texturePath = modelPath.parent_path() / path.C_Str();
 
             if (std::filesystem::exists(texturePath)) {
-                diffuseTexture.Attach(textureImporter.Import(texturePath.c_str()));
+                diffuseTexture = textureImporter.Import(texturePath.c_str());
             }
             else {
                 OutputDebugStringW((L"ModelImporter Warning: External texture not found at " + texturePath.wstring() + L"\n").c_str());
             }
         }
 
-        if (diffuseTexture) {
-            newMaterial->SetTexture(Material::TextureSlot::Diffuse, diffuseTexture.Get(), srvAllocator);
+        if (diffuseTexture)
+        {
+            newMaterial->SetTexture(Material::TextureSlot::Diffuse, diffuseTexture, srvAllocator);
         }
     }
 
     return newMaterial;
+}
+
+// インポートされたエンティティ階層をデバッグ出力する再帰関数
+void ModelImporter::PrintHierarchy(Transform* transform, int level)
+{
+    for (int i = 0; i < level; i++)
+    {
+        OutputDebugStringA("    "); // 階層レベルに応じてインデント
+    }
+
+    OutputDebugStringA(transform->entity->name.c_str());
+    OutputDebugStringA("\n");
+
+    const int childCount = TransformSystem::GetChildCount(transform);
+    for (int i = 0; i < childCount; i++)
+    {
+        PrintHierarchy(TransformSystem::GetChild(transform, i), level + 1);
+    }
 }

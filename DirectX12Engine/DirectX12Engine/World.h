@@ -14,6 +14,7 @@ private:
 	std::vector<std::unique_ptr<System>>	m_systems;
 	std::unique_ptr<DescriptorAllocator>	m_srvAllocator;
 	CameraSystem*							m_cameraSystem;
+	std::list<Entity*>						m_allEntities;
 	std::list<Entity*>						m_allCameraEntities;
 	std::list<Camera*>						m_allCameras;
 

@@ -224,6 +224,8 @@
     <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="Animator.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Arrow.h" />
+    <ClInclude Include="ArrowSystem.h" />
     <ClInclude Include="AssetImporter.h" />
     <ClInclude Include="Bounds.h" />
     <ClInclude Include="BoxCollider2D.h" />
@@ -257,6 +259,7 @@
     <ClInclude Include="KeyCode.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightSystem.h" />
+    <ClInclude Include="List.h" />
     <ClInclude Include="MainScene.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mathf.h" />

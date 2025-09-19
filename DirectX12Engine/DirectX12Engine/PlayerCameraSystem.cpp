@@ -22,9 +22,6 @@ void PlayerCameraSystem::Draw(ComponentManager& cm, World& world)
 		m_yaw -= mouseVelocity.x * playerCamera.sensitivity;
 		m_pitch = Mathf::Clamp(m_pitch + mouseVelocity.y * playerCamera.sensitivity, -40.0f, 80.0f);
 
-		// カメラの水平回転に合わせてプレイヤーの向きを更新
-		TransformSystem::SetLocalRotation(*m_playerTransform, Quaternion::Euler(0.0f, -m_yaw, 0.0f));
-
 		// 球面座標を使ってカメラの位置を計算
 		const float distance = -playerCamera.offset.z;
 		const float height = playerCamera.offset.y;

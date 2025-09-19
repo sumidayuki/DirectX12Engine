@@ -234,7 +234,7 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
     for (auto [entity, transform, meshFilter, renderer] : view)
     {
         if (!meshFilter.mesh) continue;
-        Mesh* mesh = meshFilter.mesh.Get();
+        Mesh* mesh = meshFilter.mesh;
         if (!mesh) continue;
 
         const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
@@ -269,7 +269,7 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
             const SubMesh& subMesh = mesh->GetSubMesh(i);
             if (subMesh.materialIndex >= renderer.materials.size()) continue;
-            Material* material = renderer.materials[subMesh.materialIndex].Get();
+            Material* material = renderer.materials[subMesh.materialIndex];
             if (!material) continue;
 
             // リングバッファへのデータ書き込み
