@@ -62,7 +62,7 @@ template<typename T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 // Entityの型
-using EntitySize = uint32_t;
+using EntitySize = uint32_t; 
 
 //------------------------------------------------------------------------------------------------------------
 // コンパイル時定数
@@ -186,6 +186,7 @@ class Keyboard;
 // システム関連
 #include "Reference.h"
 #include "Resolution.h"
+#include "Singleton.h"
 #include "Screen.h"
 #include "Windows-NativeWindow.h"
 #include "Application.h"
@@ -207,12 +208,12 @@ class Keyboard;
 #include "Material.h"
 #include "Skeleton.h"
 #include "Animation.h"
-#include "Model.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"
 #include "TextureImporter.h"
 #include "ModelImporter.h"
+#include "AssetManager.h"
 
 // Entity
 #include "Entity.h"
@@ -243,6 +244,7 @@ class Keyboard;
 #include "MeshFilter.h"
 #include "Animator.h"
 #include "SkinnedMeshRenderer.h"
+#include "Projectile.h"
 
 #include "GeometryUtility.h"
 

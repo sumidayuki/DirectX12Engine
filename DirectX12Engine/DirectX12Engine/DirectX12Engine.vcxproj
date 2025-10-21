@@ -155,6 +155,7 @@
     <ClCompile Include="AnimationSystem.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="AssetImporter.cpp" />
+    <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Bounds.cpp" />
     <ClCompile Include="ButtonControl.cpp" />
     <ClCompile Include="CameraSystem.cpp" />
@@ -164,8 +165,10 @@
     <ClCompile Include="ComponentManager.cpp" />
     <ClCompile Include="DescriptorAllocator.cpp" />
     <ClCompile Include="DescriptorHeap.cpp" />
+    <ClCompile Include="EnemySystem.cpp" />
     <ClCompile Include="EntityManager.cpp" />
     <ClCompile Include="FrameResource.cpp" />
+    <ClCompile Include="GameManagerSystem.cpp" />
     <ClCompile Include="Gamepad.cpp" />
     <ClCompile Include="GeometryUtility.cpp" />
     <ClCompile Include="Graphics.cpp" />
@@ -186,6 +189,7 @@
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlayerCameraSystem.cpp" />
     <ClCompile Include="PlayerSystem.cpp" />
+    <ClCompile Include="ProjectileSystem.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Reference.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -227,6 +231,7 @@
     <ClInclude Include="Arrow.h" />
     <ClInclude Include="ArrowSystem.h" />
     <ClInclude Include="AssetImporter.h" />
+    <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Bounds.h" />
     <ClInclude Include="BoxCollider2D.h" />
     <ClInclude Include="ButtonControl.h" />
@@ -242,10 +247,14 @@
     <ClInclude Include="ComponentStorage.h" />
     <ClInclude Include="DescriptorAllocator.h" />
     <ClInclude Include="DescriptorHeap.h" />
+    <ClInclude Include="EnemySystem.h" />
+    <ClInclude Include="EnemyTag.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EntityManager.h" />
     <ClInclude Include="FilterMode.h" />
     <ClInclude Include="FrameResource.h" />
+    <ClInclude Include="GameManager.h" />
+    <ClInclude Include="GameManagerSystem.h" />
     <ClInclude Include="Gamepad.h" />
     <ClInclude Include="GeometryUtility.h" />
     <ClInclude Include="Graphics.h" />
@@ -268,7 +277,6 @@
     <ClInclude Include="MeshFilter.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="MeshRendererSystem.h" />
-    <ClInclude Include="Model.h" />
     <ClInclude Include="ModelImporter.h" />
     <ClInclude Include="ModelImporterSettings.h" />
     <ClInclude Include="Mouse.h" />
@@ -278,12 +286,16 @@
     <ClInclude Include="PlayerCameraSystem.h" />
     <ClInclude Include="PlayerMove.h" />
     <ClInclude Include="PlayerSystem.h" />
+    <ClInclude Include="Projectile.h" />
+    <ClInclude Include="ProjectileSystem.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Reference.h" />
     <ClInclude Include="Resolution.h" />
+    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderBytecode.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SkinnedMeshRenderer.h" />
     <ClInclude Include="SkinnedMeshRendererSystem.h" />
@@ -292,7 +304,6 @@
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="SpriteRendererSystem.h" />
     <ClInclude Include="StringUtility.h" />
-    <ClInclude Include="Tag.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TextureDimension.h" />

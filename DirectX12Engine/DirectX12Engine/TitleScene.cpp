@@ -1,6 +1,11 @@
 #include "TitleScene.h"
 #include "SystemList.h"
 
+bool TitleScene::Load()
+{
+	return true;
+}
+
 void TitleScene::Start()
 {
 	m_world.AddSystem(std::make_unique<InputSystem>());

@@ -22,7 +22,7 @@ void LightSystem::Start(ComponentManager& cm, World& world)
     srvDesc.Buffer.StructureByteStride = sizeof(Light);
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-    m_lightBufferGpuHandle = allocator->CreateSrv(m_lightBuffer->GetNativeBufferPtr(), srvDesc);
+    m_lightBufferGpuHandle = allocator->CreateSRV(m_lightBuffer->GetNativeBufferPtr(), srvDesc);
 }
 
 void LightSystem::Update(ComponentManager& cm, World& world)
@@ -42,7 +42,12 @@ void LightSystem::Update(ComponentManager& cm, World& world)
             // Transformコンポーネントからワールド座標と向きを計算し、
             // Light構造体に設定する
             light.position = transform.position;
-            light.direction = Vector3(transform.rotation.x, transform.rotation.y, transform.rotation.z);
+
+            // ワールド座標系でのライトの向き（direction）を算出する。
+            const Vector3 FORWARD = Vector3(0.0f, 0.0f, -1.0f);
+            light.direction = transform.rotation * FORWARD; // 適切なQuaternion-Vector乗算を使用
+            light.direction.Normalized(); // 念のため正規化
+            
             activeLights.push_back(light);
         }
 

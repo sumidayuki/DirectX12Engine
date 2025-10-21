@@ -15,7 +15,7 @@ void PlayerCameraSystem::Draw(ComponentManager& cm, World& world)
 	{
 		if (!m_playerTransform)
 		{
-			m_playerTransform = world.GetComponent<Transform>(*playerCamera.player);
+			m_playerTransform = world.GetComponent<Transform>(playerCamera.player);
 		}
 
 		const Vector2 mouseVelocity = Mouse::GetVelocity();

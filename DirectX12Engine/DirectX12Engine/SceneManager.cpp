@@ -10,6 +10,18 @@ void SceneManager::ChangeScene(const std::string& name)
 	if (m_scenes.contains(name))
 	{
 		m_currentScene = m_scenes[name].get();
+		if (!m_currentScene->OnLoad())
+		{
+			assert(0);
+		}
+	}
+}
+
+void SceneManager::BeginFrame(UINT frameIndex)
+{
+	if (m_currentScene)
+	{
+		m_currentScene->OnBeginFrame(frameIndex);
 	}
 }
 

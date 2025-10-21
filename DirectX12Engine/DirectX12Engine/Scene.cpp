@@ -5,10 +5,25 @@ Scene::Scene()
 {
 }
 
+bool Scene::OnLoad()
+{
+	if (!Load())
+	{
+		return false;
+	}
+
+	return m_world.Load(m_world);
+}
+
 void Scene::OnStart()
 {
 	Start();
 	m_world.Start(m_world);
+}
+
+void Scene::OnBeginFrame(UINT frameIndex)
+{
+	m_world.BeginFrame(frameIndex);
 }
 
 void Scene::OnUpdate()

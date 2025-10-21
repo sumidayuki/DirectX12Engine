@@ -85,31 +85,37 @@ Vector3 TransformSystem::InverseTransformPoint(Transform& transform, const Vecto
 
 void TransformSystem::SetParent(Transform& transform, Transform* parent)
 {
-	if (parent == transform.parent)
+	Transform* transformParent = nullptr;
+
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+
+	if (transform.parent != INVALID_ENTITY)
+	{
+		transformParent = world.GetComponent<Transform>(transform.parent);
+	}
+
+	if (parent == transformParent)
 	{
 		return;
 	}
-
-	// 変更前と変更先の親を記憶しておく
-	Transform* before = transform.parent;
-	Transform* after = parent;
 
 	// 親を変更する前のワールド空間内での位置を保存しておく。
 	const Vector3 worldPosition = GetPosition(transform);
 
 	// 既に親がいる場合は子供リストから自分を削除する
-	if (transform.parent)
+	if (transformParent)
 	{
-		transform.parent->children.remove(&transform);
+		transformParent->children.remove(transform.entity);
 	}
 
 	// 新しい親の子供リストに自分を追加する
 	if (parent)
 	{
-		parent->children.push_back(&transform);
+		parent->children.push_back(transform.entity);
 	}
 
-	if (true  /* worldPositonStays */ )
+	// 親変更後もワールド座標を維持する
+	if (true /* worldPositionStays */)
 	{
 		if (parent)
 		{
@@ -121,28 +127,43 @@ void TransformSystem::SetParent(Transform& transform, Transform* parent)
 		}
 	}
 
-	transform.parent = parent;
+	// 親エンティティの設定
+	if (parent)
+	{
+		transform.parent = parent->entity;
+	}
+	else
+	{
+		transform.parent = INVALID_ENTITY;
+	}
 
 	transform.hasChanged = true;
+	transform.dirty = true;
 }
 
 void TransformSystem::UnsetParent(Transform& transform)
 {
-	if (transform.parent != nullptr) 
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+
+	if (transform.parent != INVALID_ENTITY) 
 	{
-		transform.parent->children.remove(&transform);
-		transform.parent = nullptr;
+		Transform* parentTransform = world.GetComponent<Transform>(transform.parent);
+
+		parentTransform->children.remove(transform.entity);
+		transform.parent = INVALID_ENTITY;
 		transform.dirty = true;
 	}
 }
 
 Transform* TransformSystem::GetRoot(Transform& transform)
 {
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+
 	Transform* root = &transform;
 	
-	while (root->parent)
+	while (root->parent != INVALID_ENTITY)
 	{
-		root = root->parent;
+		root = world.GetComponent<Transform>(root->parent);
 	}
 
 	return root;
@@ -150,6 +171,8 @@ Transform* TransformSystem::GetRoot(Transform& transform)
 
 Transform* TransformSystem::GetChild(Transform* transform, int index) 
 {
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+
 	// リスト構造はランダムアクセスができないので、
 	// シーケンシャルアクセスで目的のTransformを探す。
 	auto ite = transform->children.begin();
@@ -157,12 +180,12 @@ Transform* TransformSystem::GetChild(Transform* transform, int index)
 	{
 		++ite;
 	}
-	return *ite;
+	return world.GetComponent<Transform>(*ite);
 }
 
 Transform* TransformSystem::FindChild(Transform* transform, const std::string& name)
 {
-	if (transform->entity->name == name)
+	if (transform->entity.name == name)
 	{
 		return transform;
 	}
@@ -220,10 +243,12 @@ void TransformSystem::RotateAround(Transform& transform, Vector3 point, Vector3 
 
 Vector3 TransformSystem::GetPosition(Transform& transform)
 {
-	if (transform.parent)
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+
+	if (transform.parent != INVALID_ENTITY)
 	{
 		// 親がいる場合はワールド位置に変換して返す
-		return TransformPoint(*transform.parent, transform.position);
+		return TransformPoint(*world.GetComponent<Transform>(transform.parent), transform.position);
 	}
 	else
 	{
@@ -248,10 +273,12 @@ void TransformSystem::Rotate(Transform& transform, const Vector3 axis, float ang
 
 void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform)
 {
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+
 	// 親のワールド行列を使って自分のワールド行列を計算
-	if (transform.parent)
+	if (transform.parent != INVALID_ENTITY)
 	{
-		transform.localToWorldMatrix = transform.localMatrix * transform.parent->localToWorldMatrix;
+		transform.localToWorldMatrix = transform.localMatrix * world.GetComponent<Transform>(transform.parent)->localToWorldMatrix;
 	}
 	else
 	{
@@ -261,42 +288,48 @@ void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform)
 	// 逆行列も計算
 	transform.worldToLocalMatrix = transform.localToWorldMatrix.Inverse();
 
-	// すべての子に対しても再帰的に計算を実行
-	for (auto* child : transform.children)
+	if (!transform.children.empty())
 	{
-		RecalculateMatricesIfNeeded(*child);
+		// すべての子に対しても再帰的に計算を実行
+		for (auto child : transform.children)
+		{
+			Transform* childTransform = world.GetComponent<Transform>(child);
+
+			RecalculateMatricesIfNeeded(*childTransform);
+		}
 	}
 }
 
 void TransformSystem::Start(ComponentManager& cm, World& world)
 {
+	m_transformStorage = cm.GetStorage<Transform>();
 }
 
 void TransformSystem::Update(ComponentManager& cm, World& world)
 {
-	View<Transform> view(cm);
+	auto& entities = m_transformStorage->GetEntities();
 
-	for (auto [entity, transform] : view)
+	for (Entity e : entities)
 	{
-		if (transform.dirty)
+		Transform* transform = m_transformStorage->Get(e);
+		if (!transform) continue;
+
+		if (transform->dirty)
 		{
-			transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);
-			transform.dirty = false;
+			transform->localMatrix.SetSRT(transform->scale, transform->rotation, transform->position);
+			transform->dirty = false;
 		}
 
-		if (true)
-		{
-			if (transform.parent)
-			{
-				transform.localToWorldMatrix = transform.localMatrix * GetLocalToWorldMatrix(*transform.parent);
-			}
-			else
-			{
-				transform.localToWorldMatrix = transform.localMatrix;
-			}
+		Transform* parent = nullptr;
+		if (transform->parent != INVALID_ENTITY)
+			parent = m_transformStorage->Get(transform->parent);
 
-			transform.worldToLocalMatrix = transform.localToWorldMatrix.Inverse();
-			transform.hasChanged = false;
-		}
+		if (parent)
+			transform->localToWorldMatrix = transform->localMatrix * parent->localToWorldMatrix;
+		else
+			transform->localToWorldMatrix = transform->localMatrix;
+
+		transform->worldToLocalMatrix = transform->localToWorldMatrix.Inverse();
+		transform->hasChanged = false;
 	}
 }

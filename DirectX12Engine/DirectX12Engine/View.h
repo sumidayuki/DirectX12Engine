@@ -11,12 +11,20 @@ class View
 {
 private:
     ComponentManager& m_cm;
-    const std::deque<Entity>& m_entityList;
+    std::vector<Entity> m_entityList;
 
 public:
     View(ComponentManager& cm)
-        : m_cm(cm),
-        m_entityList(cm.GetEntities<std::tuple_element_t<0, std::tuple<Components...>>>()) {
+        : m_cm(cm)
+    {
+        const std::deque<Entity>& sourceList = cm.GetEntities<std::tuple_element_t<0, std::tuple<Components...>>>();
+        for (Entity e : sourceList)
+        {
+            if (m_cm.HasComponents<Components...>(e))
+            {
+                m_entityList.push_back(e);
+            }
+        }
     }
 
     class Iterator
@@ -51,13 +59,11 @@ public:
 
     Iterator begin() const
     {
-        size_t firstValidIndex = 0;
-        while (firstValidIndex < m_entityList.size() &&
-            !m_cm.HasComponents<Components...>(m_entityList[firstValidIndex]))
+        if (m_entityList.empty())
         {
-            ++firstValidIndex;
+            return Iterator(m_entityList.size(), this);
         }
-        return Iterator(firstValidIndex, this);
+        return Iterator(0, this);
     }
 
     Iterator end() const { return Iterator(m_entityList.size(), this); }

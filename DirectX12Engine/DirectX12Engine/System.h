@@ -9,7 +9,9 @@
 class System
 {
 public:
-	virtual void Start(ComponentManager& cm, World& world) {};
+	virtual bool Load(ComponentManager& cm, World& world) { return true; }
+
+	virtual void Start(ComponentManager& cm, World& world) {}
 
 	/// <summary>
 	/// Systemの更新処理を行います。実装は任意です。

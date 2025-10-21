@@ -14,6 +14,7 @@ public:
 protected:
 	World m_world;
 
+	virtual bool Load() = 0;
 	virtual void Start() = 0;	// シーンが始まった時
 	virtual void Update() = 0;	// シーンの更新処理
 	virtual void Draw() = 0;	// シーンの描画処理
@@ -22,9 +23,15 @@ public:
 	Scene();
 
 	// デストラクタ
-	virtual ~Scene() {}
+	virtual ~Scene() = default;
+
+	World& GetWorld() { return m_world; }
+
+	bool OnLoad();
 
 	void OnStart();
+
+	void OnBeginFrame(UINT frameIndex);
 
 	void OnUpdate();
 

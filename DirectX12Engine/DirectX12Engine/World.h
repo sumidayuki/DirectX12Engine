@@ -8,18 +8,25 @@
 /// </summary>
 class World
 {
+	friend class Scene;
+
 private:
-	EntityManager							m_em;									
+	EntityManager							m_em;
 	ComponentManager						m_cm;
 	std::vector<std::unique_ptr<System>>	m_systems;
 	std::unique_ptr<DescriptorAllocator>	m_srvAllocator;
 	CameraSystem*							m_cameraSystem;
-	std::list<Entity*>						m_allEntities;
-	std::list<Entity*>						m_allCameraEntities;
+	std::list<Entity>						m_allEntities;
+	std::list<Entity>						m_allRootEntities;
+	std::list<Entity>						m_allCameraEntities;
 	std::list<Camera*>						m_allCameras;
+	std::unordered_set<std::string>			m_entityNames;
+
+private:
+	void CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants);
 
 public:
-	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(1024); }
+	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(2048, Graphics::BackBafferCount, DescriptorHeapType::CBV_SRV_UAV); }
 
 	DescriptorAllocator* GetSrvAllocator() { return m_srvAllocator.get(); }
 
@@ -27,7 +34,7 @@ public:
 	/// エンティティを作成します。
 	/// </summary>
 	/// <returns>Entity型で値を返します。</returns>
-	Entity* CreateEntity(const std::string& name = "空のエンティティ");
+	Entity CreateEntity(const std::string& name = "空のエンティティ");
 
 	/// <summary>
 	/// ComponentManagerへの参照を取得します。
@@ -35,7 +42,7 @@ public:
 	/// <returns>ComponentManagerの参照</returns>
 	ComponentManager& GetComponentManager() { return m_cm; }
 
-	Entity* CreateWithSprite
+	Entity CreateWithSprite
 
 	(
 		const wchar_t* path,
@@ -47,7 +54,7 @@ public:
 		const Quaternion& localRotation = Quaternion::identity
 	);
 
-	Entity* CreateWithSprite
+	Entity CreateWithSprite
 	(
 		Texture2D* texture,
 		const Rect& rect,
@@ -58,7 +65,7 @@ public:
 		const Quaternion& localRotation = Quaternion::identity
 	);
 
-	Entity* CreateWithSprite
+	Entity CreateWithSprite
 	(
 		Sprite* sprite,
 		Transform* parent = nullptr,
@@ -66,7 +73,7 @@ public:
 		const Quaternion& localRotation = Quaternion::identity
 	);
 
-	Entity* CreateCamera2D(float viewWidth, float viewHeight, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
+	Entity CreateCamera2D(float viewWidth, float viewHeight, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
 	/// <summary>
 	/// ファイルパスから3Dモデルを読み込み、エンティティを生成します。
@@ -76,7 +83,7 @@ public:
 	/// <param name="localPosition">ローカル座標</param>
 	/// <param name="localRotation">ローカル回転</param>
 	/// <returns>生成されたエンティティ。読み込みに失敗した場合はnullptr</returns>
-	Entity* CreateWithModel
+	Entity CreateWithModel
 	(
 		const std::wstring& path,
 		Transform* parent,
@@ -84,21 +91,29 @@ public:
 		const Quaternion& localRotation
 	);
 
-	Entity* CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
+	Entity CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
 
 	/// <summary>
 	/// エンティティを破壊します。
 	/// </summary>
 	/// <param name="entity">破壊したいEntity</param>
-	void DestroyEntity(Entity* entity);
+	void DestroyEntity(Entity entity);
 
 	/// <summary>
 	/// 指定したエンティティが生存しているかを確認します。
 	/// </summary>
 	/// <param name="entity">確認したいEntity</param>
 	/// <returns>生存している場合は true、生存していない場合は false を返します。</returns>
-	bool IsAlive(Entity* entity)const { return m_em.IsAlive(entity); }
+	bool IsAlive(Entity entity)const { return m_em.IsAlive(entity); }
+
+	/// <summary>
+	/// 指定したタイプのコンポーネントを所持しているエンティティを取得します。
+	/// この関数では最初に見つけたエンティティを返します。
+	/// </summary>
+	/// <typeparam name="T">コンポーネントタイプ</typeparam>
+	/// <returns>見つけたエンティティ</returns>
+	template<typename T> Entity FindEntityOfType() { return m_cm.GetStorage<T>()->GetEntities()[0]; }
 
 	/// <summary>
 	/// 特定のエンティティに指定したコンポーネントを追加します。
@@ -148,7 +163,12 @@ public:
 		throw std::runtime_error("System not found");
 	}
 
+private:
+	bool Load(World& world);
+
 	void Start(World& world);
+
+	void BeginFrame(UINT frameIndex);
 
 	/// <summary>
 	/// ワールドにあるすべてのUpdateを管理します。

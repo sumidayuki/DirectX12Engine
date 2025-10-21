@@ -6,10 +6,10 @@ class CameraSystem : public System
 
 private:
 	Camera* m_current = nullptr;
-	Entity* m_currentEntity = nullptr;
+	Entity m_currentEntity;
 
 private:
-	void SetCurrent(Camera* current, Entity* entity) { m_current = current; m_currentEntity = entity; }
+	void SetCurrent(Camera* current, Entity entity) { m_current = current; m_currentEntity = entity; }
 
 public:
 	/// <summary>
@@ -18,7 +18,7 @@ public:
 	/// <returns></returns>
 	Camera* GetCurrent() { return m_current; }
 
-	Entity* GetCurrentEntity() { return m_currentEntity; }
+	Entity GetCurrentEntity() { return m_currentEntity; }
 
 	const Matrix4x4& GetWorldToCameraMatrix(Transform& transform, World& world) const;
 

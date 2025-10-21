@@ -69,6 +69,8 @@ void Application::WorkerThreadEntryPoint()
     Graphics::StaticConstructor(hWnd, resolution);
     //m_gameWindow->SetFullscreen(Screen::IsFullScreen());
 
+    AssetManager::CreateSingleton();
+
     // スプライトレンダラーの初期化
     SpriteRendererSystem::StaticConstructor();
 
@@ -118,6 +120,7 @@ void Application::WorkerThreadEntryPoint()
             // ゲームの更新 (ゲーム内の時間を少しだけ進める)
             // ゲーム画面をフレームバッファにレンダリング
             FrameResource* currentFrameResource = Graphics::GetCurrentFrameResource();
+
             currentFrameResource->Update();
             currentFrameResource->Render();
 
@@ -139,6 +142,8 @@ void Application::WorkerThreadEntryPoint()
 
     // インプットマネージャーの終了処理
     InputManager::StaticDestructor();
+
+    AssetManager::DestroySingleton();
 
     // メッシュレンダラーシステムの終了処理
     MeshRendererSystem::StaticDestructor();

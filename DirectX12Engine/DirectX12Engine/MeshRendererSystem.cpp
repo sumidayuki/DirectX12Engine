@@ -122,7 +122,7 @@ void MeshRendererSystem::StaticConstructor()
     psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
     psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
     psoDesc.DepthStencilState.StencilEnable = FALSE;
-    psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
+    psoDesc.BlendState.RenderTarget[0].BlendEnable = FALSE;
     psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
     psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
     psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
@@ -150,6 +150,24 @@ void MeshRendererSystem::StaticDestructor()
     m_rootSignature = nullptr;
     m_defaultWhiteTexture = nullptr;
     m_objectConstantBufferRing = nullptr;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE MeshRendererSystem::GetSRV(Texture2D* tex, DescriptorAllocator* allocator)
+{
+    if (auto it = m_srvCache.find(tex); it != m_srvCache.end())
+    {
+        return it->second;
+    }
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    desc.Format = tex->GetNativeResource()->GetDesc().Format;
+    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    desc.Texture2D.MipLevels = tex->GetNativeResource()->GetDesc().MipLevels;
+
+    auto handle = allocator->CreateSRV(tex->GetNativeResource(), desc);
+    m_srvCache[tex] = handle;
+    return handle;
 }
 
 void MeshRendererSystem::Start(ComponentManager& cm, World& world)
@@ -205,10 +223,10 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
     // シーンCBV
     SceneConstants* sceneData = (SceneConstants*)m_sceneConstantBuffer->LockBufferForWrite();
     sceneData->activeLightCount = lightSystem->GetActiveLightCount();
-    Entity* currentCameraEntity = cameraSystem->GetCurrentEntity();
-    if (currentCameraEntity)
+    Entity currentCameraEntity = cameraSystem->GetCurrentEntity();
+    if (currentCameraEntity != INVALID_ENTITY)
     {
-        Transform* cameraTransform = world.GetComponent<Transform>(*currentCameraEntity);
+        Transform* cameraTransform = world.GetComponent<Transform>(currentCameraEntity);
         sceneData->cameraWorldPosition = Vector4(cameraTransform->position, 1.0f);
     }
     m_sceneConstantBuffer->UnlockBufferAfterWrite();
@@ -237,6 +255,10 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
         Mesh* mesh = meshFilter.mesh;
         if (!mesh) continue;
 
+        std::string a = entity.name + "\n";
+
+        OutputDebugStringA(a.c_str());
+
         const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
 
         GraphicsBuffer* vertexBuffer = mesh->GetVertexBuffer();
@@ -259,9 +281,10 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
         // サブメッシュごとに描画
         for (UINT i = 0; i < mesh->GetSubMeshCount(); ++i)
-        {
+        {            
             // オブジェクト数が上限を超えたら、それ以上描画しない
-            if (m_currentObjectBufferIndex >= MAX_OBJECTS_PER_FRAME) {
+            if (m_currentObjectBufferIndex >= MAX_OBJECTS_PER_FRAME) 
+            {
                 // ここで警告ログなどを出すと親切
                 // OutputDebugStringA("Warning: Reached maximum number of drawable objects for this frame.\n");
                 break;
@@ -291,10 +314,16 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
             // 次のオブジェクトのためにインデックスを進める
             m_currentObjectBufferIndex++;
 
-            // Material Textures のバインド
-            D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = material->GetGpuDescriptorHandle(Material::TextureSlot::Diffuse);
-            if (textureHandle.ptr != 0)
+            // TextureのSRVを作成
+            Texture2D* texture = material->GetTexture(Material::TextureSlot::Diffuse);
+            if (!texture)
             {
+                texture = m_defaultWhiteTexture.Get();
+            }
+
+            if (texture)
+            {
+                D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = GetSRV(texture, srvAllocator);
                 commandList->SetGraphicsRootDescriptorTable(2, textureHandle);
             }
 

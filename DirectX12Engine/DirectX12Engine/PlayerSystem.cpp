@@ -39,7 +39,7 @@ void PlayerSystem::Move(Transform& transform, Input& input, Animator& animator)
 
 		// プレイヤーの向きを、移動方向に滑らかに向ける
 		Quaternion targetRotation = Quaternion::LookRotation(moveDirection, Vector3::up);
-		const float rotationSpeed = 15.0f; // 回転の速さ (値が大きいほど速い)
+		const float rotationSpeed = 360.0f; // 回転の速さ (値が大きいほど速い)
 		transform.rotation = Quaternion::Slerp(transform.rotation, targetRotation, Time::GetDeltaTime() * rotationSpeed);
 
 		// プレイヤーを移動させる
@@ -61,33 +61,20 @@ void PlayerSystem::Attack(Transform& transform, World& world)
 
 	Vector3 pos = TransformSystem::GetPosition(*m_bowTransform);
 
-	Entity* a = world.CreateWithModel(L"Assets/Arrow.fbx", nullptr, pos, Quaternion::LookRotation(forward));
+	Entity a = world.CreateWithModel(L"Assets/Arrow.fbx", nullptr, pos, Quaternion::LookRotation(forward));
+
+	OutputDebugStringA("Arrow\n");
+
+	Projectile projectile;
+	projectile.lifeTime = 1.0f;
+	projectile.speed = 700.0f;
+	world.AddComponent<Projectile>(a, projectile);
 }
 
 void PlayerSystem::Start(ComponentManager& cm, World& world)
 {
-	// プレイヤーを生成
-	Entity* player = world.CreateWithModel(L"Assets/player.fbx", nullptr, Vector3(0, 0, 0), Quaternion::identity);
-	world.AddComponent<PlayerTag>(*player, PlayerTag{});
-	world.AddComponent<Input>(*player, Input{});
-	world.AddComponent<Velocity>(*player, Velocity{});
-
-	// Playerの子エンティティから弓を発射する場所となる Transform を取得する。
-	Transform* transform = world.GetComponent<Transform>(*player);
-	m_bowTransform = TransformSystem::FindChild(transform, "mixamorig:LeftHandPinky4");
-
-	// プレイヤーカメラの設定
-	float fov = 60.0f;
-	float aspect = (float)Screen::GetWidth() / (float)Screen::GetHeight();
-	float nearPlane = 0.1f;
-	float farPlane = 5000.0f;
-	Vector3 cameraPos = Vector3(06.0f, 1.0f, -8.0f);
-	
-	// プレイヤーカメラの作成
-	Entity* camera = world.CreateCamera3D(fov, aspect, nearPlane, farPlane, cameraPos);
-	world.AddComponent<PlayerCamera>(*camera, PlayerCamera{ .player = player, .offset = Vector3(0, 150, -300), .sensitivity = 0.5f });
-
-	m_cameraTransform = world.GetComponent<Transform>(*camera);
+	Entity camera = world.FindEntityOfType<PlayerCamera>();
+	m_cameraTransform = world.GetComponent<Transform>(camera);
 
 	// 初期値
 	m_currentSpeed = WalkSpeed;
@@ -101,6 +88,11 @@ void PlayerSystem::Update(ComponentManager& cm, World& world)
 
 	for (auto [entity, playerTag, transform, input, animator] : view)
 	{
+		if (!m_bowTransform)
+		{
+			m_bowTransform = TransformSystem::FindChild(&transform, "mixamorig:LeftHandPinky4");
+		}
+
 		switch (m_currentState)
 		{
 		case PlayerState::Move:
@@ -110,7 +102,8 @@ void PlayerSystem::Update(ComponentManager& cm, World& world)
 
 			if (input.attack)
 			{
-				AnimationSystem::Play(animator, "Attack_01");
+				AnimationSystem::Play(animator, "Attack_00");
+				Attack(transform, world);
 				m_currentState = PlayerState::Attack;
 				animator.isLoop = false;
 				m_stateTimer = 0;
@@ -123,7 +116,6 @@ void PlayerSystem::Update(ComponentManager& cm, World& world)
 
 			if (!animator.isPlaying)
 			{
-				Attack(transform, world);
 				m_currentState = PlayerState::Move;
 				animator.isLoop = true;
 				m_stateTimer = 0;

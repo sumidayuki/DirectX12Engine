@@ -10,6 +10,6 @@ enum class CollisionState
 
 struct CollisionInfo
 {
-	Entity* other = nullptr;
+	Entity other = INVALID_ENTITY;
 	CollisionState state = CollisionState::None;
 };

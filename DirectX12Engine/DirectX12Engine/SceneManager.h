@@ -30,13 +30,17 @@ public:
 	/// <param name="name">変更先のシーン名</param>
 	static void ChangeScene(const std::string& name);
 
+	static Scene* GetCurrentScene() { return m_currentScene; }
+
 private:
 	static void StaticDestructor();
 
 	/// <summary>
-/// 現在のシーンの開始処理です。
-/// </summary>
+	/// 現在のシーンの開始処理です。
+	/// </summary>
 	static void Start();
+
+	static void BeginFrame(UINT frameIndex);
 
 	/// <summary>
 	/// 現在のシーンの更新処理です。

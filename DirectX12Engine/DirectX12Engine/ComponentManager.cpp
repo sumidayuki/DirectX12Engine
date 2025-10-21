@@ -1,6 +1,6 @@
 #include "ComponentManager.h"
 
-// 修正：静的メンバー変数の定義と初期化を追加
+// 静的メンバー変数の定義と初期化を追加
 std::unordered_map<std::type_index, size_t> ComponentManager::s_componentTypeMap;
 size_t ComponentManager::s_componentTypeIndex = 0;
 

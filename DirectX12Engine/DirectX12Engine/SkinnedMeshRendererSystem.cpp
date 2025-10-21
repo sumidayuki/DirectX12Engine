@@ -3,6 +3,24 @@
 // 1フレームあたりに描画可能なオブジェクトの最大数
 constexpr UINT MAX_SKINNED_OBJECTS_PER_FRAME = 1024;
 
+D3D12_GPU_DESCRIPTOR_HANDLE SkinnedMeshRendererSystem::GetSRV(Texture2D* tex, DescriptorAllocator* allocator)
+{
+    if (auto it = m_srvCache.find(tex); it != m_srvCache.end())
+    {
+        return it->second;
+    }
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    desc.Format = tex->GetNativeResource()->GetDesc().Format;
+    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    desc.Texture2D.MipLevels = tex->GetNativeResource()->GetDesc().MipLevels;
+
+    auto handle = allocator->CreateSRV(tex->GetNativeResource(), desc);
+    m_srvCache[tex] = handle;
+    return handle;
+}
+
 void SkinnedMeshRendererSystem::StaticConstructor()
 {
     ID3D12Device* device = Graphics::GetD3D12Device();
@@ -110,7 +128,7 @@ void SkinnedMeshRendererSystem::StaticConstructor()
     psoDesc.DepthStencilState.DepthEnable = TRUE;
     psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
     psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-    psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
+    psoDesc.BlendState.RenderTarget[0].BlendEnable = FALSE;
     psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
     psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
     psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
@@ -152,6 +170,8 @@ void SkinnedMeshRendererSystem::Start(ComponentManager& cm, World& world)
     ));
     m_mappedObjectConstants = (BYTE*)m_objectConstantBufferRing->LockBufferForWrite();
     m_currentObjectBufferIndex = 0;
+
+
 }
 
 void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
@@ -176,10 +196,10 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
     // シーンCBV
     SceneConstants* sceneData = (SceneConstants*)m_sceneConstantBuffer->LockBufferForWrite();
     sceneData->activeLightCount = lightSystem->GetActiveLightCount();
-    Entity* currentCameraEntity = cameraSystem->GetCurrentEntity();
-    if (currentCameraEntity)
+    Entity currentCameraEntity = cameraSystem->GetCurrentEntity();
+    if (currentCameraEntity != INVALID_ENTITY)
     {
-        Transform* cameraTransform = world.GetComponent<Transform>(*currentCameraEntity);
+        Transform* cameraTransform = world.GetComponent<Transform>(currentCameraEntity);
         sceneData->cameraWorldPosition = Vector4(cameraTransform->position, 1.0f);
     }
     m_sceneConstantBuffer->UnlockBufferAfterWrite();
@@ -206,7 +226,7 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
             continue;
         }
 
-        Animator* animator = world.GetComponent<Animator>(*TransformSystem::GetRoot(transform)->entity);
+        Animator* animator = world.GetComponent<Animator>(TransformSystem::GetRoot(transform)->entity);
 
         const Matrix4x4& worldMatrix = TransformSystem::GetLocalToWorldMatrix(transform);
 
@@ -261,9 +281,16 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
             m_currentObjectBufferIndex++;
 
-            D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = material->GetGpuDescriptorHandle(Material::TextureSlot::Diffuse);
-            if (textureHandle.ptr != 0)
+            // TextureのSRVを作成
+            Texture2D* texture = material->GetTexture(Material::TextureSlot::Diffuse);
+            if (!texture)
             {
+                continue;
+            }
+
+            if (texture)
+            {
+                D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = GetSRV(texture, srvAllocator);
                 commandList->SetGraphicsRootDescriptorTable(2, textureHandle);
             }
 

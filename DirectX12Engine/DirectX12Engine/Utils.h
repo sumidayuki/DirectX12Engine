@@ -16,6 +16,8 @@ namespace std
 // Entity
 //---------------------------------------------------------------------------------------------------------------------
 
+static const Entity INVALID_ENTITY = { UINT32_MAX, UINT32_MAX };
+
 // 非メンバーの比較演算子を定義する
 inline bool operator==(const Entity& lhs, const Entity& rhs)
 {

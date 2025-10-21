@@ -14,11 +14,14 @@ private:
 	Transform* m_cameraTransform;
 	Transform* m_bowTransform;
 
+
+	float m_attackRange;
+
 	float m_stateTimer;
 
 	float m_currentSpeed;
 	static constexpr float WalkSpeed = 75.0f;
-	static constexpr float RunSpeed = 150.0f;
+	static constexpr float RunSpeed = 200.0f;
 	static constexpr float MiddleSpeed = 100.0f;
 
 private:

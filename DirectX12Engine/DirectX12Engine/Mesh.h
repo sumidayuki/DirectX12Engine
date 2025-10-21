@@ -58,6 +58,7 @@ public:
 
     GraphicsBuffer* GetVertexBuffer() const { return m_vertexBuffer.Get(); }
     GraphicsBuffer* GetIndexBuffer() const { return m_indexBuffer.Get(); }
+    std::vector<Vertex>& GetMutableVertices() { return m_vertices; }
     UINT GetTotalIndexCount() const;
     UINT GetVertexCount() const { return (UINT)m_vertices.size(); }
     const Bounds& GetBounds() const { return m_bounds; }

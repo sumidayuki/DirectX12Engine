@@ -2,7 +2,7 @@
 
 struct PlayerCamera
 {
-	Entity* player;
+	Entity player;
 	Vector3 offset;
 	float sensitivity;
 };

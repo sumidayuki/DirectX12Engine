@@ -13,6 +13,8 @@ private:
 	// ルートとなるエンティティ（親がいないもの）のリスト
 	std::vector<Entity> m_roots;
 
+	ComponentStorage<Transform>* m_transformStorage = nullptr;
+
 public:
 	/// <summary>
 	/// 指定された transform に親を設定します。

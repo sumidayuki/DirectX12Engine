@@ -94,6 +94,11 @@ FrameResource::FrameResource(UINT frameIndex, ID3D12Resource* backBuffer, D3D12_
 	}
 }
 
+void FrameResource::BeginFrame()
+{
+	SceneManager::BeginFrame(m_frameIndex);
+}
+
 void FrameResource::Update()
 {
 	SceneManager::Update();

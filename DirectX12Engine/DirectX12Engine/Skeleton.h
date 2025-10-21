@@ -37,6 +37,8 @@ public:
 
 	const std::unordered_map<std::string, BoneInfo>& GetBoneInfoMap() const { return m_boneInfoMap; }
 	
+	int& GetMutableBoneCount() { return m_boneCount; }
+
 	int GetBoneCount() const { return m_boneCount; }
 
 	const Matrix4x4& GetGlobalInverseTransform() const { return m_globalInverseTransform; }

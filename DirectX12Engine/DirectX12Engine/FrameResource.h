@@ -28,6 +28,8 @@ private:
     // 引数付きコンストラクタ
     FrameResource(UINT frameIndex, ID3D12Resource* backBuffer, D3D12_CPU_DESCRIPTOR_HANDLE handleRTV);
 
+    void BeginFrame();
+
     void Update();
 
     void Render();

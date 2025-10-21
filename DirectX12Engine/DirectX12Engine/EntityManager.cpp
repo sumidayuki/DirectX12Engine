@@ -1,6 +1,6 @@
 #include "EntityManager.h"
 
-Entity* EntityManager::CreateEntity()
+Entity EntityManager::CreateEntity()
 {
     uint32_t id;
 
@@ -15,12 +15,12 @@ Entity* EntityManager::CreateEntity()
         m_generations.push_back(0);
     }
 
-    return new Entity{ id, m_generations[id] };
+    return Entity{ id, m_generations[id] };
 }
 
-void EntityManager::DestroyEntity(Entity* entity)
+void EntityManager::DestroyEntity(Entity entity)
 {
     if (!IsAlive(entity)) return;
-    m_generations[entity->id]++;
-    m_freeIds.push_back(entity->id);
+    m_generations[entity.id]++;
+    m_freeIds.push_back(entity.id);
 }

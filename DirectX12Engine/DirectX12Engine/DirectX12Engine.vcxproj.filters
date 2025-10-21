@@ -124,42 +124,6 @@
     <Filter Include="ゲームエンジン\ECS\コンポーネント\図形\Box">
       <UniqueIdentifier>{670adec7-9d6a-431b-b6cf-04146029a375}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\カメラ">
-      <UniqueIdentifier>{2c63c779-9794-4947-bfe0-c1fced9dc95d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\コライダー">
-      <UniqueIdentifier>{408567bc-fc20-4824-82d8-300c8f128024}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\コライダー\Circle">
-      <UniqueIdentifier>{7fd5ce92-818d-4ebd-b453-2e134251b35d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\コライダー\Box">
-      <UniqueIdentifier>{47f64d3e-abf7-4287-90f6-86b3d9588113}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\インプット">
-      <UniqueIdentifier>{13d447fc-113a-440a-980a-d2f2de693700}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\ライト">
-      <UniqueIdentifier>{46fe427b-641a-44cd-b9db-5ad0a3c3c63a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\メッシュレンダラー">
-      <UniqueIdentifier>{5b966e98-aaea-4560-9dc8-13a11660b6ba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\スプライトレンダラー">
-      <UniqueIdentifier>{b4221fa4-b5d7-4f1c-aa7f-6179a7918c4b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\タグ">
-      <UniqueIdentifier>{4ed998dd-8bd5-4cbf-8d5d-09f84d60dce8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\ターゲット">
-      <UniqueIdentifier>{a8ca2bda-9344-432f-aad5-59239bc31993}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\トランスフォーム">
-      <UniqueIdentifier>{04fcba60-a153-4bed-8088-3bb860a6cac2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\速度">
-      <UniqueIdentifier>{7374020e-8140-460f-a5d0-8ca1f40a0ddf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\リソース\アセット">
       <UniqueIdentifier>{6643440c-429b-4517-9160-c580f472a3ab}</UniqueIdentifier>
     </Filter>
@@ -175,26 +139,11 @@
     <Filter Include="ゲームエンジン\リソース\アセット\マテリアル">
       <UniqueIdentifier>{e05911cb-a902-4b02-a6a8-9e9e6dd1632c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\リソース\アセット\モデル">
-      <UniqueIdentifier>{ca347933-1fb8-4a31-a7ec-bd0c5bacb0ab}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\リソース\アセット\スケルトン">
       <UniqueIdentifier>{67c73285-69cf-4992-a9e3-ecfa31690707}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\アニメーターコントローラー">
-      <UniqueIdentifier>{4822b19f-597b-4f35-a65d-e0ebd7c6571f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\リソース\アセット\シェーダー">
       <UniqueIdentifier>{396ef0f2-1b2d-44dd-93df-fd3e744c5542}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\メッシュフィルター">
-      <UniqueIdentifier>{ee590dc4-bf36-465d-a5b2-c7c564133287}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\アニメーター">
-      <UniqueIdentifier>{e3ad7aa1-2d11-48d1-b4fb-818a67f8e9a3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\コンポーネント\スキンドメッシュレンダラー">
-      <UniqueIdentifier>{03fc5827-054e-4375-a095-8ddea0dca213}</UniqueIdentifier>
     </Filter>
     <Filter Include="ゲームエンジン\リソース\アセット\アニメーション">
       <UniqueIdentifier>{9527c971-850e-4e97-adc6-74c096d28bfc}</UniqueIdentifier>
@@ -208,39 +157,6 @@
     <Filter Include="ゲーム\Character\Player">
       <UniqueIdentifier>{d2acf18b-e107-476a-8daf-41783369420e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム">
-      <UniqueIdentifier>{561e9868-0d5f-46df-9b0d-b22ab4271b6a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\コリジョンシステム">
-      <UniqueIdentifier>{fabdf4b6-80b2-4642-b12e-b9bdc87d3aed}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\コリジョンシステム\SpatialHashGrid">
-      <UniqueIdentifier>{8dde386a-8b75-4bcf-85e6-2e2b63300f02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\カメラシステム">
-      <UniqueIdentifier>{1280fded-8ff4-41fc-8f5d-cc675f7b9b7e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\スプライトレンダラーシステム">
-      <UniqueIdentifier>{0e48e2b9-0497-42c9-9927-70ebe3ee7d91}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\トランスフォームシステム">
-      <UniqueIdentifier>{c40c410a-22d7-4f78-9f1a-9a8f7795bb77}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\メッシュレンダラーシステム">
-      <UniqueIdentifier>{28a1d3ca-4637-4e57-afe6-f1ed28256212}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\ライトシステム">
-      <UniqueIdentifier>{bdec7e2a-2c8e-4a7d-834e-06d729b59c40}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\インプットシステム">
-      <UniqueIdentifier>{63f8284f-05b8-42ba-beeb-243466cbb0fc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\アニメーションシステム">
-      <UniqueIdentifier>{2d0596a7-d828-4f91-8e6a-ec71e7ec25ef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\ECS\システム\スキンドメッシュレンダラーシステム">
-      <UniqueIdentifier>{823eb8d7-26bc-4c6e-989c-0312e2bf7760}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\ECS\エンティティ">
       <UniqueIdentifier>{99bf5dad-2558-4d77-ac1d-d8a6460820af}</UniqueIdentifier>
     </Filter>
@@ -252,6 +168,96 @@
     </Filter>
     <Filter Include="ゲーム\Character\Player\Arrow">
       <UniqueIdentifier>{25869f04-c3aa-4a90-aa6a-48e8455436a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Projectile">
+      <UniqueIdentifier>{bd079c49-63cf-45b3-9a82-fb1ff937196f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Animator">
+      <UniqueIdentifier>{e3ad7aa1-2d11-48d1-b4fb-818a67f8e9a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Input">
+      <UniqueIdentifier>{13d447fc-113a-440a-980a-d2f2de693700}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Camera">
+      <UniqueIdentifier>{2c63c779-9794-4947-bfe0-c1fced9dc95d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Collider">
+      <UniqueIdentifier>{408567bc-fc20-4824-82d8-300c8f128024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Collider\Circle">
+      <UniqueIdentifier>{7fd5ce92-818d-4ebd-b453-2e134251b35d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Collider\Box">
+      <UniqueIdentifier>{47f64d3e-abf7-4287-90f6-86b3d9588113}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\SkinnedMeshRenderer">
+      <UniqueIdentifier>{03fc5827-054e-4375-a095-8ddea0dca213}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\SpriteRenderer">
+      <UniqueIdentifier>{b4221fa4-b5d7-4f1c-aa7f-6179a7918c4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Target">
+      <UniqueIdentifier>{a8ca2bda-9344-432f-aad5-59239bc31993}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Transform">
+      <UniqueIdentifier>{04fcba60-a153-4bed-8088-3bb860a6cac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\MeshFilter">
+      <UniqueIdentifier>{ee590dc4-bf36-465d-a5b2-c7c564133287}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\MeshRenderer">
+      <UniqueIdentifier>{5b966e98-aaea-4560-9dc8-13a11660b6ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Light">
+      <UniqueIdentifier>{46fe427b-641a-44cd-b9db-5ad0a3c3c63a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Velocity">
+      <UniqueIdentifier>{7374020e-8140-460f-a5d0-8ca1f40a0ddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System">
+      <UniqueIdentifier>{561e9868-0d5f-46df-9b0d-b22ab4271b6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\コリジョンシステム">
+      <UniqueIdentifier>{fabdf4b6-80b2-4642-b12e-b9bdc87d3aed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\コリジョンシステム\SpatialHashGrid">
+      <UniqueIdentifier>{8dde386a-8b75-4bcf-85e6-2e2b63300f02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\カメラシステム">
+      <UniqueIdentifier>{1280fded-8ff4-41fc-8f5d-cc675f7b9b7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\スプライトレンダラーシステム">
+      <UniqueIdentifier>{0e48e2b9-0497-42c9-9927-70ebe3ee7d91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\トランスフォームシステム">
+      <UniqueIdentifier>{c40c410a-22d7-4f78-9f1a-9a8f7795bb77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\メッシュレンダラーシステム">
+      <UniqueIdentifier>{28a1d3ca-4637-4e57-afe6-f1ed28256212}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\ライトシステム">
+      <UniqueIdentifier>{bdec7e2a-2c8e-4a7d-834e-06d729b59c40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\インプットシステム">
+      <UniqueIdentifier>{63f8284f-05b8-42ba-beeb-243466cbb0fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\アニメーションシステム">
+      <UniqueIdentifier>{2d0596a7-d828-4f91-8e6a-ec71e7ec25ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム">
+      <UniqueIdentifier>{823eb8d7-26bc-4c6e-989c-0312e2bf7760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\ProjectileSystem">
+      <UniqueIdentifier>{5e9aa4f3-ae9e-40ca-aaa6-928c2e9ff0d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\システム\シングルトン">
+      <UniqueIdentifier>{3c3ccb04-4407-4099-8f68-e6e0922b77e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲーム\Character\Enemy">
+      <UniqueIdentifier>{02fe5c2a-1936-4494-bd9e-c8922b8ed651}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲーム\Manager">
+      <UniqueIdentifier>{cc5f087f-c91e-444b-839f-d55965897684}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -304,7 +310,7 @@
       <Filter>ゲームエンジン\数学\ベクトル\3次元ベクトル</Filter>
     </ClCompile>
     <ClCompile Include="CollisionSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\コリジョンシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\コリジョンシステム</Filter>
     </ClCompile>
     <ClCompile Include="Vector4.cpp">
       <Filter>ゲームエンジン\数学\ベクトル\4次元ベクトル</Filter>
@@ -316,13 +322,13 @@
       <Filter>ゲームエンジン\数学\四元数</Filter>
     </ClCompile>
     <ClCompile Include="TransformSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\トランスフォームシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\トランスフォームシステム</Filter>
     </ClCompile>
     <ClCompile Include="CameraSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\カメラシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\カメラシステム</Filter>
     </ClCompile>
     <ClCompile Include="SpatialHashGrid.cpp">
-      <Filter>ゲームエンジン\ECS\システム\コリジョンシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\コリジョンシステム</Filter>
     </ClCompile>
     <ClCompile Include="Reference.cpp">
       <Filter>ゲームエンジン\システム\参照カウント</Filter>
@@ -355,7 +361,7 @@
       <Filter>ゲームエンジン\数学</Filter>
     </ClCompile>
     <ClCompile Include="SpriteRendererSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\スプライトレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\スプライトレンダラーシステム</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>ゲームエンジン\リソース\アセット\テクスチャ</Filter>
@@ -385,7 +391,7 @@
       <Filter>ゲームエンジン\入力\ゲームパッド</Filter>
     </ClCompile>
     <ClCompile Include="MeshRendererSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\メッシュレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\メッシュレンダラーシステム</Filter>
     </ClCompile>
     <ClCompile Include="ModelImporter.cpp">
       <Filter>ゲームエンジン\リソース\アセットインポーター\モデル</Filter>
@@ -394,10 +400,7 @@
       <Filter>ゲームエンジン\リソース\アセット\マテリアル</Filter>
     </ClCompile>
     <ClCompile Include="LightSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\ライトシステム</Filter>
-    </ClCompile>
-    <ClCompile Include="DescriptorAllocator.cpp">
-      <Filter>ゲームエンジン\グラフィックス\ディスクリプタヒープ</Filter>
+      <Filter>ゲームエンジン\ECS\System\ライトシステム</Filter>
     </ClCompile>
     <ClCompile Include="MainScene.cpp">
       <Filter>ゲーム</Filter>
@@ -406,7 +409,7 @@
       <Filter>ゲーム</Filter>
     </ClCompile>
     <ClCompile Include="InputSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\インプットシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\インプットシステム</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>ゲームエンジン\リソース\アセット\メッシュ</Filter>
@@ -418,10 +421,10 @@
       <Filter>ゲームエンジン\リソース\アセット\スケルトン</Filter>
     </ClCompile>
     <ClCompile Include="AnimationSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\アニメーションシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\アニメーションシステム</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMeshRendererSystem.cpp">
-      <Filter>ゲームエンジン\ECS\システム\スキンドメッシュレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>ゲームエンジン\シーン</Filter>
@@ -437,6 +440,21 @@
     </ClCompile>
     <ClCompile Include="ComponentManager.cpp">
       <Filter>ゲームエンジン\ECS\コンポーネント</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectileSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\ProjectileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorAllocator.cpp">
+      <Filter>ゲームエンジン\グラフィックス\ディスクリプタヒープ</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
+      <Filter>ゲームエンジン\リソース\アセット</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemySystem.cpp">
+      <Filter>ゲーム\Character\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="GameManagerSystem.cpp">
+      <Filter>ゲーム\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -459,13 +477,13 @@
       <Filter>ゲームエンジン\ECS\コンポーネント</Filter>
     </ClInclude>
     <ClInclude Include="System.h">
-      <Filter>ゲームエンジン\ECS\システム</Filter>
+      <Filter>ゲームエンジン\ECS\System</Filter>
     </ClInclude>
     <ClInclude Include="Velocity.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\速度</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Velocity</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\インプット</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Input</Filter>
     </ClInclude>
     <ClInclude Include="Precompiled.h">
       <Filter>ゲームエンジン</Filter>
@@ -477,13 +495,13 @@
       <Filter>ゲームエンジン\ECS\コンポーネント\図形\Triangle</Filter>
     </ClInclude>
     <ClInclude Include="Target.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\ターゲット</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Target</Filter>
     </ClInclude>
     <ClInclude Include="SystemList.h">
-      <Filter>ゲームエンジン\ECS\システム</Filter>
+      <Filter>ゲームエンジン\ECS\System</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\トランスフォーム</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Transform</Filter>
     </ClInclude>
     <ClInclude Include="Vector2.h">
       <Filter>ゲームエンジン\数学\ベクトル\2次元ベクトル</Filter>
@@ -528,19 +546,19 @@
       <Filter>ゲームエンジン\数学\ベクトル\3次元ベクトル</Filter>
     </ClInclude>
     <ClInclude Include="CircleCollider2D.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\コライダー\Circle</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Collider\Circle</Filter>
     </ClInclude>
     <ClInclude Include="Box.h">
       <Filter>ゲームエンジン\ECS\コンポーネント\図形\Box</Filter>
     </ClInclude>
     <ClInclude Include="CollisionInfo.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\コライダー</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Collider</Filter>
     </ClInclude>
     <ClInclude Include="CollisionSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\コリジョンシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\コリジョンシステム</Filter>
     </ClInclude>
     <ClInclude Include="BoxCollider2D.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\コライダー\Box</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Collider\Box</Filter>
     </ClInclude>
     <ClInclude Include="Entity.h">
       <Filter>ゲームエンジン\ECS\エンティティ</Filter>
@@ -558,19 +576,16 @@
       <Filter>ゲームエンジン\数学\ベクトル\4次元ベクトル</Filter>
     </ClInclude>
     <ClInclude Include="TransformSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\トランスフォームシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\トランスフォームシステム</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\カメラ</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Camera</Filter>
     </ClInclude>
     <ClInclude Include="CameraSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\カメラシステム</Filter>
-    </ClInclude>
-    <ClInclude Include="Tag.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\タグ</Filter>
+      <Filter>ゲームエンジン\ECS\System\カメラシステム</Filter>
     </ClInclude>
     <ClInclude Include="SpatialHashGrid.h">
-      <Filter>ゲームエンジン\ECS\システム\コリジョンシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\コリジョンシステム</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>ゲームエンジン\システム\Utils</Filter>
@@ -606,7 +621,7 @@
       <Filter>ゲームエンジン\数学</Filter>
     </ClInclude>
     <ClInclude Include="SpriteRendererSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\スプライトレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\スプライトレンダラーシステム</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>ゲームエンジン\リソース\アセット\テクスチャ</Filter>
@@ -636,7 +651,7 @@
       <Filter>ゲームエンジン\数学\軸平行境界ボックス%28AABB%29</Filter>
     </ClInclude>
     <ClInclude Include="SpriteRenderer.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\スプライトレンダラー</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\SpriteRenderer</Filter>
     </ClInclude>
     <ClInclude Include="Mouse.h">
       <Filter>ゲームエンジン\入力\マウス</Filter>
@@ -651,10 +666,10 @@
       <Filter>ゲームエンジン\リソース\アセット\メッシュ</Filter>
     </ClInclude>
     <ClInclude Include="MeshRenderer.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\メッシュレンダラー</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\MeshRenderer</Filter>
     </ClInclude>
     <ClInclude Include="MeshRendererSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\メッシュレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\メッシュレンダラーシステム</Filter>
     </ClInclude>
     <ClInclude Include="ModelImporter.h">
       <Filter>ゲームエンジン\リソース\アセットインポーター\モデル</Filter>
@@ -663,13 +678,10 @@
       <Filter>ゲームエンジン\リソース\アセット\マテリアル</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\ライト</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Light</Filter>
     </ClInclude>
     <ClInclude Include="LightSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\ライトシステム</Filter>
-    </ClInclude>
-    <ClInclude Include="DescriptorAllocator.h">
-      <Filter>ゲームエンジン\グラフィックス\ディスクリプタヒープ</Filter>
+      <Filter>ゲームエンジン\ECS\System\ライトシステム</Filter>
     </ClInclude>
     <ClInclude Include="Animation.h">
       <Filter>ゲームエンジン\リソース\アセット\アニメーション</Filter>
@@ -681,10 +693,7 @@
       <Filter>ゲーム</Filter>
     </ClInclude>
     <ClInclude Include="InputSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\インプットシステム</Filter>
-    </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>ゲームエンジン\リソース\アセット\モデル</Filter>
+      <Filter>ゲームエンジン\ECS\System\インプットシステム</Filter>
     </ClInclude>
     <ClInclude Include="Skeleton.h">
       <Filter>ゲームエンジン\リソース\アセット\スケルトン</Filter>
@@ -693,19 +702,19 @@
       <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
     </ClInclude>
     <ClInclude Include="MeshFilter.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\メッシュフィルター</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\MeshFilter</Filter>
     </ClInclude>
     <ClInclude Include="Animator.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\アニメーター</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\Animator</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMeshRenderer.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント\スキンドメッシュレンダラー</Filter>
+      <Filter>ゲームエンジン\ECS\コンポーネント\SkinnedMeshRenderer</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMeshRendererSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\スキンドメッシュレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム</Filter>
     </ClInclude>
     <ClInclude Include="AnimationSystem.h">
-      <Filter>ゲームエンジン\ECS\システム\アニメーションシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\アニメーションシステム</Filter>
     </ClInclude>
     <ClInclude Include="ModelImporterSettings.h">
       <Filter>ゲームエンジン\リソース\アセットインポーター\モデル</Filter>
@@ -743,18 +752,48 @@
     <ClInclude Include="ArrowSystem.h">
       <Filter>ゲーム\Character\Player\Arrow</Filter>
     </ClInclude>
+    <ClInclude Include="Projectile.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectileSystem.h">
+      <Filter>ゲームエンジン\ECS\System\ProjectileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="DescriptorAllocator.h">
+      <Filter>ゲームエンジン\グラフィックス\ディスクリプタヒープ</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>ゲームエンジン\システム\シングルトン</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetManager.h">
+      <Filter>ゲームエンジン\リソース\アセット</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>ゲームエンジン\リソース</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyTag.h">
+      <Filter>ゲーム\Character\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemySystem.h">
+      <Filter>ゲーム\Character\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="GameManager.h">
+      <Filter>ゲーム\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="GameManagerSystem.h">
+      <Filter>ゲーム\Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
-      <Filter>ゲームエンジン\ECS\システム\スプライトレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\スプライトレンダラーシステム</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="MeshRenderer.hlsl">
-      <Filter>ゲームエンジン\ECS\システム\メッシュレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\メッシュレンダラーシステム</Filter>
     </FxCompile>
     <FxCompile Include="SkinnedMeshRenderer.hlsl">
-      <Filter>ゲームエンジン\ECS\システム\スキンドメッシュレンダラーシステム</Filter>
+      <Filter>ゲームエンジン\ECS\System\スキンドメッシュレンダラーシステム</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
