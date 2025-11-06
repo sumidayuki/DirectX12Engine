@@ -9,7 +9,6 @@ bool MainScene::Load()
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Warrok-00.fbx");
 
 	// Worldにシステムを追加
-
 	m_world.AddSystem(std::make_unique<GameManagerSystem>());
 	m_world.AddSystem(std::make_unique<PlayerSystem>());
 	m_world.AddSystem(std::make_unique<PlayerCameraSystem>());

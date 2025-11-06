@@ -13,6 +13,8 @@ public:
 	/// <param name="clipName">再生したいアニメーションクリップの名前</param>
 	static void Play(Animator& animator, const std::string& clipName);
 
+	static void Play(Animator& animator, Animation& newAnimation);
+
 private:
 	/// <summary>
 	/// 指定された時間における、2つのキーフレーム間の補間された値を見つけます。

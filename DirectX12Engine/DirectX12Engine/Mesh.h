@@ -45,8 +45,7 @@ public:
     virtual ~Mesh() = default;
 
     /// <summary>
-    /// 頂点データとインデックスデータからメッシュをセットアップします。
-    /// ModelImporterでデータを集約した後に一度だけ呼び出します。
+    /// 頂点データとインデックスデータをビデオメモリ上に公開します。
     /// </summary>
     void SetupMesh();
 

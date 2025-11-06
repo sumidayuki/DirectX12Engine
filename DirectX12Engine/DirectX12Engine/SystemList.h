@@ -15,6 +15,7 @@
 #include "AnimationSystem.h"
 #include "SkinnedMeshRendererSystem.h"
 #include "GameManagerSystem.h"
+#include "AIAgentSystem.h"
 #include "PlayerSystem.h"
 #include "PlayerCameraSystem.h"
 #include "ProjectileSystem.h"

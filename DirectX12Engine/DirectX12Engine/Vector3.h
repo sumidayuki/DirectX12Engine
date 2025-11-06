@@ -24,6 +24,8 @@ public:
 
 	static const Vector3 forward;
 
+	static const Vector3 max;
+
 public:
 	union
 	{

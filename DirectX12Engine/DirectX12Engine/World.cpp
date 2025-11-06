@@ -4,7 +4,7 @@ void World::CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& 
 {
 	if (!parent) return;
 
-	auto childCopy = parent->children;
+	auto childCopy = m_transformSystem->GetChildren(parent->entity);
 	for (auto child : childCopy)
 	{
 		Transform* childTransform = GetComponent<Transform>(child);
@@ -29,8 +29,6 @@ Entity World::CreateEntity(const std::string& name)
 	{
 		finalName = name + "_" + std::to_string(index++);
 	}
-
-	OutputDebugStringA((finalName + "\n").c_str());
 
 	// ユニークな名前をエンティティに設定し、セットに追加
 	entity.name = finalName;
@@ -155,7 +153,7 @@ void World::DestroyEntity(Entity entity)
 		{
 			Transform* t = GetComponent<Transform>(e);
 
-			TransformSystem::SetParent(*t, nullptr);
+			m_transformSystem->SetParent(*t, nullptr);
 
 			m_entityNames.erase(e.name);
 			m_cm.RemoveAllComponents(e);
@@ -181,6 +179,11 @@ bool World::Load(World& world)
 	world.AddSystem(std::make_unique<LightSystem>());
 	world.AddSystem(std::make_unique<InputSystem>());
 	world.AddSystem(std::make_unique<ProjectileSystem>());
+	world.AddSystem(std::make_unique<AIAgentSystem>());
+
+	TransformSystem::CreateSingleton();
+	AIAgentSystem::CreateSingleton();
+	m_transformSystem = TransformSystem::GetInstance();
 
 	for (auto& sys : m_systems)
 	{

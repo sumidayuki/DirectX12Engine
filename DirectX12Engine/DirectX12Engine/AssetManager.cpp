@@ -55,12 +55,14 @@ Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, co
     if (rootEntity != INVALID_ENTITY)
     {
         Transform* rootTransform = world.GetComponent<Transform>(rootEntity);
+        TransformSystem* system = world.GetTransformSystem();
+
         if (parent)
         {
-            TransformSystem::SetParent(*rootTransform, parent);
+            system->SetParent(*rootTransform, parent);
         }
-        TransformSystem::SetLocalPosition(*rootTransform, localPosition);
-        TransformSystem::SetLocalRotation(*rootTransform, localRotation);
+        system->SetLocalPosition(*rootTransform, localPosition);
+        system->SetLocalRotation(*rootTransform, localRotation);
 
         // If the model has animations, add an Animator component to the root entity
         if (modelData->skeleton && !modelData->animations.empty())
@@ -75,7 +77,7 @@ Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, co
         }
     }
 
-    PrintHierarchy(world.GetComponent<Transform>(rootEntity), 0);
+    //PrintHierarchy(world.GetComponent<Transform>(rootEntity), 0);
 
     return rootEntity;
 }
@@ -89,7 +91,7 @@ Entity AssetManager::CreateEntityFromPrefab(const PrefabNode& node, const ModelD
 
     if (parentEntity != INVALID_ENTITY)
     {
-        TransformSystem::SetParent(*transform, world.GetComponent<Transform>(parentEntity));
+        TransformSystem::GetInstance()->SetParent(*transform, world.GetComponent<Transform>(parentEntity));
     }
 
     node.transform.Decompose(transform->scale, transform->rotation, transform->position);
@@ -114,8 +116,11 @@ Entity AssetManager::CreateEntityFromPrefab(const PrefabNode& node, const ModelD
 
         if (modelData->skeleton)
         {
+            MeshFilter filter;
+            filter.mesh = mesh;
+            world.AddComponent<MeshFilter>(entity, filter);
+
             SkinnedMeshRenderer renderer;
-            renderer.mesh = mesh;
             if (material) renderer.materials.push_back(material);
             world.AddComponent<SkinnedMeshRenderer>(entity, renderer);
         }
@@ -150,10 +155,10 @@ void AssetManager::PrintHierarchy(Transform* transform, int level)
     OutputDebugStringA(transform->entity.name.c_str());
     OutputDebugStringA("\n");
 
-    const int childCount = TransformSystem::GetChildCount(transform);
+    const int childCount = TransformSystem::GetInstance()->GetChildCount(transform);
     for (int i = 0; i < childCount; i++)
     {
-        PrintHierarchy(TransformSystem::GetChild(transform, i), level + 1);
+        PrintHierarchy(TransformSystem::GetInstance()->GetChild(transform, i), level + 1);
     }
 }
 

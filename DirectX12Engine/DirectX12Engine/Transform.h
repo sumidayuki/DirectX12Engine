@@ -8,16 +8,15 @@ struct Transform
 {
 	Entity entity;
 	Entity parent = INVALID_ENTITY;
-	std::list<Entity> children = {};
 
 	Vector3 position = Vector3(0.0f, 0.0f, 0.0f);
 	Quaternion rotation = Quaternion::identity;
 	Vector3 scale = Vector3(1.0f, 1.0f, 1.0f);
 
-	mutable Matrix4x4 localMatrix = Matrix4x4::identity;
-	mutable Matrix4x4 localToWorldMatrix = Matrix4x4::identity;
-	mutable Matrix4x4 worldToLocalMatrix = Matrix4x4::identity;
+	Matrix4x4 localMatrix = Matrix4x4::identity;
+	Matrix4x4 localToWorldMatrix = Matrix4x4::identity;
+	Matrix4x4 worldToLocalMatrix = Matrix4x4::identity;
 
-	mutable bool dirty = true;
-	mutable bool hasChanged = true;
+	bool dirty = true;
+	bool hasChanged = true;
 };

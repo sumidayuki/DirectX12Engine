@@ -108,6 +108,7 @@ class Rect;
 class Reference;
 class Screen;
 class Time;
+class ScopedProfiler;
 
 // シェーダー関連
 class ShaderBytecode;
@@ -185,9 +186,11 @@ class Keyboard;
 
 // システム関連
 #include "Reference.h"
+#include "FNV-1a.h"
 #include "Resolution.h"
 #include "Singleton.h"
 #include "Screen.h"
+#include "ScopedProfiler.h"
 #include "Windows-NativeWindow.h"
 #include "Application.h"
 
@@ -245,6 +248,7 @@ class Keyboard;
 #include "Animator.h"
 #include "SkinnedMeshRenderer.h"
 #include "Projectile.h"
+#include "AIAgent.h"
 
 #include "GeometryUtility.h"
 

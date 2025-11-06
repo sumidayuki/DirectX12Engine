@@ -2,6 +2,7 @@
 #include "PlayerSystem.h"
 #include "PlayerTag.h"
 #include "PlayerCamera.h"
+#include "ScopedProfiler.h"
 
 void PlayerSystem::Move(Transform& transform, Input& input, Animator& animator)
 {
@@ -39,11 +40,11 @@ void PlayerSystem::Move(Transform& transform, Input& input, Animator& animator)
 
 		// プレイヤーの向きを、移動方向に滑らかに向ける
 		Quaternion targetRotation = Quaternion::LookRotation(moveDirection, Vector3::up);
-		const float rotationSpeed = 360.0f; // 回転の速さ (値が大きいほど速い)
+		const float rotationSpeed = 45.0f; // 回転の速さ (値が大きいほど速い)
 		transform.rotation = Quaternion::Slerp(transform.rotation, targetRotation, Time::GetDeltaTime() * rotationSpeed);
 
 		// プレイヤーを移動させる
-		TransformSystem::Translate(transform, moveDirection * m_currentSpeed * Time::GetDeltaTime());
+		TransformSystem::GetInstance()->Translate(transform, moveDirection * m_currentSpeed * Time::GetDeltaTime());
 	}
 
 	// アニメーションの切り替え
@@ -59,7 +60,7 @@ void PlayerSystem::Attack(Transform& transform, World& world)
 	forward.y = 0;
 	forward.Normalized();
 
-	Vector3 pos = TransformSystem::GetPosition(*m_bowTransform);
+	Vector3 pos = TransformSystem::GetInstance()->GetPosition(*m_bowTransform);
 
 	Entity a = world.CreateWithModel(L"Assets/Arrow.fbx", nullptr, pos, Quaternion::LookRotation(forward));
 
@@ -90,7 +91,7 @@ void PlayerSystem::Update(ComponentManager& cm, World& world)
 	{
 		if (!m_bowTransform)
 		{
-			m_bowTransform = TransformSystem::FindChild(&transform, "mixamorig:LeftHandPinky4");
+			m_bowTransform = TransformSystem::GetInstance()->FindChild(&transform, "mixamorig:LeftHandPinky4");
 		}
 
 		switch (m_currentState)

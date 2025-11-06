@@ -203,6 +203,7 @@ void MeshRendererSystem::Start(ComponentManager& cm, World& world)
 
 void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
 {
+    // グラフィックスパイプラインの設定
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
     DescriptorAllocator* srvAllocator = world.GetSrvAllocator();
 
@@ -212,42 +213,54 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
     ID3D12DescriptorHeap* heaps[] = { srvAllocator->GetHeap() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-    // 共通情報のバインド
+    // カメラ・ライトなどのシーン共通情報を設定
     CameraSystem* cameraSystem = world.GetSystem<CameraSystem>();
-    Camera* camera = cameraSystem->GetCurrent();
     LightSystem* lightSystem = world.GetSystem<LightSystem>();
-    if (!camera || !lightSystem) return;
+    if (!cameraSystem || !lightSystem) return;
 
-    commandList->SetGraphicsRootConstantBufferView(0, cameraSystem->GetCameraBuffer(*camera)->GetNativeBufferPtr()->GetGPUVirtualAddress());
+    Camera* camera = cameraSystem->GetCurrent();
+    if (!camera) return;
 
-    // シーンCBV
+    // カメラCBV設定
+    commandList->SetGraphicsRootConstantBufferView
+    (
+        0, 
+        cameraSystem->GetCameraBuffer(*camera)->GetNativeBufferPtr()->GetGPUVirtualAddress()
+    );
+
+    // シーンCBV更新
     SceneConstants* sceneData = (SceneConstants*)m_sceneConstantBuffer->LockBufferForWrite();
     sceneData->activeLightCount = lightSystem->GetActiveLightCount();
+
     Entity currentCameraEntity = cameraSystem->GetCurrentEntity();
     if (currentCameraEntity != INVALID_ENTITY)
     {
-        Transform* cameraTransform = world.GetComponent<Transform>(currentCameraEntity);
-        sceneData->cameraWorldPosition = Vector4(cameraTransform->position, 1.0f);
+        Transform* camTransform = world.GetComponent<Transform>(currentCameraEntity);
+        sceneData->cameraWorldPosition = Vector4(camTransform->position, 1.0f);
     }
-    m_sceneConstantBuffer->UnlockBufferAfterWrite();
-    commandList->SetGraphicsRootConstantBufferView(4, m_sceneConstantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());
 
+    m_sceneConstantBuffer->UnlockBufferAfterWrite();
+    commandList->SetGraphicsRootConstantBufferView
+    (
+        4, 
+        m_sceneConstantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress()
+    );
+
+    // ライト情報設定
     if (lightSystem->GetActiveLightCount() > 0)
     {
         commandList->SetGraphicsRootDescriptorTable(3, lightSystem->GetLightBufferGpuHandle());
     }
 
-    // リングバッファのセットアップ
-    // フレームごとにオブジェクトインデックスをリセット
+    // オブジェクト用リングバッファのセットアップ
     m_currentObjectBufferIndex = 0;
 
-    // このフレームが使用するリングバッファのセクションを計算
     const UINT frameIndex = Graphics::GetCurrentFrameResource()->GetFrameIndex();
-    const UINT alignedObjectConstantsSize = m_objectConstantBufferRing->GetStride();
-    const UINT bufferOffsetForFrame = frameIndex * MAX_OBJECTS_PER_FRAME;
-    D3D12_GPU_VIRTUAL_ADDRESS gpuAddressBase = m_objectConstantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
+    const UINT alignedSize = m_objectConstantBufferRing->GetStride();
+    const UINT frameOffset = frameIndex * MAX_OBJECTS_PER_FRAME;
+    const D3D12_GPU_VIRTUAL_ADDRESS gpuAddressBase = m_objectConstantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
 
-    // 各オブジェクトの描画ループ
+    // 描画対象のエンティティを取得
     View<Transform, MeshFilter, MeshRenderer> view(cm);
     for (auto [entity, transform, meshFilter, renderer] : view)
     {
@@ -255,12 +268,7 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
         Mesh* mesh = meshFilter.mesh;
         if (!mesh) continue;
 
-        std::string a = entity.name + "\n";
-
-        OutputDebugStringA(a.c_str());
-
-        const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
-
+        // 入力アセンブラ設定（IAステージ）
         GraphicsBuffer* vertexBuffer = mesh->GetVertexBuffer();
         GraphicsBuffer* indexBuffer = mesh->GetIndexBuffer();
         if (!vertexBuffer || !indexBuffer) continue;
@@ -279,42 +287,39 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        // サブメッシュごとに描画
+        // サブメッシュごとの描画処理
+        const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
+
         for (UINT i = 0; i < mesh->GetSubMeshCount(); ++i)
-        {            
-            // オブジェクト数が上限を超えたら、それ以上描画しない
-            if (m_currentObjectBufferIndex >= MAX_OBJECTS_PER_FRAME) 
+        {
+            if (m_currentObjectBufferIndex >= MAX_OBJECTS_PER_FRAME)
             {
-                // ここで警告ログなどを出すと親切
-                // OutputDebugStringA("Warning: Reached maximum number of drawable objects for this frame.\n");
+                OutputDebugStringA("Warning: Maximum drawable object count reached.\n");
                 break;
             }
 
             const SubMesh& subMesh = mesh->GetSubMesh(i);
             if (subMesh.materialIndex >= renderer.materials.size()) continue;
+
             Material* material = renderer.materials[subMesh.materialIndex];
             if (!material) continue;
 
-            // リングバッファへのデータ書き込み
-            // 定数データをローカル変数に設定
+            // オブジェクト定数バッファ更新
             ObjectConstantsLayout constants;
             constants.worldMatrix = worldMatrix.Transpose();
             constants.diffuseColor = material->GetDiffuseColor();
             constants.specularColor = material->GetSpecularColor();
-            constants.shininess = 64.0f; // 仮
+            constants.shininess = 64.0f;
 
-            // リングバッファの現在位置にデータをコピー
-            BYTE* dest = m_mappedObjectConstants + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
+            BYTE* dest = m_mappedObjectConstants + (frameOffset + m_currentObjectBufferIndex) * alignedSize;
             memcpy(dest, &constants, sizeof(ObjectConstantsLayout));
 
-            // 対応するGPUアドレスを計算してルートパラメータに設定
-            D3D12_GPU_VIRTUAL_ADDRESS currentGpuAddress = gpuAddressBase + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
-            commandList->SetGraphicsRootConstantBufferView(1, currentGpuAddress);
+            D3D12_GPU_VIRTUAL_ADDRESS objGpuAddr = gpuAddressBase + (frameOffset + m_currentObjectBufferIndex) * alignedSize;
+            commandList->SetGraphicsRootConstantBufferView(1, objGpuAddr);
 
-            // 次のオブジェクトのためにインデックスを進める
             m_currentObjectBufferIndex++;
 
-            // TextureのSRVを作成
+            // テクスチャSRV設定
             Texture2D* texture = material->GetTexture(Material::TextureSlot::Diffuse);
             if (!texture)
             {
@@ -323,10 +328,11 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
 
             if (texture)
             {
-                D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = GetSRV(texture, srvAllocator);
-                commandList->SetGraphicsRootDescriptorTable(2, textureHandle);
+                D3D12_GPU_DESCRIPTOR_HANDLE texHandle = GetSRV(texture, srvAllocator);
+                commandList->SetGraphicsRootDescriptorTable(2, texHandle);
             }
 
+            // 描画コマンド発行
             commandList->DrawIndexedInstanced(subMesh.indexCount, 1, subMesh.startIndex, 0, 0);
         }
     }

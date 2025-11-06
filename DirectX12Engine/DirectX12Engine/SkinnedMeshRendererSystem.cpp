@@ -176,124 +176,151 @@ void SkinnedMeshRendererSystem::Start(ComponentManager& cm, World& world)
 
 void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
 {
+    // コマンドリストとSRVアロケータを取得
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
     DescriptorAllocator* srvAllocator = world.GetSrvAllocator();
 
+    // パイプラインとルートシグネチャを設定
     commandList->SetPipelineState(m_graphicsPipelineState.Get());
     commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
     ID3D12DescriptorHeap* heaps[] = { srvAllocator->GetHeap() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-    auto cameraSystem = world.GetSystem<CameraSystem>();
-    auto camera = cameraSystem->GetCurrent();
-    auto lightSystem = world.GetSystem<LightSystem>();
+    // カメラ・ライト関連情報の取得と設定
+    CameraSystem* cameraSystem = world.GetSystem<CameraSystem>();
+    LightSystem* lightSystem = world.GetSystem<LightSystem>();
+    Camera* camera = cameraSystem->GetCurrent();
 
     if (!camera || !lightSystem) return;
 
-    commandList->SetGraphicsRootConstantBufferView(0, cameraSystem->GetCameraBuffer(*camera)->GetNativeBufferPtr()->GetGPUVirtualAddress());
+    // カメラ定数バッファを設定
+    commandList->SetGraphicsRootConstantBufferView
+    (
+        0,
+        cameraSystem->GetCameraBuffer(*camera)->GetNativeBufferPtr()->GetGPUVirtualAddress()
+    );
 
-    // シーンCBV
+    // シーン用定数バッファの更新（ライト数やカメラ位置）
     SceneConstants* sceneData = (SceneConstants*)m_sceneConstantBuffer->LockBufferForWrite();
     sceneData->activeLightCount = lightSystem->GetActiveLightCount();
+
     Entity currentCameraEntity = cameraSystem->GetCurrentEntity();
     if (currentCameraEntity != INVALID_ENTITY)
     {
         Transform* cameraTransform = world.GetComponent<Transform>(currentCameraEntity);
         sceneData->cameraWorldPosition = Vector4(cameraTransform->position, 1.0f);
     }
-    m_sceneConstantBuffer->UnlockBufferAfterWrite();
-    commandList->SetGraphicsRootConstantBufferView(4, m_sceneConstantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());
 
+    m_sceneConstantBuffer->UnlockBufferAfterWrite();
+
+    // シーンCBVを設定
+    commandList->SetGraphicsRootConstantBufferView
+    (
+        4,
+        m_sceneConstantBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress()
+    );
+
+    // ライトバッファを設定
     if (lightSystem->GetActiveLightCount() > 0)
     {
         commandList->SetGraphicsRootDescriptorTable(3, lightSystem->GetLightBufferGpuHandle());
     }
 
+    // 定数バッファリング（リングバッファ）の初期化
     m_currentObjectBufferIndex = 0;
-
     const UINT frameIndex = Graphics::GetCurrentFrameResource()->GetFrameIndex();
     const UINT alignedObjectConstantsSize = m_objectConstantBufferRing->GetStride();
     const D3D12_GPU_VIRTUAL_ADDRESS gpuAddressBase = m_objectConstantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
 
-    View<SkinnedMeshRenderer, Transform> view(cm);
-    for (auto [entity, smr, transform] : view)
+    // スキンメッシュの描画ループ
+    View<SkinnedMeshRenderer, MeshFilter, Transform> view(cm);
+    for (auto [entity, smr, meshFilter, transform] : view)
     {
-        if (!smr.mesh || m_currentObjectBufferIndex >= MAX_SKINNED_OBJECTS_PER_FRAME)
+        // 無効なメッシュや上限超過をスキップ
+        if (!meshFilter.mesh || m_currentObjectBufferIndex >= MAX_SKINNED_OBJECTS_PER_FRAME)
         {
             OutputDebugStringA("SkinnedMeshRenderer Error: Asset path is not set or empty.\n");
-
             continue;
         }
 
-        Animator* animator = world.GetComponent<Animator>(TransformSystem::GetRoot(transform)->entity);
+        // Animator および行列情報の取得
+        if (!smr.animator)
+        {
+            smr.animator = world.GetComponent<Animator>(TransformSystem::GetInstance()->GetRoot(transform)->entity);
+        }
 
-        const Matrix4x4& worldMatrix = TransformSystem::GetLocalToWorldMatrix(transform);
+        const Matrix4x4& worldMatrix = transform.localToWorldMatrix;
 
-        GraphicsBuffer* vertexBuffer = smr.mesh->GetVertexBuffer();
-        GraphicsBuffer* indexBuffer = smr.mesh->GetIndexBuffer();
+        // 入力アセンブラステージ設定（頂点・インデックスバッファ）
+        GraphicsBuffer* vertexBuffer = meshFilter.mesh->GetVertexBuffer();
+        GraphicsBuffer* indexBuffer = meshFilter.mesh->GetIndexBuffer();
         if (!vertexBuffer || !indexBuffer) continue;
 
         D3D12_VERTEX_BUFFER_VIEW vbView = {};
-        vbView.BufferLocation = smr.mesh->GetVertexBuffer()->GetNativeBufferPtr()->GetGPUVirtualAddress();
-        vbView.StrideInBytes = smr.mesh->GetVertexBuffer()->GetStride();
-        vbView.SizeInBytes = smr.mesh->GetVertexBuffer()->GetSizeInBytes();
+        vbView.BufferLocation = vertexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
+        vbView.StrideInBytes = vertexBuffer->GetStride();
+        vbView.SizeInBytes = vertexBuffer->GetSizeInBytes();
         commandList->IASetVertexBuffers(0, 1, &vbView);
 
         D3D12_INDEX_BUFFER_VIEW ibView = {};
-        ibView.BufferLocation = smr.mesh->GetIndexBuffer()->GetNativeBufferPtr()->GetGPUVirtualAddress();
-        ibView.SizeInBytes = smr.mesh->GetIndexBuffer()->GetSizeInBytes();
+        ibView.BufferLocation = indexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
+        ibView.SizeInBytes = indexBuffer->GetSizeInBytes();
         ibView.Format = DXGI_FORMAT_R32_UINT;
         commandList->IASetIndexBuffer(&ibView);
 
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        for (UINT i = 0; i < smr.mesh->GetSubMeshCount(); ++i)
+        // サブメッシュごとの描画処理
+        for (UINT i = 0; i < meshFilter.mesh->GetSubMeshCount(); ++i)
         {
             if (m_currentObjectBufferIndex >= MAX_SKINNED_OBJECTS_PER_FRAME)
-            {
                 break;
-            }
 
-            const auto& submesh = smr.mesh->GetSubMesh(i);
+            const auto& submesh = meshFilter.mesh->GetSubMesh(i);
             if (submesh.materialIndex >= smr.materials.size()) continue;
             Material* material = smr.materials[submesh.materialIndex];
             if (!material) continue;
 
+            // スキンメッシュ用定数バッファの更新
             SkinnedObjectConstantsLayout constants;
             constants.worldMatrix = worldMatrix.Transpose();
             constants.diffuseColor = material->GetDiffuseColor();
             constants.specularColor = material->GetSpecularColor();
             constants.shininess = 64.0f;
 
-            const size_t boneCount = std::min(animator->skeleton->GetBoneCount(), SkinnedObjectConstantsLayout::MAX_BONES);
+            // ボーン行列の書き込み（最大ボーン数を超えないよう制限）
+            const size_t boneCount = std::min
+            (
+                smr.animator->skeleton->GetBoneCount(),
+                SkinnedObjectConstantsLayout::MAX_BONES
+            );
+
             for (size_t j = 0; j < boneCount; ++j)
             {
-                constants.boneMatrices[j] = animator->finalBoneMatrices[j].Transpose();
+                constants.boneMatrices[j] = smr.animator->finalBoneMatrices[j].Transpose();
             }
 
+            // リングバッファへのコピー
             const UINT bufferOffsetForFrame = frameIndex * MAX_SKINNED_OBJECTS_PER_FRAME;
             BYTE* dest = m_mappedObjectConstants + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
             memcpy(dest, &constants, sizeof(SkinnedObjectConstantsLayout));
 
-            D3D12_GPU_VIRTUAL_ADDRESS currentGpuAddres = gpuAddressBase + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
-            commandList->SetGraphicsRootConstantBufferView(1, currentGpuAddres);
+            // GPUアドレスをルートパラメータに設定
+            D3D12_GPU_VIRTUAL_ADDRESS currentGpuAddress = gpuAddressBase + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
+            commandList->SetGraphicsRootConstantBufferView(1, currentGpuAddress);
 
             m_currentObjectBufferIndex++;
 
-            // TextureのSRVを作成
+            // マテリアルのテクスチャ設定
             Texture2D* texture = material->GetTexture(Material::TextureSlot::Diffuse);
-            if (!texture)
-            {
-                continue;
-            }
-
             if (texture)
             {
                 D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = GetSRV(texture, srvAllocator);
                 commandList->SetGraphicsRootDescriptorTable(2, textureHandle);
             }
 
+            // 描画コマンド発行
             commandList->DrawIndexedInstanced(submesh.indexCount, 1, submesh.startIndex, 0, 0);
         }
     }

@@ -29,16 +29,6 @@ private:
 	std::unordered_map<Texture2D*, D3D12_GPU_DESCRIPTOR_HANDLE> m_srvCache;
 
 private:
-	/// <summary>
-	/// ボーンの階層を再帰的に更新します。
-	/// </summary>
-	/// <param name="bone"></param>
-	/// <param name="parentTransform"></param>
-	/// <param name="animation"></param>
-	/// <param name="currentTime"></param>
-	/// <param name="boneTransforms"></param>
-	void CalculateBoneTransform(const Bone* bone, const Matrix4x4& parentTransform, const Animation* animation, float currentTime, std::unordered_map<std::string, Matrix4x4>& boneTransforms);
-
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRV(Texture2D* tex, DescriptorAllocator* allocator);
 
 private:

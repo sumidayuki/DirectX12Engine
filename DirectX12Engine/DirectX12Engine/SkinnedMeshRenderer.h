@@ -6,13 +6,11 @@
 /// </summary>
 struct SkinnedMeshRenderer
 {
-	// 描画するメッシュ
-	// このメッシュはボーン情報を含んでいる必要があります。
-	Mesh* mesh = nullptr;
-
 	// 描画に使用するマテリアルにリスト
 	// Meshのサブメッシュインデックスと対応します。
 	std::vector<Material*> materials;
+
+	Animator* animator = nullptr;
 
 	// このレンダラーのルートボーンとなるエンティティ
 	// これにより、モデルの一部(剣など)を別のエンティティ階層に追従させることが可能になります。

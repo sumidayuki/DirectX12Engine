@@ -2,18 +2,12 @@
 
 const Matrix4x4& TransformSystem::GetLocalToWorldMatrix(Transform& transform)
 {
-	// 各種行列を再計算
-	RecalculateMatricesIfNeeded(transform);
-
 	// ワールド変換行列の参照を返す。
 	return transform.localToWorldMatrix;
 }
 
 const Matrix4x4& TransformSystem::GetWorldToLocalMatrix(Transform& transform)
 {
-	// 各種行列の再計算
-	RecalculateMatricesIfNeeded(transform);
-
 	// ワールド変換行列の逆行列の参照を返す。
 	return transform.worldToLocalMatrix;
 }
@@ -85,51 +79,18 @@ Vector3 TransformSystem::InverseTransformPoint(Transform& transform, const Vecto
 
 void TransformSystem::SetParent(Transform& transform, Transform* parent)
 {
-	Transform* transformParent = nullptr;
+	if (transform.parent == (parent ? parent->entity : INVALID_ENTITY)) return;
 
-	World& world = SceneManager::GetCurrentScene()->GetWorld();
-
+	// 古い親から削除
 	if (transform.parent != INVALID_ENTITY)
 	{
-		transformParent = world.GetComponent<Transform>(transform.parent);
+		std::erase(m_hierarchy[transform.parent], transform.entity);
 	}
 
-	if (parent == transformParent)
-	{
-		return;
-	}
-
-	// 親を変更する前のワールド空間内での位置を保存しておく。
-	const Vector3 worldPosition = GetPosition(transform);
-
-	// 既に親がいる場合は子供リストから自分を削除する
-	if (transformParent)
-	{
-		transformParent->children.remove(transform.entity);
-	}
-
-	// 新しい親の子供リストに自分を追加する
+	// 新しい親に登録
 	if (parent)
 	{
-		parent->children.push_back(transform.entity);
-	}
-
-	// 親変更後もワールド座標を維持する
-	if (true /* worldPositionStays */)
-	{
-		if (parent)
-		{
-			SetLocalPosition(transform, InverseTransformPoint(*parent, worldPosition));
-		}
-		else
-		{
-			SetLocalPosition(transform, worldPosition);
-		}
-	}
-
-	// 親エンティティの設定
-	if (parent)
-	{
+		m_hierarchy[parent->entity].push_back(transform.entity);
 		transform.parent = parent->entity;
 	}
 	else
@@ -137,22 +98,19 @@ void TransformSystem::SetParent(Transform& transform, Transform* parent)
 		transform.parent = INVALID_ENTITY;
 	}
 
-	transform.hasChanged = true;
 	transform.dirty = true;
+	transform.hasChanged = true;
 }
 
 void TransformSystem::UnsetParent(Transform& transform)
 {
-	World& world = SceneManager::GetCurrentScene()->GetWorld();
+	if (transform.parent == INVALID_ENTITY) return;
 
-	if (transform.parent != INVALID_ENTITY) 
-	{
-		Transform* parentTransform = world.GetComponent<Transform>(transform.parent);
+	std::erase(m_hierarchy[transform.parent], transform.entity);
 
-		parentTransform->children.remove(transform.entity);
-		transform.parent = INVALID_ENTITY;
-		transform.dirty = true;
-	}
+	transform.parent = INVALID_ENTITY;
+	transform.dirty = true;
+	transform.hasChanged = true;
 }
 
 Transform* TransformSystem::GetRoot(Transform& transform)
@@ -169,18 +127,19 @@ Transform* TransformSystem::GetRoot(Transform& transform)
 	return root;
 }
 
+int TransformSystem::GetChildCount(Transform* transform)
+{
+	auto it = m_hierarchy.find(transform->entity);
+	return (it != m_hierarchy.end()) ? (int)it->second.size() : 0;
+}
+
 Transform* TransformSystem::GetChild(Transform* transform, int index) 
 {
-	World& world = SceneManager::GetCurrentScene()->GetWorld();
+	auto it = m_hierarchy.find(transform->entity);
+	if (it == m_hierarchy.end() || index >= (int)it->second.size()) return nullptr;
 
-	// リスト構造はランダムアクセスができないので、
-	// シーケンシャルアクセスで目的のTransformを探す。
-	auto ite = transform->children.begin();
-	for (int i = 0; i < index; i++)
-	{
-		++ite;
-	}
-	return world.GetComponent<Transform>(*ite);
+	Entity childEntity = it->second[index];
+	return SceneManager::GetCurrentScene()->GetWorld().GetComponent<Transform>(childEntity);
 }
 
 Transform* TransformSystem::FindChild(Transform* transform, const std::string& name)
@@ -271,45 +230,59 @@ void TransformSystem::Rotate(Transform& transform, const Vector3 axis, float ang
 	transform.dirty = true;
 }
 
-void TransformSystem::RecalculateMatricesIfNeeded(Transform& transform)
+void TransformSystem::BuildHierarchy(ComponentManager& cm)
 {
-	World& world = SceneManager::GetCurrentScene()->GetWorld();
+	m_hierarchy.clear();
+	m_roots.clear();
 
-	// 親のワールド行列を使って自分のワールド行列を計算
-	if (transform.parent != INVALID_ENTITY)
+	auto& entities = m_transformStorage->GetEntities();
+	for (Entity e : entities)
 	{
-		transform.localToWorldMatrix = transform.localMatrix * world.GetComponent<Transform>(transform.parent)->localToWorldMatrix;
-	}
-	else
-	{
-		transform.localToWorldMatrix = transform.localMatrix;
-	}
+		Transform* t = m_transformStorage->Get(e);
+		if (!t) continue;
 
-	// 逆行列も計算
-	transform.worldToLocalMatrix = transform.localToWorldMatrix.Inverse();
-
-	if (!transform.children.empty())
-	{
-		// すべての子に対しても再帰的に計算を実行
-		for (auto child : transform.children)
+		if (t->parent == INVALID_ENTITY)
 		{
-			Transform* childTransform = world.GetComponent<Transform>(child);
-
-			RecalculateMatricesIfNeeded(*childTransform);
+			m_roots.push_back(e);
+		}
+		else
+		{
+			m_hierarchy[t->parent].push_back(e);
 		}
 	}
 }
 
-void TransformSystem::Start(ComponentManager& cm, World& world)
+void TransformSystem::TopologicalSort()
 {
-	m_transformStorage = cm.GetStorage<Transform>();
+	m_sortedEntities.clear();
+	std::unordered_set<Entity> visited;
+
+	for (Entity root : m_roots)
+	{
+		Visit(root, visited);
+	}
 }
 
-void TransformSystem::Update(ComponentManager& cm, World& world)
+void TransformSystem::Visit(Entity entity, std::unordered_set<Entity>& visited)
 {
-	auto& entities = m_transformStorage->GetEntities();
+	if (visited.contains(entity)) return;
+	visited.insert(entity);
 
-	for (Entity e : entities)
+	auto it = m_hierarchy.find(entity);
+	if (it != m_hierarchy.end())
+	{
+		for (Entity child : it->second)
+		{
+			Visit(child, visited);
+		}
+	}
+
+	m_sortedEntities.push_back(entity);
+}
+
+void TransformSystem::RecalculateMatrices(World& world)
+{
+	for (Entity e : m_sortedEntities)
 	{
 		Transform* transform = m_transformStorage->Get(e);
 		if (!transform) continue;
@@ -320,16 +293,33 @@ void TransformSystem::Update(ComponentManager& cm, World& world)
 			transform->dirty = false;
 		}
 
-		Transform* parent = nullptr;
 		if (transform->parent != INVALID_ENTITY)
-			parent = m_transformStorage->Get(transform->parent);
-
-		if (parent)
+		{
+			Transform* parent = m_transformStorage->Get(transform->parent);
 			transform->localToWorldMatrix = transform->localMatrix * parent->localToWorldMatrix;
+		}
 		else
+		{
 			transform->localToWorldMatrix = transform->localMatrix;
+		}
 
 		transform->worldToLocalMatrix = transform->localToWorldMatrix.Inverse();
 		transform->hasChanged = false;
 	}
+}
+
+void TransformSystem::Start(ComponentManager& cm, World& world)
+{
+	m_transformStorage = cm.GetStorage<Transform>();
+	BuildHierarchy(cm);
+	TopologicalSort();
+}
+
+void TransformSystem::Update(ComponentManager& cm, World& world)
+{
+	if (!m_transformStorage) return;
+
+	BuildHierarchy(cm);
+	TopologicalSort();
+	RecalculateMatrices(world);
 }

@@ -2,6 +2,12 @@
 
 void AnimationSystem::Play(Animator& animator, const std::string& clipName)
 {
+	// 現在再生中のクリップと同じ名前で、既に再生中なら何もしない
+	if (animator.currentClip && animator.currentClip->GetName() == clipName && animator.isPlaying)
+	{
+		return;
+	}
+
 	// クリップの存在をチェック
 	auto it = animator.clips.find(clipName);
 	if (it == animator.clips.end() || !it->second)
@@ -11,15 +17,24 @@ void AnimationSystem::Play(Animator& animator, const std::string& clipName)
 		return;
 	}
 
+	// 再生するクリップ名を設定し、時間をリセット
+	animator.currentClipName = clipName;
+	animator.currentClip = it->second;
+	animator.currentTime = 0.0f;
+	animator.isPlaying = true;
+}
+
+void AnimationSystem::Play(Animator& animator, Animation& newAnimation)
+{
 	// 現在再生中のクリップと同じ名前で、既に再生中なら何もしない
-	if (animator.currentClip && animator.currentClip->GetName() == clipName && animator.isPlaying)
+	if (animator.currentClip && animator.currentClip->GetName() == newAnimation.GetName() && animator.isPlaying)
 	{
 		return;
 	}
 
 	// 再生するクリップ名を設定し、時間をリセット
-	animator.currentClipName = clipName;
-	animator.currentClip = it->second;
+	animator.currentClipName = newAnimation.GetName();
+	animator.currentClip = &newAnimation;
 	animator.currentTime = 0.0f;
 	animator.isPlaying = true;
 }

@@ -33,11 +33,13 @@ void PlayerCameraSystem::Draw(ComponentManager& cm, World& world)
 		offset.y = distance * Mathf::Sin(pitchRad);
 		offset.z = -distance * Mathf::Cos(pitchRad) * Mathf::Cos(yawRad);
 
+		TransformSystem* transformSystem = world.GetTransformSystem();
+
 		const Vector3 lookAtPoint = m_playerTransform->position + Vector3(0.0f, height, 0.0f);
-		TransformSystem::SetLocalPosition(transform, lookAtPoint + offset);
+		transformSystem->SetLocalPosition(transform, lookAtPoint + offset);
 
 		// ƒJƒƒ‰‚ð’Ž‹“_‚ÉŒü‚¯‚é
 		const Vector3 lookDirection = (lookAtPoint - transform.position).Normalized();
-		TransformSystem::SetLocalRotation(transform, Quaternion::LookRotation(lookDirection, Vector3::up));
+		transformSystem->SetLocalRotation(transform, Quaternion::LookRotation(lookDirection, Vector3::up));
 	}
 }

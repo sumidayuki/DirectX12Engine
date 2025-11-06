@@ -70,7 +70,7 @@ public:
     }
 
     template <typename T>
-    const std::deque<Entity>& GetEntities()
+    const std::vector<Entity>& GetEntities()
     {
         return GetStorage<T>()->GetEntities();
     }

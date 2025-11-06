@@ -3,8 +3,6 @@
 #include "Entity.h"
 #include "ComponentManager.h"
 #include <vector>
-#include <tuple>
-#include <type_traits>
 
 template<typename... Components>
 class View
@@ -17,7 +15,7 @@ public:
     View(ComponentManager& cm)
         : m_cm(cm)
     {
-        const std::deque<Entity>& sourceList = cm.GetEntities<std::tuple_element_t<0, std::tuple<Components...>>>();
+        const std::vector<Entity>& sourceList = cm.GetEntities<std::tuple_element_t<0, std::tuple<Components...>>>();
         for (Entity e : sourceList)
         {
             if (m_cm.HasComponents<Components...>(e))

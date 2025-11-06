@@ -8,9 +8,9 @@ template <typename T>
 class ComponentStorage : public IComponentStorage
 {
 private:
-	std::deque<T> m_datas;
+	std::vector<T> m_datas;
 	std::unordered_map<Entity, size_t> m_entityToIndex;
-	std::deque<Entity> m_indexToEntity;
+	std::vector<Entity> m_indexToEntity;
 
 public:
 	void Add(Entity entity, const T& component)
@@ -49,6 +49,6 @@ public:
 		return &m_datas[it->second];
 	}
 
-	const std::deque<T>& GetAll() const { return m_datas; }
-	const std::deque<Entity>& GetEntities() const { return m_indexToEntity; }
+	const std::vector<T>& GetAll() const { return m_datas; }
+	const std::vector<Entity>& GetEntities() const { return m_indexToEntity; }
 };

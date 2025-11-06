@@ -1,7 +1,7 @@
 #include "GameManagerSystem.h"
 #include "PlayerTag.h"
 #include "PlayerCamera.h"
-#include "EnemyTag.h"
+#include "Enemy.h"
 
 bool GameManagerSystem::Load(ComponentManager& cm, World& world)
 {
@@ -26,9 +26,13 @@ bool GameManagerSystem::Load(ComponentManager& cm, World& world)
 	Entity warrok = world.CreateWithModel(L"Assets/Warrok-00.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0));
 	Transform* transform = world.GetComponent<Transform>(warrok);
 	transform->scale = transform->scale * 1.5f;
-	EnemyTag enemyTag;
-	enemyTag.target = player;
-	world.AddComponent<EnemyTag>(warrok, EnemyTag{});
+	Enemy enemy;
+	enemy.target = player;
+	world.AddComponent<Enemy>(warrok, enemy);
+	AIAgent agent;
+	agent.speed = 100.0f;
+	agent.acceleration = 10.0f;
+	world.AddComponent<AIAgent>(warrok, agent);
 
 	return true;
 }

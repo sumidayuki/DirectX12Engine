@@ -99,6 +99,8 @@ void Application::WorkerThreadEntryPoint()
     auto previousTimeForFpsCounter = Time::m_startupTimePoint;
     auto previousFrameCount = Time::m_frameCount;
 
+    int frameCounter = 0;
+
     // ゲームループ
     while (m_isRunning)
     {
@@ -130,6 +132,20 @@ void Application::WorkerThreadEntryPoint()
             Time::m_deltaTime = Time::m_unscaledDeltaTime * Time::m_timeScale;
             Time::m_time += Time::m_deltaTime;
             Time::m_frameCount++;
+
+            frameCounter++;
+            auto fpsElapsed = std::chrono::duration<float>(currentTime - previousTimeForFpsCounter).count();
+            if (fpsElapsed >= 1.0f)
+            {
+                Time::m_framesPerSecond = frameCounter / fpsElapsed;
+                frameCounter = 0;
+                previousTimeForFpsCounter = currentTime;
+
+                // ウィンドウタイトル更新
+                std::string title = "My Game - FPS: " + std::to_string((int)Time::m_framesPerSecond);
+                SetWindowTextA(hWnd, title.c_str());
+            }
+
             previousTimeForVariable = currentTime;
         }
     }

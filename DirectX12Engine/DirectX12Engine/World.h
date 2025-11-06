@@ -21,6 +21,7 @@ private:
 	std::list<Entity>						m_allCameraEntities;
 	std::list<Camera*>						m_allCameras;
 	std::unordered_set<std::string>			m_entityNames;
+	TransformSystem*						m_transformSystem;
 
 private:
 	void CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants);
@@ -29,6 +30,8 @@ public:
 	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(2048, Graphics::BackBafferCount, DescriptorHeapType::CBV_SRV_UAV); }
 
 	DescriptorAllocator* GetSrvAllocator() { return m_srvAllocator.get(); }
+
+	TransformSystem* GetTransformSystem() { return m_transformSystem; }
 
 	/// <summary>
 	/// エンティティを作成します。

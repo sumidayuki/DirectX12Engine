@@ -10,9 +10,9 @@ void ProjectileSystem::Update(ComponentManager& cm, World& world)
 
 		projectile.velocity.y -= 9.8f;
 
-		TransformSystem::Translate(transform, projectile.velocity * Time::GetDeltaTime());
+		TransformSystem::GetInstance()->Translate(transform, projectile.velocity * Time::GetDeltaTime());
 
-		TransformSystem::SetLocalRotation(transform, Quaternion::LookRotation(projectile.velocity.Normalized()));
+		TransformSystem::GetInstance()->SetLocalRotation(transform, Quaternion::LookRotation(projectile.velocity.Normalized()));
 
 		projectile.lifeTime -= Time::GetDeltaTime();
 		if (projectile.lifeTime <= 0.0f)

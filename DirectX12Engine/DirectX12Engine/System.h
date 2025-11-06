@@ -28,6 +28,4 @@ public:
 	/// <param name="cm"></param>
 	/// <param name="world"></param>
 	virtual void Draw(ComponentManager& cm, World& world) {}
-
-	virtual ~System() = default;
 };
