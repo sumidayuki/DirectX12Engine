@@ -4,10 +4,11 @@
 /// トランスフォームを表すコンポーネントです。
 /// 親子関係や自分のローカル座標・ローカル空間座標・ワールド空間座標・ワールド空間座標の逆行列を持ちます。
 /// </summary>
-struct Transform
+struct Transform : public IComponentData
 {
 	Entity entity;
 	Entity parent = INVALID_ENTITY;
+	std::vector<Entity> children;
 
 	Vector3 position = Vector3(0.0f, 0.0f, 0.0f);
 	Quaternion rotation = Quaternion::identity;
@@ -19,4 +20,5 @@ struct Transform
 
 	bool dirty = true;
 	bool hasChanged = true;
+	bool inverseDirty = true;
 };

@@ -61,7 +61,7 @@ private:
 	void CalculateBoneTransform(const Bone* bone, const Matrix4x4& parentTransform, const Animation* animation, float currentTime, std::unordered_map<std::string, Matrix4x4>& boneTransforms);
 
 public:
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };
 
 template<typename T>

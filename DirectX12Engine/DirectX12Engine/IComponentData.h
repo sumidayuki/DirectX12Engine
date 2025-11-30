@@ -16,6 +16,4 @@ struct IComponentData
 /// </summary>
 template<typename T>
 concept ComponentType =
-std::is_base_of_v<IComponentData, T>&&
-std::is_trivial_v<T>&&
-std::is_standard_layout_v<T>;
+std::is_base_of_v<IComponentData, T>;

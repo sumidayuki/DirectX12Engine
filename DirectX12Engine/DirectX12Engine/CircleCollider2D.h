@@ -1,6 +1,6 @@
 #pragma once
 
-struct CircleCollider2D
+struct CircleCollider2D : IComponentData
 {
 	float radius;
 	CollisionInfo info;

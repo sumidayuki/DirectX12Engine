@@ -1,68 +1,85 @@
 #pragma once
 
 #include "Entity.h"
-#include "ComponentManager.h"
 #include <vector>
+#include "ArchetypeManager.h"
+#include "Chunk.h"
 
 template<typename... Components>
 class View
 {
 private:
-    ComponentManager& m_cm;
-    std::vector<Entity> m_entityList;
+    std::vector<Chunk*> m_chunks;
 
 public:
-    View(ComponentManager& cm)
-        : m_cm(cm)
+    View(World& world)
+        : m_chunks(world.GetArchetypeManager().GetChunks<Components...>())
     {
-        const std::vector<Entity>& sourceList = cm.GetEntities<std::tuple_element_t<0, std::tuple<Components...>>>();
-        for (Entity e : sourceList)
-        {
-            if (m_cm.HasComponents<Components...>(e))
-            {
-                m_entityList.push_back(e);
-            }
-        }
     }
 
     class Iterator
     {
     private:
-        size_t m_index;
-        const View* m_view;
+        std::vector<Chunk*>::iterator m_chunkIt;
+        std::vector<Chunk*>::iterator m_chunkEnd;
+        size_t m_entityIndex;
+
+    private:
+        void SkipToNextValid()
+        {
+            while (m_chunkIt != m_chunkEnd && m_entityIndex >= (*m_chunkIt)->GetCount())
+            {
+                m_chunkIt++;
+                m_entityIndex = 0;
+            }
+        }
 
     public:
-        Iterator(size_t index, const View* view) : m_index(index), m_view(view) {}
-
-        auto operator*() const
+        // begin—p
+        Iterator(std::vector<Chunk*>::iterator begin, std::vector<Chunk*>::iterator end)
+            : m_chunkIt(begin), m_chunkEnd(end), m_entityIndex(0)
         {
-            Entity currentEntity = m_view->m_entityList[m_index];
+            SkipToNextValid();
+        }
+
+        // end—p
+        Iterator(std::vector<Chunk*>::iterator end)
+            : m_chunkIt(end), m_chunkEnd(end), m_entityIndex(0)
+        {
+        }
+
+        std::tuple<Entity, Components&...> operator*()
+        {
+            Chunk* currentChunk = *m_chunkIt;
+            Entity entity = currentChunk->GetEntity(m_entityIndex);
+
             return std::tuple<Entity, Components&...>(
-                currentEntity,
-                *m_view->m_cm.GetComponent<Components>(currentEntity)...
+                entity,
+                *currentChunk->GetComponent<Components>(entity)...
             );
         }
 
         Iterator& operator++()
         {
-            do {
-                ++m_index;
-            } while (m_index < m_view->m_entityList.size() &&
-                !m_view->m_cm.HasComponents<Components...>(m_view->m_entityList[m_index]));
+            m_entityIndex++;
+            SkipToNextValid();
             return *this;
         }
 
-        bool operator!=(const Iterator& other) const { return m_index != other.m_index; }
+        bool operator!=(const Iterator& other) const
+        {
+            return m_chunkIt != other.m_chunkIt || m_entityIndex != other.m_entityIndex;
+        }
     };
 
-    Iterator begin() const
+public:
+    Iterator begin()
     {
-        if (m_entityList.empty())
-        {
-            return Iterator(m_entityList.size(), this);
-        }
-        return Iterator(0, this);
+        return Iterator(m_chunks.begin(), m_chunks.end());
     }
 
-    Iterator end() const { return Iterator(m_entityList.size(), this); }
+    Iterator end()
+    {
+        return Iterator(m_chunks.end());
+    }
 };

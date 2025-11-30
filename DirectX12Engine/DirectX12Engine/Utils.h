@@ -29,6 +29,15 @@ inline bool operator!=(const Entity& lhs, const Entity& rhs)
     return !(lhs == rhs);
 }
 
+inline bool operator<(const Entity& lhs, const Entity& rhs)
+{
+	if (lhs.id != rhs.id)
+	{
+		return lhs.id < rhs.id;
+	}
+	return lhs.generation < rhs.generation;
+}
+
 /// <summary>
 /// std::pair を unordered_map のキーとして使用する為のハッシュ関数です。
 /// この構造体は、operatorしか持っていないため、class ではなく struct として定義しています。

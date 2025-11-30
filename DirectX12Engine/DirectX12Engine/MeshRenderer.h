@@ -3,7 +3,7 @@
 /// <summary>
 /// メッシュのレンダリング方法を定義します。
 /// </summary>
-struct MeshRenderer
+struct MeshRenderer : IComponentData
 {
     // 描画に使用するマテリアルのリスト。
     // Meshのサブメッシュインデックスと対応します。

@@ -271,6 +271,45 @@
     <Filter Include="ゲームエンジン\システム\FNV-1a">
       <UniqueIdentifier>{bb6cb09c-3a42-4432-b7e2-14af2cf1f537}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\数学\光線">
+      <UniqueIdentifier>{c79065c6-33f1-4ada-9371-af578aad28b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\MeshRendererSystem\WF">
+      <UniqueIdentifier>{1550fed4-2afe-4e53-880a-3bbf9f5a021d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\MeshRenderer\WF">
+      <UniqueIdentifier>{0660becd-4729-461a-97eb-d96290d0e10b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Layer">
+      <UniqueIdentifier>{26338de0-b69a-40ca-a15e-3b5dfb957faf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\システム\Physics">
+      <UniqueIdentifier>{c6e83f44-d56d-49de-9e1e-725d7c96c9f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\システム\Layers">
+      <UniqueIdentifier>{b71e5926-8951-4f16-accb-f750097bdb21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Collider\Sphere">
+      <UniqueIdentifier>{8246b519-b7da-4ff4-bb7d-4341f994010e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\CollisionSystem\SpatialHashGrid\2D">
+      <UniqueIdentifier>{6ee0f1b6-e231-455d-a1fb-cd47c97e3a92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\CollisionSystem\SpatialHashGrid\3D">
+      <UniqueIdentifier>{2270b63a-264b-4d95-81e4-de10fd08cd73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\DebugRenderer">
+      <UniqueIdentifier>{3109a9d7-db8a-4cac-b9cc-ae1a3968c9e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\システム\Debug">
+      <UniqueIdentifier>{cfad79e5-5e46-4fae-bdf9-b51e061c1e1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\グラフィックス\シェーダー\LineShader">
+      <UniqueIdentifier>{578d8d64-f7ba-4c92-a032-a63535b933eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Collider\AABB">
+      <UniqueIdentifier>{85ffa155-12c3-4730-8ad2-bacccc1a2c15}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -338,9 +377,6 @@
     </ClCompile>
     <ClCompile Include="CameraSystem.cpp">
       <Filter>ゲームエンジン\ECS\System\CameraSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="SpatialHashGrid.cpp">
-      <Filter>ゲームエンジン\ECS\System\CollisionSystem</Filter>
     </ClCompile>
     <ClCompile Include="Reference.cpp">
       <Filter>ゲームエンジン\システム\参照カウント</Filter>
@@ -450,9 +486,6 @@
     <ClCompile Include="EntityManager.cpp">
       <Filter>ゲームエンジン\ECS\エンティティ</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentManager.cpp">
-      <Filter>ゲームエンジン\ECS\コンポーネント</Filter>
-    </ClCompile>
     <ClCompile Include="ProjectileSystem.cpp">
       <Filter>ゲームエンジン\ECS\System\ProjectileSystem</Filter>
     </ClCompile>
@@ -477,6 +510,27 @@
     <ClCompile Include="ArchetypeManager.cpp">
       <Filter>ゲームエンジン\ECS\Archetype</Filter>
     </ClCompile>
+    <ClCompile Include="Ray.cpp">
+      <Filter>ゲームエンジン\数学\光線</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>ゲームエンジン\システム\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="WFMeshRendererSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\MeshRendererSystem\WF</Filter>
+    </ClCompile>
+    <ClCompile Include="SpatialHashGrid2D.cpp">
+      <Filter>ゲームエンジン\ECS\System\CollisionSystem\SpatialHashGrid\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SpatialHashGrid.cpp">
+      <Filter>ゲームエンジン\ECS\System\CollisionSystem\SpatialHashGrid\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugManager.cpp">
+      <Filter>ゲームエンジン\システム\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugLineRenderer.cpp">
+      <Filter>ゲームエンジン\システム\Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h">
@@ -490,12 +544,6 @@
     </ClInclude>
     <ClInclude Include="InputManager.h">
       <Filter>ゲームエンジン\入力</Filter>
-    </ClInclude>
-    <ClInclude Include="IComponentStorage.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント</Filter>
-    </ClInclude>
-    <ClInclude Include="ComponentStorage.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント</Filter>
     </ClInclude>
     <ClInclude Include="System.h">
       <Filter>ゲームエンジン\ECS\System</Filter>
@@ -604,9 +652,6 @@
     </ClInclude>
     <ClInclude Include="CameraSystem.h">
       <Filter>ゲームエンジン\ECS\System\CameraSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="SpatialHashGrid.h">
-      <Filter>ゲームエンジン\ECS\System\CollisionSystem</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>ゲームエンジン\システム\Utils</Filter>
@@ -758,9 +803,6 @@
     <ClInclude Include="EntityManager.h">
       <Filter>ゲームエンジン\ECS\エンティティ</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentManager.h">
-      <Filter>ゲームエンジン\ECS\コンポーネント</Filter>
-    </ClInclude>
     <ClInclude Include="StringUtility.h">
       <Filter>ゲームエンジン\システム\文字列</Filter>
     </ClInclude>
@@ -830,10 +872,61 @@
     <ClInclude Include="FNV-1a.h">
       <Filter>ゲームエンジン\システム\FNV-1a</Filter>
     </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>ゲームエンジン\数学\光線</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>ゲームエンジン\システム\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="WFMeshRendererSystem.h">
+      <Filter>ゲームエンジン\ECS\System\MeshRendererSystem\WF</Filter>
+    </ClInclude>
+    <ClInclude Include="WFMeshRenderer.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\MeshRenderer\WF</Filter>
+    </ClInclude>
+    <ClInclude Include="Layer.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="Layers.h">
+      <Filter>ゲームエンジン\システム\Layers</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxCollider.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Collider\Box</Filter>
+    </ClInclude>
+    <ClInclude Include="SphereCollider.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Collider\Sphere</Filter>
+    </ClInclude>
+    <ClInclude Include="SpatialHashGrid2D.h">
+      <Filter>ゲームエンジン\ECS\System\CollisionSystem\SpatialHashGrid\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SpatialHashGrid.h">
+      <Filter>ゲームエンジン\ECS\System\CollisionSystem\SpatialHashGrid\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugRenderer.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\DebugRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugManager.h">
+      <Filter>ゲームエンジン\システム\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugLineRenderer.h">
+      <Filter>ゲームエンジン\システム\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTextRenderer.h">
+      <Filter>ゲームエンジン\システム\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugStats.h">
+      <Filter>ゲームエンジン\システム\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="AABBCollider.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Collider\AABB</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
       <Filter>ゲームエンジン\ECS\System\SpriteRendererSystem</Filter>
+    </None>
+    <None Include="Light.hlsli">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Light</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -842,6 +935,9 @@
     </FxCompile>
     <FxCompile Include="SkinnedMeshRenderer.hlsl">
       <Filter>ゲームエンジン\ECS\System\SkinnedMeshRendererSystem</Filter>
+    </FxCompile>
+    <FxCompile Include="LineShader.hlsl">
+      <Filter>ゲームエンジン\グラフィックス\シェーダー\LineShader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

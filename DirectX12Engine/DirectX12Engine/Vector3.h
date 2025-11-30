@@ -86,6 +86,9 @@ public:
 	// 3次元ベクトルの大きさを指定された範囲にクランプした新しい3次元ベクトルを作成します。
 	static Vector3 ClampMagnitude(const Vector3& vector, float minValue, float maxValue);
 
+	// 2つのベクトルの内積を返します。
+	static float Dot(const Vector3& lhs, const Vector3& rhs);
+
 	// 2つのベクトルの外積を返します。
 	static Vector3 Cross(const Vector3& lhs, const Vector3& rhs);
 
@@ -97,6 +100,10 @@ public:
 
 	// 正規化された新しい3次元ベクトルを作成します。
 	static Vector3 Normalize(const Vector3& vector);
+
+	static Vector3 Max(const Vector3& a, const Vector3& b);
+
+	static Vector3 Min(const Vector3& a, const Vector3& b);
 };
 
 Vector3 operator +(const Vector3& lhs, const Vector3& rhs);

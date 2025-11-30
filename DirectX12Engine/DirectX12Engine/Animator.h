@@ -3,7 +3,7 @@
 /// <summary>
 /// エンティティのアニメーション状態を管理するコンポーネントです。
 /// </summary>
-struct Animator
+struct Animator : IComponentData
 {
 	// このAnimatorが利用可能な全てのアニメーションクリップのマップ
 	// キーはアニメーション名です。

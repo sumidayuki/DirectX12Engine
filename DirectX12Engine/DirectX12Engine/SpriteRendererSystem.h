@@ -28,7 +28,7 @@ public:
     void SetSprite(SpriteRenderer* spriteRenderer, Sprite* sprite);
 
 private:
-	void Start(ComponentManager& cm, World& world) override;
+	void Start(World& world) override;
 
-	void Draw(ComponentManager& cm, World& world) override;
+	void Draw(World& world) override;
 };

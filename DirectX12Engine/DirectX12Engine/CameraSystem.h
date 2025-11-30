@@ -32,5 +32,5 @@ public:
 	GraphicsBuffer* GetCameraBuffer(Camera& camera) const { return camera.cameraBuffer.Get(); }
 
 private:
-	void InternalRender(ComponentManager& cm, World& world) override;
+	void InternalRender(World& world) override;
 };

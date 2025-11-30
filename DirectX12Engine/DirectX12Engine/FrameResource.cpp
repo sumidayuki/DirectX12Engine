@@ -1,4 +1,5 @@
 #include "FrameResource.h"
+#include "DebugManager.h"
 
 FrameResource::FrameResource(UINT frameIndex, ID3D12Resource* backBuffer, D3D12_CPU_DESCRIPTOR_HANDLE handleRTV)
 	: m_frameIndex(frameIndex)
@@ -109,6 +110,10 @@ void FrameResource::Render()
 	WaitUntilReadyToRender();
 
 	SceneManager::Draw();
+
+#ifdef _DEBUG
+	DebugManager::GetInstance()->Render();
+#endif
 
 	//------------------------------------------------------------------------------------
 	// コマンド「バックバッファがプレゼント状態に遷移するまで待つ」をコマンドリストに追加する。

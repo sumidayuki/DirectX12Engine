@@ -14,6 +14,7 @@ private:
 	Transform* m_cameraTransform;
 	Transform* m_bowTransform;
 
+	Transform* m_coll;
 
 	float m_attackRange;
 
@@ -30,7 +31,7 @@ private:
 	void Attack(Transform& transform, World& world);
 
 private:
-	void Start(ComponentManager& cm, World& world) override;
+	void Start(World& world) override;
 	
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };

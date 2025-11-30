@@ -4,7 +4,7 @@
 /// スプライトをレンダリングするための情報を持つコンポーネントです。
 /// 定数バッファとディスクリプタヒープを作成する必要があります。
 /// </summary>
-struct SpriteRenderer
+struct SpriteRenderer : IComponentData
 {
 	bool					isEnabled = true;
 	ComPtr<Sprite>			sprite = nullptr;

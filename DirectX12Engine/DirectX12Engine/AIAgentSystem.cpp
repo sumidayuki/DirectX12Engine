@@ -11,9 +11,9 @@ void AIAgentSystem::ResetAI(AIAgent& aiAgent)
 	aiAgent.target = Vector3::max;
 }
 
-void AIAgentSystem::Update(ComponentManager& cm, World& world)
+void AIAgentSystem::Update(World& world)
 {
-	View<Transform, AIAgent> view(cm);
+	View<Transform, AIAgent> view(world);
 
 	for (auto [entity, transform, aiAgent] : view)
 	{

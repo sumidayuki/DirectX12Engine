@@ -3,7 +3,7 @@
 /// <summary>
 /// モデルの形状を定義するMeshアセットを保持します。
 /// </summary>
-struct MeshFilter
+struct MeshFilter : IComponentData
 {
 	Mesh* mesh = nullptr;
 };

@@ -256,14 +256,14 @@ void SpriteRendererSystem::SetSprite(SpriteRenderer* spriteRenderer, Sprite* spr
 	}
 }
 
-void SpriteRendererSystem::Start(ComponentManager& cm, World& world)
+void SpriteRendererSystem::Start(World& world)
 {
 	
 }
 
-void SpriteRendererSystem::Draw(ComponentManager& cm, World& world)
+void SpriteRendererSystem::Draw(World& world)
 {
-	View<Transform, SpriteRenderer> view(cm);
+	View<Transform, SpriteRenderer> view(world);
 
 	int spriteCount = 0;
 

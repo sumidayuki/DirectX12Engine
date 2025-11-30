@@ -8,6 +8,7 @@
 #include "CameraSystem.h"
 #include "SpriteRendererSystem.h"
 #include "MeshRendererSystem.h"
+#include "WFMeshRendererSystem.h"
 #include "CollisionSystem.h"
 #include "TransformSystem.h"
 #include "LightSystem.h"

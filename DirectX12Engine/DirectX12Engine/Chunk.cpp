@@ -50,14 +50,24 @@ Chunk::~Chunk()
 {
 	if (m_buffer)
 	{
+		// Call destructors for all active components
+		for (size_t i = 0; i < m_count; ++i)
+		{
+			for (const auto& type : m_archetype->types)
+			{
+				void* componentPtr = m_buffer + m_archetype->offsets[m_typeIndexMap[type.hash]] + i * m_archetype->totalSize;
+				type.destroy(componentPtr);
+			}
+		}
+
 #if defined(__cpp_aligned_new) || (_MSC_VER && _HAS_CXX17)
 		::operator delete(m_buffer, std::align_val_t(m_bufferAlignment));
 #else
-	#if defined(_MSC_VER)
+#if defined(_MSC_VER)
 		_aligned_free(m_buffer);
-	#else
+#else
 		free(m_buffer);
-	#endif
+#endif
 #endif
 	}
 }
@@ -71,10 +81,30 @@ Chunk& Chunk::operator=(Chunk&& other) noexcept
 {
 	if (this != &other)
 	{
-		this->~Chunk();
+		// Destroy existing components before moving
+		if (m_buffer)
+		{
+			for (size_t i = 0; i < m_count; ++i)
+			{
+				for (const auto& type : m_archetype->types)
+				{
+					void* componentPtr = m_buffer + m_archetype->offsets[m_typeIndexMap[type.hash]] + i * m_archetype->totalSize;
+					type.destroy(componentPtr);
+				}
+			}
+#if defined(__cpp_aligned_new) || (_MSC_VER && _HAS_CXX17)
+			::operator delete(m_buffer, std::align_val_t(m_bufferAlignment));
+#else
+#if defined(_MSC_VER)
+			_aligned_free(m_buffer);
+#else
+			free(m_buffer);
+#endif
+#endif
+		}
 		MoveFrom(std::move(other));
 	}
-	
+
 	return *this;
 }
 
@@ -87,6 +117,12 @@ void Chunk::MoveFrom(Chunk&& other)
 	m_entities = std::move(other.m_entities);
 	m_typeIndexMap = std::move(other.m_typeIndexMap);
 	m_bufferAlignment = other.m_bufferAlignment;
+
+	other.m_archetype = nullptr;
+	other.m_buffer = nullptr;
+	other.m_capacity = 0;
+	other.m_count = 0;
+	other.m_bufferAlignment = 0;
 }
 
 size_t Chunk::FindEntityIndex(Entity e) const
@@ -131,7 +167,7 @@ void Chunk::WriteComponentByHash(size_t index, uint64_t hash, const void* src)
 		return;
 	}
 	const auto& t = m_archetype->types[m_typeIndexMap[hash]];
-	std::memcpy(dst, src, t.size);
+	t.copy_construct(dst, src);
 }
 
 const void* Chunk::ReadComponentByHash(size_t index, uint64_t hash) const
@@ -151,20 +187,31 @@ Entity Chunk::RemoveEntity(Entity entity)
 	size_t idx = FindEntityIndex(entity);
 	if (idx == SIZE_MAX) return INVALID_ENTITY;
 
+	// Call destructors for the component being removed
+	for (const auto& type : m_archetype->types)
+	{
+		void* componentPtr = m_buffer + m_archetype->offsets[m_typeIndexMap[type.hash]] + idx * m_archetype->totalSize;
+		type.destroy(componentPtr);
+	}
+
 	size_t last = m_count - 1;
 	Entity moved = INVALID_ENTITY;
 
 	if (idx != last)
 	{
+		// Move the last entity's components to the removed entity's position
 		for (size_t i = 0; i < m_archetype->types.size(); ++i)
 		{
-			const auto& t = m_archetype->types[i];
+			const auto& type = m_archetype->types[i];
 			size_t offset = m_archetype->offsets[i];
-			std::memmove(
-				m_buffer + offset + idx * m_archetype->totalSize,
-				m_buffer + offset + last * m_archetype->totalSize,
-				t.size
-			);
+
+			void* dst = m_buffer + offset + idx * m_archetype->totalSize;
+			void* src = m_buffer + offset + last * m_archetype->totalSize;
+
+			// Destroy the component at destination before moving
+			type.destroy(dst);
+			// Move construct the component
+			type.move_construct(dst, src);
 		}
 
 		moved = m_entities[last];

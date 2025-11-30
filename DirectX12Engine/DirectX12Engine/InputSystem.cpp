@@ -1,8 +1,8 @@
 #include "InputSystem.h"
 
-void InputSystem::Update(ComponentManager& cm, World& world)
+void InputSystem::Update(World& world)
 {
-    View<Input> view(cm);
+    View<Input> view(world);
 
     for (auto [entity, input] : view)
     {

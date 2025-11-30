@@ -9,23 +9,21 @@
 class System
 {
 public:
-	virtual bool Load(ComponentManager& cm, World& world) { return true; }
+	virtual bool Load(World& world) { return true; }
 
-	virtual void Start(ComponentManager& cm, World& world) {}
+	virtual void Start(World& world) {}
 
 	/// <summary>
 	/// Systemの更新処理を行います。実装は任意です。
 	/// </summary>
-	/// <param name="cm">コンポーネントマネージャーの参照。Viewを使用する時などに使います。</param>
 	/// <param name="world">ワールドの参照。Entityを生成したりなどに使います</param>
-	virtual void Update(ComponentManager& cm, World& world) {}
+	virtual void Update(World& world) {}
 
-	virtual void InternalRender(ComponentManager& cm, World& world) {}
+	virtual void InternalRender(World& world) {}
 
 	/// <summary>
 	/// Systemの描画処理を行います。実装は任意です。
 	/// </summary>
-	/// <param name="cm"></param>
 	/// <param name="world"></param>
-	virtual void Draw(ComponentManager& cm, World& world) {}
+	virtual void Draw(World& world) {}
 };

@@ -14,7 +14,7 @@ enum class CameraClearFlags
 /// <summary>
 /// ƒJƒƒ‰‚ğ•\‚µ‚Ü‚·B
 /// </summary>
-struct Camera
+struct Camera : IComponentData
 {
     CameraClearFlags        clearFlags = CameraClearFlags::SolidColor;
     Color                   backgroundColor = Color::cornflowerBlue;

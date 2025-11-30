@@ -36,7 +36,7 @@ private:
 	static void StaticDestructor();
 
 public:
-	void Start(ComponentManager& cm, World& world) override;
+	void Start(World& world) override;
 
-	void Draw(ComponentManager& cm, World& world) override;
+	void Draw(World& world) override;
 };

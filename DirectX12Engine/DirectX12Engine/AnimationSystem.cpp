@@ -124,9 +124,9 @@ void AnimationSystem::CalculateBoneTransform(const Bone* bone, const Matrix4x4& 
 	}
 }
 
-void AnimationSystem::Update(ComponentManager& cm, World& world)
+void AnimationSystem::Update(World& world)
 {
-	View<Animator> view(cm);
+	View<Animator> view(world);
 
 	for (auto [entity, animator] : view)
 	{

@@ -153,6 +153,11 @@ Vector3 Vector3::ClampMagnitude(const Vector3& vector, float minValue, float max
     }
 }
 
+float Vector3::Dot(const Vector3& lhs, const Vector3& rhs)
+{
+    return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+}
+
 Vector3 Vector3::Cross(const Vector3& lhs, const Vector3& rhs)
 {
     return Vector3
@@ -186,6 +191,27 @@ Vector3 Vector3::LerpUnclamped(const Vector3& a, const Vector3& b, float t)
 Vector3 Vector3::Normalize(const Vector3& vector)
 {
     return vector.Normalized();
+}
+
+Vector3 Vector3::Max(const Vector3& a, const Vector3& b)
+{
+    return Vector3
+    (
+        (a.x > b.x) ? a.x : b.x,
+        (a.y > b.y) ? a.y : b.y,
+        (a.z > b.z) ? a.z : b.z
+    );
+}
+
+
+Vector3 Vector3::Min(const Vector3& a, const Vector3& b)
+{
+    return Vector3
+    (
+        (a.x < b.x) ? a.x : b.x,
+        (a.y < b.y) ? a.y : b.y,
+        (a.z < b.z) ? a.z : b.z
+    );
 }
 
 Vector3 operator+(const Vector3& lhs, const Vector3& rhs)

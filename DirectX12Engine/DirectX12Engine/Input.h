@@ -3,7 +3,7 @@
 /// <summary>
 /// Inputを扱うコンポーネントです。
 /// </summary>
-struct Input
+struct Input : IComponentData
 {
 	bool moveUp;		// 上方向
 	bool moveDown;		// 下方向

@@ -40,7 +40,7 @@ void AssetManager::LoadAsset(AssetType type, const std::wstring& path)
     }
 }
 
-Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
+Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation, LayerMask layer)
 {
     World& world = SceneManager::GetCurrentScene()->GetWorld();
 
@@ -50,7 +50,7 @@ Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, co
         return INVALID_ENTITY;
     }
 
-    Entity rootEntity = CreateEntityFromPrefab(*modelData->rootNode, modelData, INVALID_ENTITY);
+    Entity rootEntity = CreateEntityFromPrefab(*modelData->rootNode, modelData, INVALID_ENTITY, layer);
 
     if (rootEntity != INVALID_ENTITY)
     {
@@ -64,30 +64,36 @@ Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, co
         system->SetLocalPosition(*rootTransform, localPosition);
         system->SetLocalRotation(*rootTransform, localRotation);
 
-        // If the model has animations, add an Animator component to the root entity
         if (modelData->skeleton && !modelData->animations.empty())
         {
             Animator animator;
             animator.skeleton = modelData->skeleton;
             animator.clips = modelData->animations;
-            // Set default clip
             animator.currentClip = modelData->animations.begin()->second;
             animator.currentClipName = modelData->animations.begin()->first;
             world.AddComponent<Animator>(rootEntity, animator);
         }
-    }
 
-    //PrintHierarchy(world.GetComponent<Transform>(rootEntity), 0);
+        // レイヤー設定
+        Layer layerComp;
+        layerComp.layer = layer;
+        world.AddComponent<Layer>(rootEntity, layerComp);
+    }
 
     return rootEntity;
 }
 
-Entity AssetManager::CreateEntityFromPrefab(const PrefabNode& node, const ModelData* modelData, Entity parentEntity)
+Entity AssetManager::CreateEntityFromPrefab(const PrefabNode& node, const ModelData* modelData, Entity parentEntity, LayerMask layer)
 {
     World& world = SceneManager::GetCurrentScene()->GetWorld();
 
     Entity entity = world.CreateEntity(node.name);
     Transform* transform = world.GetComponent<Transform>(entity);
+
+    // レイヤー設定
+    Layer layerComp;
+    layerComp.layer = layer;
+    world.AddComponent<Layer>(entity, layerComp);
 
     if (parentEntity != INVALID_ENTITY)
     {
@@ -138,7 +144,7 @@ Entity AssetManager::CreateEntityFromPrefab(const PrefabNode& node, const ModelD
 
     for (const auto& childNode : node.children)
     {
-        CreateEntityFromPrefab(*childNode, modelData, entity);
+        CreateEntityFromPrefab(*childNode, modelData, entity, layer);
     }
 
     return entity;

@@ -24,3 +24,13 @@ void Material::SetTexture(TextureSlot slot, Texture2D* texture)
     // テクスチャへのポインタを更新
     m_textures[slotIndex] = texture;
 }
+
+Texture2D* Material::GetTexture(TextureSlot slot) const
+{
+    if (m_textures[(int)slot])
+    {
+        return m_textures[(int)slot].Get();
+    }
+
+    return nullptr;
+}

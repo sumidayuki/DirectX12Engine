@@ -151,7 +151,7 @@ void SkinnedMeshRendererSystem::StaticDestructor()
     m_objectConstantBufferRing.Reset();
 }
 
-void SkinnedMeshRendererSystem::Start(ComponentManager& cm, World& world)
+void SkinnedMeshRendererSystem::Start(World& world)
 {
     m_sceneConstantBuffer.Attach(new GraphicsBuffer(
         GraphicsBuffer::Target::Constant,
@@ -174,7 +174,7 @@ void SkinnedMeshRendererSystem::Start(ComponentManager& cm, World& world)
 
 }
 
-void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
+void SkinnedMeshRendererSystem::Draw(World& world)
 {
     // コマンドリストとSRVアロケータを取得
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
@@ -234,7 +234,7 @@ void SkinnedMeshRendererSystem::Draw(ComponentManager& cm, World& world)
     const D3D12_GPU_VIRTUAL_ADDRESS gpuAddressBase = m_objectConstantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
 
     // スキンメッシュの描画ループ
-    View<SkinnedMeshRenderer, MeshFilter, Transform> view(cm);
+    View<SkinnedMeshRenderer, MeshFilter, Transform> view(world);
     for (auto [entity, smr, meshFilter, transform] : view)
     {
         // 無効なメッシュや上限超過をスキップ

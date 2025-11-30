@@ -27,10 +27,10 @@ private:
 	/// <summary>
 	/// システムの初期化処理。リソースの作成などを行います。
 	/// </summary>
-	void Start(ComponentManager& cm, World& world) override;
+	void Start(World& world) override;
 
 	/// <summary>
 	/// 毎フレームの更新処理。シーン内のライト情報を収集し、バッファを更新します。
 	/// </summary>
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };

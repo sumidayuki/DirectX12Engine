@@ -1,5 +1,6 @@
 ﻿#include "MainScene.h"
 #include "SystemList.h"
+#include "DebugManager.h"
 
 bool MainScene::Load()
 {
@@ -21,110 +22,37 @@ void MainScene::Start()
 {
 	//指向性ライト（Directional Light）の作成 (太陽光のような役割)
 	{
-		Entity directionalLightEntity = m_world.CreateEntity();
+		Entity directionalLightEntity = m_world.CreateSphere(500, 16, 16);
 	
 		Light light;
 		light.type = LightType::Directional;
-		light.color = Color(1.0f, 0.7f, 0.9f, 1.0f);
+		light.color = Color(1.0f, 1.0f, 0.9f, 1.0f);
 		m_world.AddComponent<Light>(directionalLightEntity, light);
 	
 		// ライトの向きをTransformの回転で制御する
 		Transform* lightTransform = m_world.GetComponent<Transform>(directionalLightEntity);
 		// 右斜め上から照らすように回転させる
-		lightTransform->rotation = Quaternion::Euler(-90.0f, 0.0f, 0.0f);
-		lightTransform->position = Vector3(0, 5000, 0);
+		lightTransform->rotation = Quaternion::Euler(90.0f, 0.0f, 0.0f);
+		lightTransform->position = Vector3(0, 2000, 0);
 	}
 
-	// 点光源（Point Light）の作成 (モデルの左側から照らす)
-	{
-    Entity pointLightEntity = m_world.CreateEntity();
+	Entity floor = m_world.CreateWithModel(L"Assets/floor-01.fbx", nullptr, Vector3::zero, Quaternion::identity, Layers::Environment);
 	
-    Light light;
-    light.type = LightType::Point; // タイプを Point に設定
-	light.color = Color(1.0f, 0.9f, 0.7f, 1.0f); // 少し暖かい白色
-	light.range = 1000.0f; // 光の届く範囲を十分に確保
+	Entity wall0 = m_world.CreateCube(2000.0f, 500.0f, 1.0f, Layers::Environment, Color::yellow, false);
+	m_world.GetComponent<Transform>(wall0)->position = Vector3(0, 250, 1000);
 	
-    // ポイントライトには向きは関係ないため、回転やspotCosAngleの設定は不要
-    m_world.AddComponent<Light>(pointLightEntity, light);
-    
-    // ライトの位置を設定
-    Transform* lightTransform = m_world.GetComponent<Transform>(pointLightEntity);
+	Entity wall1 = m_world.CreateCube(2000.0f, 500.0f, 1.0f, Layers::Environment, Color::yellow, false);
+	m_world.GetComponent<Transform>(wall1)->position = Vector3(0, 250, -1000);
 	
-	lightTransform->rotation = Quaternion::Euler(0, 45, 0);
-    
-	// モデルの少し手前、左上に配置
-    lightTransform->position = Vector3(-1000, 0, -1000);
-	}
+	Entity wall2 = m_world.CreateCube(1.0f, 500.0f, 2000.0f, Layers::Environment, Color::yellow, false);
+	m_world.GetComponent<Transform>(wall2)->position = Vector3(1000, 250, 0);
 	
-	// 点光源（Point Light）の作成 (モデルの左側から照らす)
-	{
-		Entity pointLightEntity = m_world.CreateEntity();
-	
-		Light light;
-		light.type = LightType::Point; // タイプを Point に設定
-		light.color = Color(1.0f, 0.9f, 0.7f, 1.0f); // 少し暖かい白色
-		light.range = 2000.0f; // 光の届く範囲を十分に確保
-	
-		// ポイントライトには向きは関係ないため、回転やspotCosAngleの設定は不要
-		m_world.AddComponent<Light>(pointLightEntity, light);
-	
-		// ライトの位置を設定
-		Transform* lightTransform = m_world.GetComponent<Transform>(pointLightEntity);
-	
-		lightTransform->rotation = Quaternion::LookRotation(Vector3(0, -135, 0) - lightTransform->position);
-	
-		// モデルの少し手前、左上に配置
-		lightTransform->position = Vector3(1000, 0, 1000);
-	}
-	
-	// 点光源（Point Light）の作成 (モデルの左側から照らす)
-	{
-		Entity pointLightEntity = m_world.CreateEntity();
-	
-		Light light;
-		light.type = LightType::Point; // タイプを Point に設定
-		light.color = Color(1.0f, 0.9f, 0.7f, 1.0f); // 少し暖かい白色
-		light.range = 2000.0f; // 光の届く範囲を十分に確保
-	
-		// ポイントライトには向きは関係ないため、回転やspotCosAngleの設定は不要
-		m_world.AddComponent<Light>(pointLightEntity, light);
-	
-		// ライトの位置を設定
-		Transform* lightTransform = m_world.GetComponent<Transform>(pointLightEntity);
-	
-		lightTransform->rotation = Quaternion::LookRotation(Vector3(0, 135, 0) - lightTransform->position);
-	
-		// モデルの少し手前、左上に配置
-		lightTransform->position = Vector3(-1000, 0, 1000);
-	}
-	
-	// 点光源（Point Light）の作成 (モデルの左側から照らす)
-	{
-		Entity pointLightEntity = m_world.CreateEntity();
-	
-		Light light;
-		light.type = LightType::Point; // タイプを Point に設定
-		light.color = Color(1.0f, 0.9f, 0.7f, 1.0f); // 少し暖かい白色
-		light.range = 2000.0f; // 光の届く範囲を十分に確保
-	
-		// ポイントライトには向きは関係ないため、回転やspotCosAngleの設定は不要
-		m_world.AddComponent<Light>(pointLightEntity, light);
-	
-		// ライトの位置を設定
-		Transform* lightTransform = m_world.GetComponent<Transform>(pointLightEntity);
-	
-		lightTransform->rotation = Quaternion::LookRotation(Vector3(0, -45, 0) - lightTransform->position);
-	
-		// モデルの少し手前、左上に配置
-		lightTransform->position = Vector3(1000, 0, -1000);
-	}
-
-	Entity floor = m_world.CreateWithModel(L"Assets/floor-01.fbx", nullptr, Vector3(0, 0, 0), Quaternion::Euler(0, 0, 0));	
+	Entity wall3 = m_world.CreateCube(1.0f, 500.0f, 2000.0f, Layers::Environment, Color::yellow, false);
+	m_world.GetComponent<Transform>(wall3)->position = Vector3(-1000, 250, 0);
 }
 
 void MainScene::Update()
 {	
-
 }
 
 void MainScene::Draw()

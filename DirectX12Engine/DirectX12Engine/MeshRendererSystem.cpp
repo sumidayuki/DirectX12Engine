@@ -170,7 +170,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE MeshRendererSystem::GetSRV(Texture2D* tex, Descripto
     return handle;
 }
 
-void MeshRendererSystem::Start(ComponentManager& cm, World& world)
+void MeshRendererSystem::Start(World& world)
 {
     TextureImporter importer;
     m_defaultWhiteTexture.Attach(importer.Import(L"Assets/White.png"));
@@ -201,7 +201,7 @@ void MeshRendererSystem::Start(ComponentManager& cm, World& world)
     m_currentObjectBufferIndex = 0;
 }
 
-void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
+void MeshRendererSystem::Draw(World& world)
 {
     // グラフィックスパイプラインの設定
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
@@ -261,7 +261,7 @@ void MeshRendererSystem::Draw(ComponentManager& cm, World& world)
     const D3D12_GPU_VIRTUAL_ADDRESS gpuAddressBase = m_objectConstantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
 
     // 描画対象のエンティティを取得
-    View<Transform, MeshFilter, MeshRenderer> view(cm);
+    View<Transform, MeshFilter, MeshRenderer> view(world);
     for (auto [entity, transform, meshFilter, renderer] : view)
     {
         if (!meshFilter.mesh) continue;

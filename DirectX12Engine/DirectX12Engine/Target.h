@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-struct Target
+struct Target : IComponentData
 {
 	uint32_t entityID;
 };

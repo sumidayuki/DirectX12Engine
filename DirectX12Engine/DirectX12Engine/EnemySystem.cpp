@@ -64,16 +64,30 @@ void EnemySystem::Attack(Entity& entity, Enemy& enemy, Transform& transform, Ani
 	}
 }
 
-void EnemySystem::Start(ComponentManager& cm, World& world)
+void EnemySystem::Start(World& world)
 {
+	Entity hitBox = world.CreateEntity("EnemyHitBox");
+	SphereCollider bColl;
+	bColl.radius = 70.0f;
+	bColl.offset = Vector3(0, 150, 0);
+	world.AddComponent<SphereCollider>(hitBox, bColl);
+	m_hitBox = world.GetComponent<Transform>(hitBox);
 }
 
-void EnemySystem::Update(ComponentManager& cm, World& world)
+void EnemySystem::Update(World& world)
 {
-	View<Enemy, AIAgent, Transform, Animator> view(cm);
+	View<Enemy, AIAgent, Transform, Animator> view(world);
 
 	for (auto [entity, enemy, aiAgent, transform, animator] : view)
 	{
+		if (!m_leftHandColl)
+		{
+			Transform* t = TransformSystem::GetInstance()->FindChild(&transform, "mixamorig:LeftHand");
+			SphereCollider bColl;
+			bColl.radius = 70.0f;
+			m_leftHandColl = world.AddComponent<SphereCollider>(t->entity, bColl);
+		}
+
 		enemy.stateTimer += Time::GetDeltaTime();
 
 		switch (enemy.state)
@@ -93,5 +107,7 @@ void EnemySystem::Update(ComponentManager& cm, World& world)
 		case EnemyState::Retreat:
 			break;
 		}
+
+		m_hitBox->position = TransformSystem::GetInstance()->GetPosition(transform);
 	}
 }

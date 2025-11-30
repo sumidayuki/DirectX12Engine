@@ -46,6 +46,16 @@ void Mesh::SetupMesh()
     }
 }
 
+void Mesh::SetVertices(const std::vector<Vertex>&& vertices)
+{
+    m_vertices = std::move(vertices);
+}
+
+void Mesh::SetIndices(const std::vector<uint32_t>&& indices, int subMeshIndex, bool calculateBounds, int baseVertex)
+{
+	m_indices = std::move(indices);
+}
+
 void Mesh::AddSubMesh(UINT startIndex, UINT indexCount, UINT materialIndex)
 {
     m_subMeshes.push_back({ startIndex, indexCount, materialIndex });

@@ -3,7 +3,7 @@
 class GameManagerSystem : public System
 {
 private:
-	bool Load(ComponentManager& cm, World& world) override;
-	void Start(ComponentManager& cm, World& world) override;
-	void Update(ComponentManager& cm, World& world) override;
+	bool Load(World& world) override;
+	void Start(World& world) override;
+	void Update(World& world) override;
 };

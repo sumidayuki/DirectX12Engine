@@ -1,8 +1,5 @@
 #pragma once
 
-// 授業で作りました。
-// Swap関数はfloat型でしかできなかったものをテンプレート化しました。
-
 /// <summary>
 /// 数学を管理するクラスです。
 /// </summary>
@@ -46,6 +43,12 @@ public:
 	static constexpr float NegativeInfinity = -Infinity;
 
 public:
+	// 2つの浮動小数点値を比較し、近似している場合は true を返します。
+	static constexpr bool Approximately(float a, float b)
+	{
+		return Abs(b - a) < Max(0.000001f * Max(Abs(a), Abs(b)), Epsilon * 8);
+	}
+
 	/// <summary>
 	/// 絶対値を返します。
 	/// </summary>
@@ -90,6 +93,12 @@ public:
 	static float Sqrt(float value) { return sqrt(value); }
 
 	static float Swap(float& a, float& b) { const float temp = a; a = b; b = temp; }
+
+	// 2つの値の最小値を返します。
+	static constexpr float Min(float a, float b) { return (a < b) ? a : b; }
+
+	// 2つの値の最大値を返します。
+	static constexpr float Max(float a, float b) { return (a > b) ? a : b; }
 
 	/// <summary>
 	/// 2つの値を交換します。

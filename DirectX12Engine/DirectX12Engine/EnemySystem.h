@@ -4,6 +4,10 @@
 class EnemySystem : public System
 {
 private:
+	Transform* m_hitBox;
+	SphereCollider* m_leftHandColl;
+
+private:
 	float GetTargetDistance(const Vector3 enemyPos, const Vector3 targetpos) const;
 
 	void Idle(Entity& entity, Enemy& enemy, Transform& transform, Animator& animator);
@@ -11,6 +15,6 @@ private:
 	void Attack(Entity& entity, Enemy& enemy, Transform& transform, Animator& animator);
 
 private:
-	void Start(ComponentManager& cm, World& world) override;
-	void Update(ComponentManager& cm, World& world) override;
+	void Start(World& world) override;
+	void Update(World& world) override;
 };

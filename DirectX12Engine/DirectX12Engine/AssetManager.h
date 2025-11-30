@@ -71,7 +71,8 @@ public:
 		const std::wstring& path,
 		Transform* parent = nullptr,
 		const Vector3& localPosition = Vector3::zero,
-		const Quaternion& localRotation = Quaternion::identity
+		const Quaternion& localRotation = Quaternion::identity,
+		LayerMask layer = Layers::Default
 	);
 
 	/// <summary>
@@ -84,8 +85,11 @@ private:
 	Entity CreateEntityFromPrefab(
 		const PrefabNode& node,
 		const ModelData* modelData,
-		Entity parentEntity
+		Entity parentEntity,
+		LayerMask layer
 	);
+
+	void BindBoneEntitiesRecursive(const Entity& entity, const Skeleton* skeleton, std::vector<Entity>& boneEntities, World& world);
 
 	void PrintHierarchy(Transform* transform, int level);
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-struct Arrow
+struct Arrow : IComponentData
 {
 	float speed;
 };

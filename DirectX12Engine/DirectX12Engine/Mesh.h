@@ -34,8 +34,6 @@ private:
     ComPtr<GraphicsBuffer>  m_indexBuffer;    // インデックスバッファ
     Bounds                  m_bounds;         // モデル空間での境界ボックス
     std::vector<SubMesh>    m_subMeshes;      // サブメッシュのリスト
-
-    // 一時的な頂点/インデックスデータを保持する
     std::vector<Vertex> m_vertices;
     std::vector<uint32_t> m_indices;
 
@@ -52,11 +50,14 @@ public:
     void AddVertex(const Vertex& vertex) { m_vertices.push_back(vertex); }
     void AddIndex(uint32_t index) { m_indices.push_back(index); }
     void AddVertices(const std::vector<Vertex>& vertices) { m_vertices.insert(m_vertices.end(), vertices.begin(), vertices.end()); }
+    void SetVertices(const std::vector<Vertex>&& vertices);
     void AddIndices(const std::vector<uint32_t>& indices) { m_indices.insert(m_indices.end(), indices.begin(), indices.end()); }
+	void SetIndices(const std::vector<uint32_t>&& indices, int subMeshIndex, bool calculateBounds = true, int baseVertex = 0);
     void AddSubMesh(UINT startIndex, UINT indexCount, UINT materialIndex);
 
     GraphicsBuffer* GetVertexBuffer() const { return m_vertexBuffer.Get(); }
     GraphicsBuffer* GetIndexBuffer() const { return m_indexBuffer.Get(); }
+    const std::vector<uint32_t>& GetIndices() const { return m_indices; }
     std::vector<Vertex>& GetMutableVertices() { return m_vertices; }
     UINT GetTotalIndexCount() const;
     UINT GetVertexCount() const { return (UINT)m_vertices.size(); }

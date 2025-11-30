@@ -1,322 +1,195 @@
 #include "CollisionSystem.h"
 #include "SpatialHashGrid.h"
+#include "SpatialHashGrid2D.h"
+#include "DebugManager.h"
 
-void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity entityB)
+void CollisionSystem::UpdateComponentState(CollisionInfo& info, Entity targetEntity, bool isHitNow)
 {
-	float dx = transformA.position.x - transformB.position.x;
-	float dy = transformA.position.y - transformB.position.y;
-
-	float distanceSquared = dx * dx + dy * dy;
-
-	float radiusSum = a.radius + b.radius;
-
-	if (distanceSquared <= (radiusSum * radiusSum)) 
+	if (isHitNow)
 	{
-		// circleAのステートを確認します。
-		switch (a.info.state)
+		// 新規衝突、または継続衝突
+		if (info.state == CollisionState::None || info.state == CollisionState::Exit)
 		{
-			// ステートが None なら
-		case CollisionState::None:
-			// ステートを Enter に変更します。 
-			a.info.state = CollisionState::Enter;
-			// other に entityB を代入します。
-			a.info.other = entityB;
-			break;
-
-			// ステートが Enter なら
-		case CollisionState::Enter:
-			// ステートを Stay に変更します。
-			a.info.state = CollisionState::Stay;
-			break;
-
-		default:
-			break;
+			info.state = CollisionState::Enter;
+			info.other = targetEntity;
+		}
+		else if (info.state == CollisionState::Enter || info.state == CollisionState::Stay)
+		{
+			info.state = CollisionState::Stay;
+			// 必要であればここで相手が変わった場合の処理（今回は割愛）
 		}
 	}
-	// 当たっていない時
 	else
 	{
-		if (a.info.other == entityB || a.info.other == INVALID_ENTITY)
+		// 今当たっていないが、前回ターゲットとして記録されていた場合（Exit処理）
+		if (info.other == targetEntity)
 		{
-			// circleAのステートを確認します。
-			switch (a.info.state)
+			if (info.state == CollisionState::Enter || info.state == CollisionState::Stay)
 			{
-				// ステートは Enter 又は Stay なら
-			case CollisionState::Enter:
-			case CollisionState::Stay:
-				// ステートを Exit に変更します。
-				a.info.state = CollisionState::Exit;
-				break;
-
-				// ステートがExitなら
-			case CollisionState::Exit:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
-
-			default:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
+				info.state = CollisionState::Exit;
+			}
+			else if (info.state == CollisionState::Exit)
+			{
+				info.state = CollisionState::None;
+				info.other = INVALID_ENTITY;
 			}
 		}
 	}
 }
 
-void CollisionSystem::CheckCollision(CircleCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity entityB)
+bool CollisionSystem::CheckPair(Entity entityA, Entity entityB, World& world)
 {
-	float halfWidth = b.rect.x / 2.0f;
-	float halfHeight = b.rect.y / 2.0f;
-	float closestX = std::clamp(transformA.position.x, transformB.position.x - halfWidth, transformB.position.x + halfWidth);
-	float closestY = std::clamp(transformA.position.y, transformB.position.y - halfHeight, transformB.position.y + halfHeight);
+	auto* transA = world.GetComponent<Transform>(entityA);
+	auto* transB = world.GetComponent<Transform>(entityB);
+	if (!transA || !transB) return false;
 
-	float dx = transformA.position.x - closestX;
-	float dy = transformA.position.y - closestY;
+	Vector3 posA = TransformSystem::GetInstance()->GetPosition(*transA);
+	Vector3 posB = TransformSystem::GetInstance()->GetPosition(*transB);
 
-	if ((dx * dx + dy * dy) <= (a.radius * a.radius)) 
+	// Aが Sphere の場合
+	if (world.HasComponent<SphereCollider>(entityA))
 	{
-		// a のステートを確認します。
-		switch (a.info.state)
+		auto& colA = *world.GetComponent<SphereCollider>(entityA);
+		Vector3 worldPosA = posA + colA.offset;
+
+		if (world.HasComponent<SphereCollider>(entityB)) // Sphere vs Sphere
 		{
-			// ステートが None なら
-		case CollisionState::None:
-			// ステートを Enter に変更します。 
-			a.info.state = CollisionState::Enter;
-			// other に entityB を代入します。
-			a.info.other = entityB;
-			break;
-
-			// ステートが Enter なら
-		case CollisionState::Enter:
-			// ステートを Stay に変更します。
-			a.info.state = CollisionState::Stay;
-			break;
-
-		default:
-			break;
+			auto& colB = *world.GetComponent<SphereCollider>(entityB);
+			return IsColliding(colA, worldPosA, colB, posB + colB.offset);
+		}
+		else if (world.HasComponent<AABBCollider>(entityB)) // Sphere vs AABB
+		{
+			auto& colB = *world.GetComponent<AABBCollider>(entityB);
+			return IsColliding(colA, worldPosA, colB, posB + colB.offset);
 		}
 	}
-	// 当たっていない時
-	else
+	// Aが AABB の場合
+	else if (world.HasComponent<AABBCollider>(entityA))
 	{
-		if (a.info.other.id == entityB.id && a.info.other.generation == entityB.generation || a.info.other == INVALID_ENTITY)
+		auto& colA = *world.GetComponent<AABBCollider>(entityA);
+		Vector3 worldPosA = posA + colA.offset;
+
+		if (world.HasComponent<SphereCollider>(entityB)) // AABB vs Sphere
 		{
-			// a のステートを確認します。
-			switch (a.info.state)
-			{
-				// ステートは Enter 又は Stay なら
-			case CollisionState::Enter:
-			case CollisionState::Stay:
-				// ステートを Exit に変更します。
-				a.info.state = CollisionState::Exit;
-				break;
-
-				// ステートがExitなら
-			case CollisionState::Exit:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
-
-			default:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
-			}
+			auto& colB = *world.GetComponent<SphereCollider>(entityB);
+			// 引数の順序を入れ替えて再利用
+			return IsColliding(colB, posB + colB.offset, colA, worldPosA);
+		}
+		else if (world.HasComponent<AABBCollider>(entityB)) // AABB vs AABB
+		{
+			auto& colB = *world.GetComponent<AABBCollider>(entityB);
+			return IsColliding(colA, worldPosA, colB, posB + colB.offset);
 		}
 	}
+
+	return false;
 }
 
-void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity entityB)
+bool CollisionSystem::IsColliding(const SphereCollider& a, const Vector3& posA, const SphereCollider& b, const Vector3& posB)
 {
-	float dx = std::abs(transformA.position.x - transformB.position.x);
-	float dy = std::abs(transformA.position.y - transformB.position.y);
-	float totalWidth = (a.rect.x + b.rect.x) / 2.0f;
-	float totalHeight = (a.rect.y + b.rect.y) / 2.0f;
-
-	if (dx <= totalWidth && dy <= totalHeight) 
-	{
-		// a のステートを確認します。
-		switch (a.info.state)
-		{
-			// ステートが None なら
-		case CollisionState::None:
-			// ステートを Enter に変更します。 
-			a.info.state = CollisionState::Enter;
-			// other に entityB を代入します。
-			a.info.other = entityB;
-			break;
-
-			// ステートが Enter なら
-		case CollisionState::Enter:
-			// ステートを Stay に変更します。
-			a.info.state = CollisionState::Stay;
-			break;
-
-		default:
-			break;
-		}
-	}
-	// 当たっていない時
-	else
-	{
-		if (a.info.other.id == entityB.id && a.info.other.generation == entityB.generation || a.info.other == INVALID_ENTITY)
-		{
-			// a のステートを確認します。
-			switch (a.info.state)
-			{
-				// ステートは Enter 又は Stay なら
-			case CollisionState::Enter:
-			case CollisionState::Stay:
-				// ステートを Exit に変更します。
-				a.info.state = CollisionState::Exit;
-				break;
-
-				// ステートがExitなら
-			case CollisionState::Exit:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
-
-			default:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
-			}
-		}
-	}
+	return GeometryUtility::SphereVSSphere(posA, a.radius, posB, b.radius);
 }
 
-void CollisionSystem::CheckCollision(BoxCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity entityB)
+bool CollisionSystem::IsColliding(const AABBCollider& a, const Vector3& posA, const AABBCollider& b, const Vector3& posB)
 {
-	float halfWidth = a.rect.x / 2.0f;
-	float halfHeight = a.rect.y / 2.0f;
-	float closestX = std::clamp(transformB.position.x, transformA.position.x - halfWidth, transformA.position.x + halfWidth);
-	float closestY = std::clamp(transformB.position.y, transformA.position.y - halfHeight, transformA.position.y + halfHeight);
+	Vector3 halfA = a.bounds.GetSize() * 0.5f;
+	Vector3 halfB = b.bounds.GetSize() * 0.5f;
 
-	float dx = transformB.position.x - closestX;
-	float dy = transformB.position.y - closestY;
+	// Min/Max の計算
+	Vector3 minA = posA - halfA;
+	Vector3 maxA = posA + halfA;
+	Vector3 minB = posB - halfB;
+	Vector3 maxB = posB + halfB;
 
-	if ((dx * dx + dy * dy) <= (b.radius * b.radius)) 
-	{
-		// a のステートを確認します。
-		switch (a.info.state)
-		{
-			// ステートが None なら
-		case CollisionState::None:
-			// ステートを Enter に変更します。 
-			a.info.state = CollisionState::Enter;
-			// other に entityB を代入します。
-			a.info.other = entityB;
-			break;
-
-			// ステートが Enter なら
-		case CollisionState::Enter:
-			// ステートを Stay に変更します。
-			a.info.state = CollisionState::Stay;
-			break;
-
-		default:
-			break;
-		}
-	}
-	// 当たっていない時
-	else
-	{
-		if (a.info.other == entityB || a.info.other == INVALID_ENTITY)
-		{
-			// a のステートを確認します。
-			switch (a.info.state)
-			{
-				// ステートは Enter 又は Stay なら
-			case CollisionState::Enter:
-			case CollisionState::Stay:
-				// ステートを Exit に変更します。
-				a.info.state = CollisionState::Exit;
-				break;
-
-				// ステートがExitなら
-			case CollisionState::Exit:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
-
-			default:
-				// ステートを None に変更します。
-				a.info.state = CollisionState::None;
-				break;
-			}
-		}
-	}
+	return GeometryUtility::AABBVSAABB(minA, maxA, minB, maxB);
 }
 
-void CollisionSystem::Update(ComponentManager& cm, World& world)
+bool CollisionSystem::IsColliding(const SphereCollider& sphere, const Vector3& spherePos, const AABBCollider& aabb, const Vector3& aabbPos)
 {
-	View<CircleCollider2D, Transform> circleView(cm);
-	View<BoxCollider2D, Transform> boxView(cm);
+	// AABBとSphereの判定ロジック（簡易実装：AABB上の最近接点を探す）
+	Vector3 halfBox = aabb.bounds.GetSize() * 0.5f;
+	Vector3 minBox = aabbPos - halfBox;
+	Vector3 maxBox = aabbPos + halfBox;
 
-	SpatialHashGrid grid(64.0f);
+	// クランプ処理で最近接点を求める
+	float closestX = std::max(minBox.x, std::min(spherePos.x, maxBox.x));
+	float closestY = std::max(minBox.y, std::min(spherePos.y, maxBox.y));
+	float closestZ = std::max(minBox.z, std::min(spherePos.z, maxBox.z));
 
-	for (auto [entity, collider, transform] : circleView) 
+	Vector3 closestPoint(closestX, closestY, closestZ);
+	float distanceSq = (closestPoint - spherePos).SqrMagnitude();
+
+	return distanceSq <= (sphere.radius * sphere.radius);
+}
+
+void CollisionSystem::Update(World& world)
+{
+	static SpatialHashGrid grid(1000.0f);
+	grid.Clear();
+
+	View<SphereCollider, Transform> sphereView(world);
+	View<AABBCollider, Transform> aabbView(world);
+
+	// Sphereの登録とデバッグ描画
+	for (auto [entity, collider, transform] : sphereView)
 	{
 		if (!entity.enabled) continue;
+		Vector3 center = TransformSystem::GetInstance()->GetPosition(transform) + collider.offset;
+		grid.AddEntity(entity, center);
 
-		if (!world.IsAlive(collider.info.other))
-		{
-			collider.info.other = INVALID_ENTITY;
-		}
-
-		grid.AddEntity(entity, Vector2{ transform.position.x, transform.position.y });
+		// 色の決定ロジックも共通化可能ですが、ここでは簡易的に
+		Color c = (collider.info.state == CollisionState::Enter || collider.info.state == CollisionState::Stay) ? Color::red : Color::green;
+		DebugManager::GetInstance()->DrawSphere(center, collider.radius, c);
 	}
 
-	for (auto [entity, collider, transform] : boxView) 
+	// AABBの登録とデバッグ描画
+	for (auto [entity, collider, transform] : aabbView)
 	{
 		if (!entity.enabled) continue;
-		grid.AddEntity(entity, Vector2{ transform.position.x, transform.position.y });
+		Vector3 center = TransformSystem::GetInstance()->GetPosition(transform) + collider.offset;
+		grid.AddEntity(entity, center);
+
+		Vector3 half = collider.bounds.GetSize() * 0.5f;
+		Color c = (collider.info.state == CollisionState::Enter || collider.info.state == CollisionState::Stay) ? Color::red : Color::green;
+		DebugManager::GetInstance()->DrawAABB(center - half, center + half, c);
 	}
 
-	for (auto [entityA, circleA, transformA] : circleView)
-	{
-		if (!entityA.enabled) continue;
-		auto nearEntities = grid.GetNearbyEntities(Vector2{ transformA.position.x, transformA.position.y });
-		for (Entity entityB : nearEntities) 
+	auto processCollisions = [&](Entity entityA, CollisionInfo& infoA, Transform& transformA)
 		{
-			if (entityA == entityB || !world.IsAlive(entityB)) continue;
+			auto nearEntities = grid.GetNearbyEntities(transformA.position);
 
-			if (cm.HasComponents<CircleCollider2D, Transform>(entityB)) 
+			Entity previousOther = infoA.other;
+			bool isHitThisFrame = false;
+			Entity hitTarget = INVALID_ENTITY;
+
+			for (Entity entityB : nearEntities)
 			{
-				auto* circleB = cm.GetComponent<CircleCollider2D>(entityB);
-				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(circleA, transformA, *circleB, *transformB, entityB);
+				if (entityA.id == entityB.id || !world.IsAlive(entityB)) continue;
+
+				// CheckPairを使うことで、相手がSphereでもAABBでも分岐なしで判定可能
+				if (CheckPair(entityA, entityB, world))
+				{
+					isHitThisFrame = true;
+					hitTarget = entityB;
+
+					// 必要なら相手側のStateもここで更新できますが、
+					// 基本的には「自分から見て当たったか」を全員分回せば整合性は取れます
+					break; // 単一衝突判定の場合はbreak。複数衝突対応ならリスト化が必要
+				}
 			}
-			else if (cm.HasComponents<BoxCollider2D, Transform>(entityB)) 
-			{
-				auto* boxB = cm.GetComponent<BoxCollider2D>(entityB);
-				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(circleA, transformA, *boxB, *transformB, entityB);
-			}
-		}
+
+			// 判定結果に基づいて状態更新を一括で行う
+			Entity targetToUpdate = isHitThisFrame ? hitTarget : previousOther;
+			UpdateComponentState(infoA, targetToUpdate, isHitThisFrame);
+		};
+
+	// Sphereについて回す
+	for (auto [entity, collider, transform] : sphereView) {
+		if (entity.enabled) processCollisions(entity, collider.info, transform);
 	}
 
-	for (auto [entityA, boxA, transformA] : boxView) 
-	{
-		if (!entityA.enabled) continue;
-		auto nearEntities = grid.GetNearbyEntities(Vector2{ transformA.position.x, transformA.position.y });
-		for (Entity entityB : nearEntities) 
-		{
-			if (entityA == entityB || !world.IsAlive(entityB)) continue;
-
-			if (cm.HasComponents<BoxCollider2D, Transform>(entityB)) 
-			{
-				auto* boxB = cm.GetComponent<BoxCollider2D>(entityB);
-				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(boxA, transformA, *boxB, *transformB, entityB);
-			}
-			else if (cm.HasComponents<CircleCollider2D, Transform>(entityB)) 
-			{
-				auto* circleB = cm.GetComponent<CircleCollider2D>(entityB);
-				auto* transformB = cm.GetComponent<Transform>(entityB);
-				CheckCollision(boxA, transformA, *circleB, *transformB, entityB);
-			}
-		}
+	// AABBについて回す
+	for (auto [entity, collider, transform] : aabbView) {
+		if (entity.enabled) processCollisions(entity, collider.info, transform);
 	}
 }

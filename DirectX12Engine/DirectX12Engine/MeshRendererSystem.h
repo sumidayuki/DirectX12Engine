@@ -22,7 +22,7 @@ struct ObjectConstantsLayout
 static constexpr UINT MAX_SRV_TEXTURES_PER_OBJECT = 8;
 // 1 (Materials: t0) + 8 (Textures: t1以降) = 9 スロット
 static constexpr UINT MESH_DESCRIPTOR_SLOTS_PER_OBJECT = 1 + MAX_SRV_TEXTURES_PER_OBJECT;
-static constexpr UINT MESH_TEXTURES_SLOT_OFFSET = 1; // t1 の開始位置はオフセット 1
+static constexpr UINT MESH_TEXTURES_SLOT_OFFSET = 1;
 
 /// <summary>
 /// 3Dメッシュを描画するシステムです。
@@ -71,7 +71,7 @@ private:
 
     D3D12_GPU_DESCRIPTOR_HANDLE GetSRV(Texture2D* tex, DescriptorAllocator* allocator);
 
-    void Start(ComponentManager& cm, World& world) override;
+    void Start(World& world) override;
 
-    void Draw(ComponentManager& cm, World& world) override;
+    void Draw(World& world) override;
 };

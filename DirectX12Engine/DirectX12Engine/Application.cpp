@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "SpriteRendererSystem.h"
 #include "MeshRendererSystem.h"
+#include "DebugManager.h"
 #include "TitleScene.h"
 #include "MainScene.h"
 
@@ -76,8 +77,12 @@ void Application::WorkerThreadEntryPoint()
 
     // メッシュレンダラーシステムの初期化
     MeshRendererSystem::StaticConstructor();
+    WFMeshRendererSystem::StaticConstructor();
 
     SkinnedMeshRendererSystem::StaticConstructor();
+
+    DebugManager::CreateSingleton();
+	DebugManager::GetInstance()->Initialize();
 
     // 入力システムの初期化
     InputManager::StaticConstructor(hWnd);
@@ -161,8 +166,12 @@ void Application::WorkerThreadEntryPoint()
 
     AssetManager::DestroySingleton();
 
+    DebugManager::GetInstance()->Shutdown();
+    DebugManager::GetInstance()->DestroySingleton();
+
     // メッシュレンダラーシステムの終了処理
     MeshRendererSystem::StaticDestructor();
+	WFMeshRendererSystem::StaticDestructor();
 
     SkinnedMeshRendererSystem::StaticDestructor();
 

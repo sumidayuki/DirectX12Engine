@@ -1,6 +1,6 @@
 #pragma once
 
-struct AIAgent
+struct AIAgent : IComponentData
 {
 	Vector3 target = Vector3::max;
 	float acceleration = 5.0f;

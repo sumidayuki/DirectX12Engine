@@ -1,8 +1,8 @@
 #include "ProjectileSystem.h"
 
-void ProjectileSystem::Update(ComponentManager& cm, World& world)
+void ProjectileSystem::Update(World& world)
 {
-	View<Transform, Projectile> view(cm);
+	View<Transform, Projectile> view(world);
 
 	for (auto [entity, transform, projectile] : view)
 	{

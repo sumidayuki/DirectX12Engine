@@ -259,3 +259,34 @@ Matrix4x4 operator*(const Matrix4x4& lhs, const Matrix4x4& rhs)
     );
 #endif
 }
+
+bool operator==(const Matrix4x4& lhs, const Matrix4x4& rhs)
+{
+    return
+    (
+        lhs._11 == rhs._11 && lhs._12 == rhs._21 && lhs._13 == rhs._31 && lhs._14 == rhs._41,
+        lhs._11 == rhs._12 && lhs._12 == rhs._22 && lhs._13 == rhs._32 && lhs._14 == rhs._42,
+        lhs._11 == rhs._13 && lhs._12 == rhs._23 && lhs._13 == rhs._33 && lhs._14 == rhs._43,
+        lhs._11 == rhs._14 && lhs._12 == rhs._24 && lhs._13 == rhs._34 && lhs._14 == rhs._44,
+                                     
+        lhs._21 == rhs._11 && lhs._22 == rhs._21 && lhs._23 == rhs._31 && lhs._24 == rhs._41,
+        lhs._21 == rhs._12 && lhs._22 == rhs._22 && lhs._23 == rhs._32 && lhs._24 == rhs._42,
+        lhs._21 == rhs._13 && lhs._22 == rhs._23 && lhs._23 == rhs._33 && lhs._24 == rhs._43,
+        lhs._21 == rhs._14 && lhs._22 == rhs._24 && lhs._23 == rhs._34 && lhs._24 == rhs._44,
+                                      
+        lhs._31 == rhs._11 && lhs._32 == rhs._21 && lhs._33 == rhs._31 && lhs._34 == rhs._41,
+        lhs._31 == rhs._12 && lhs._32 == rhs._22 && lhs._33 == rhs._32 && lhs._34 == rhs._42,
+        lhs._31 == rhs._13 && lhs._32 == rhs._23 && lhs._33 == rhs._33 && lhs._34 == rhs._43,
+        lhs._31 == rhs._14 && lhs._32 == rhs._24 && lhs._33 == rhs._34 && lhs._34 == rhs._44,
+                                      
+        lhs._41 == rhs._11 && lhs._42 == rhs._21 && lhs._43 == rhs._31 && lhs._44 == rhs._41,
+        lhs._41 == rhs._12 && lhs._42 == rhs._22 && lhs._43 == rhs._32 && lhs._44 == rhs._42,
+        lhs._41 == rhs._13 && lhs._42 == rhs._23 && lhs._43 == rhs._33 && lhs._44 == rhs._43,
+        lhs._41 == rhs._14 && lhs._42 == rhs._24 && lhs._43 == rhs._34 && lhs._44 == rhs._44
+    );
+}
+
+bool operator!=(const Matrix4x4& lhs, const Matrix4x4& rhs)
+{
+    return !(lhs == rhs);
+}

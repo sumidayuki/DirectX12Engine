@@ -317,8 +317,40 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, ModelData* modelData
     }
 }
 
+static void DebugPrintAssimpNode(const aiNode* node, int level)
+{
+    if (!node) return;
+
+    // インデント生成
+    std::string indent(level * 2, ' ');
+
+    // ノード名取得
+    std::string name = node->mName.C_Str();
+    if (name.empty()) name = "[No Name]";
+
+    // デバッグ出力 (Meshがある場合はその数も表示してみる)
+    std::string log = indent + "- " + name;
+    if (node->mNumMeshes > 0)
+    {
+        log += " (Meshes: " + std::to_string(node->mNumMeshes) + ")";
+    }
+    log += "\n";
+
+    OutputDebugStringA(log.c_str());
+
+    // 子ノードへ再帰
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
+    {
+        DebugPrintAssimpNode(node->mChildren[i], level + 1);
+    }
+}
+
 void ModelImporter::ProcessHierarchy(const aiScene* scene, ModelData* modelData)
 {
+    OutputDebugStringA("\n========== [ModelImporter] Assimp Node Hierarchy START ==========\n");
+    DebugPrintAssimpNode(scene->mRootNode, 0);
+    OutputDebugStringA("========== [ModelImporter] Assimp Node Hierarchy END ============\n\n");
+
     modelData->rootNode = std::make_unique<PrefabNode>();
     BuildPrefabNode(modelData->rootNode, scene->mRootNode, modelData);
 }

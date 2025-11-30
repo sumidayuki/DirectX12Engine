@@ -31,6 +31,8 @@ private:
 public:
 	size_t FindEntityIndex(Entity e) const;
 
+	size_t GetCount() const { return m_count; }
+
 	bool HasSpace() const noexcept { return m_count < m_capacity; }
 
 	Entity GetEntity(size_t index) const { return m_entities[index]; }
@@ -44,52 +46,47 @@ public:
 	const void* ReadComponentByHash(size_t index, uint64_t hash) const;
 
 	template<ComponentType T>
-	T* AddComponent(Entity entity, const T& value);
+	T* AddComponent(Entity entity, const T& value)
+	{
+		auto it = m_typeIndexMap.find(GetTypeInfo<T>().hash);
+		if (it == m_typeIndexMap.end())
+		{
+			assert(0);
+		}
+
+		size_t typeIdx = it->second;
+		size_t offset = m_archetype->offsets[typeIdx];
+		size_t index = FindEntityIndex(entity);
+		if (index == SIZE_MAX)
+		{
+			assert(0);
+		}
+
+		uint8_t* dst = m_buffer + offset + m_archetype->totalSize * index;
+		GetTypeInfo<T>().copy_construct(dst, &value);
+
+		return reinterpret_cast<T*>(dst);
+	}
 
 	template<ComponentType T>
-	T* GetComponent(Entity entity);
+	T* GetComponent(Entity entity)
+	{
+		auto it = m_typeIndexMap.find(GetTypeInfo<T>().hash);
+		if (it == m_typeIndexMap.end())
+		{
+			return nullptr;
+		}
+
+		size_t index = FindEntityIndex(entity);
+		if (index == SIZE_MAX)
+		{
+			return nullptr;
+		}
+
+		size_t offset = m_archetype->offsets[it->second];
+		return reinterpret_cast<T*>(m_buffer + offset + m_archetype->totalSize * index);
+	}
+
 
 	Entity RemoveEntity(Entity entity);
 };
-
-template<ComponentType T>
-inline T* Chunk::AddComponent(Entity entity, const T& value)
-{
-	auto it = m_typeIndexMap.find(GetTypeInfo<T>().hash);
-	if (it == m_typeIndexMap.end())
-	{
-		assert(0);
-	}
-
-	size_t typeIdx = it->second;
-	size_t offset = m_archetype->offsets[typeIdx];
-	size_t index = FindEntityIndex(entity);
-	if (index == SIZE_MAX)
-	{
-		assert(0);
-	}
-
-	uint8_t* dst = m_buffer + offset + m_archetype->totalSize * index;
-	std::memcpy(dst, &value, sizeof(T));
-
-	return reinterpret_cast<T*>(dst);
-}
-
-template<ComponentType T>
-inline T* Chunk::GetComponent(Entity entity)
-{
-	auto it = m_typeIndexMap.find(GetTypeInfo<T>().hash);
-	if (it == m_typeIndexMap.end())
-	{
-		return nullptr;
-	}
-
-	size_t index = FindEntityIndex(entity);
-	if (index == SIZE_MAX)
-	{
-		return nullptr;
-	}
-
-	size_t offset = m_archetype->offsets[it->second];
-	return reinterpret_cast<T*>(m_buffer + offset + m_archetype->totalSize * index);
-}

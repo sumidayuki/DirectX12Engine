@@ -16,7 +16,7 @@ enum class EnemyCondition
 	angry
 };
 
-struct Enemy
+struct Enemy : IComponentData
 {
 	Entity target;
 	EnemyState state = EnemyState::Idle;

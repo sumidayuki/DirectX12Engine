@@ -64,15 +64,17 @@ void PlayerSystem::Attack(Transform& transform, World& world)
 
 	Entity a = world.CreateWithModel(L"Assets/Arrow.fbx", nullptr, pos, Quaternion::LookRotation(forward));
 
-	OutputDebugStringA("Arrow\n");
-
 	Projectile projectile;
 	projectile.lifeTime = 1.0f;
-	projectile.speed = 700.0f;
+	projectile.speed = 1000.0f;
 	world.AddComponent<Projectile>(a, projectile);
+
+	SphereCollider collider;
+	collider.radius = 10.0f;
+	world.AddComponent<SphereCollider>(a, collider);
 }
 
-void PlayerSystem::Start(ComponentManager& cm, World& world)
+void PlayerSystem::Start(World& world)
 {
 	Entity camera = world.FindEntityOfType<PlayerCamera>();
 	m_cameraTransform = world.GetComponent<Transform>(camera);
@@ -83,16 +85,25 @@ void PlayerSystem::Start(ComponentManager& cm, World& world)
 	m_currentState = PlayerState::Move;
 }
 
-void PlayerSystem::Update(ComponentManager& cm, World& world)
+void PlayerSystem::Update(World& world)
 {
-	View<PlayerTag, Transform, Input, Animator> view(cm);
+	View<PlayerTag, Transform, Input, Animator> view(world);
 
 	for (auto [entity, playerTag, transform, input, animator] : view)
 	{
 		if (!m_bowTransform)
 		{
 			m_bowTransform = TransformSystem::GetInstance()->FindChild(&transform, "mixamorig:LeftHandPinky4");
+
+			Entity coll = world.CreateEntity("PlayerCollider");
+			AABBCollider bColl;
+			bColl.bounds = Bounds(Vector3(0, 0, 0), Vector3(40, 180, 40));
+			world.AddComponent<AABBCollider>(coll, bColl);
+
+			m_coll = world.GetComponent<Transform>(coll);
 		}
+
+		m_coll->position = transform.position + Vector3::up * 90;
 
 		switch (m_currentState)
 		{

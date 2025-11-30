@@ -8,18 +8,6 @@ class TransformSystem : public System, public Singleton<TransformSystem>
 {
 	friend class Singleton<TransformSystem>;
 
-private:
-	// 親をキーとして、その直接の子エンティティのリストを保持するマップ
-	std::unordered_map<Entity, std::vector<Entity>> m_hierarchy;
-
-	// ルートとなるエンティティ（親がいないもの）のリスト
-	std::vector<Entity> m_roots;
-
-	// トポロジカルソート済みの更新順
-	std::vector<Entity> m_sortedEntities;
-
-	ComponentStorage<Transform>* m_transformStorage = nullptr;
-
 public:
 	/// <summary>
 	/// 指定された transform に親を設定します。
@@ -36,8 +24,6 @@ public:
 	void UnsetParent(Transform& transform);
 
 	Transform* GetRoot(Transform& transform);
-
-	std::vector<Entity>& GetChildren(Entity parent) { return m_hierarchy[parent]; }
 
 	// 子Transformの個数を取得します。
 	int GetChildCount(Transform* transform);
@@ -105,13 +91,10 @@ public:
 	void Rotate(Transform& transform, const Vector3 axis, float angle);
 
 private:
-	void BuildHierarchy(ComponentManager& cm);
-	void TopologicalSort();
-	void Visit(Entity entity, std::unordered_set<Entity>& visited);
-	void RecalculateMatrices(World& world);
+	void RecalculateMatricesRecursive(World& world, Transform& transform);
 
 public:
-	void Start(ComponentManager& cm, World& world) override;
+	void Start(World& world) override;
 
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };

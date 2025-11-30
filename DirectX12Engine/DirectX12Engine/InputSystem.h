@@ -7,5 +7,5 @@ class InputSystem : public System
 {
 public:
 	// Systemの更新処理のオーバーライドです。
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };

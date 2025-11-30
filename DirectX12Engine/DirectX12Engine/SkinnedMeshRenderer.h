@@ -4,7 +4,7 @@
 /// スキニングされたメッシュのレンダリングに必要な情報を保持するコンポーネント。
 /// 静的なMeshRendererとは区別されます。
 /// </summary>
-struct SkinnedMeshRenderer
+struct SkinnedMeshRenderer : IComponentData
 {
 	// 描画に使用するマテリアルにリスト
 	// Meshのサブメッシュインデックスと対応します。

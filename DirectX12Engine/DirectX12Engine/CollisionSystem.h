@@ -7,18 +7,23 @@
 class CollisionSystem : public System
 {
 private:
-	// 円コライダー同士が当たっているかを確認します。
-	void CheckCollision(CircleCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity entityB);
+    // 衝突状態(Enter/Stay/Exit)を更新する共通関数
+    void UpdateComponentState(CollisionInfo& info, Entity otherEntity, bool isHitNow);
 
-	// 円コライダーが矩形コライダーに当たっているかを確認します。
-	void CheckCollision(CircleCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity entityB);
+    // 2つのエンティティのコンポーネント型を確認し、適切な判定関数を呼び出す
+    bool CheckPair(Entity entityA, Entity entityB, World& world);
 
-	// 矩形コライダー同士が当たっているかを確認します。
-	void CheckCollision(BoxCollider2D& a, Transform& transformA, BoxCollider2D& b, Transform& transformB, Entity entityB);
+    // Sphere vs Sphere
+    bool IsColliding(const SphereCollider& a, const Vector3& posA, const SphereCollider& b, const Vector3& posB);
 
-	// 矩形コライダーが円コライダーに当たっているかを確認します。
-	void CheckCollision(BoxCollider2D& a, Transform& transformA, CircleCollider2D& b, Transform& transformB, Entity entityB);
+    // AABB vs AABB
+    bool IsColliding(const AABBCollider& a, const Vector3& posA, const AABBCollider& b, const Vector3& posB);
+
+    // Sphere vs AABB
+    bool IsColliding(const SphereCollider& sphere, const Vector3& spherePos, const AABBCollider& aabb, const Vector3& aabbPos);
+
+
 
 public:
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };

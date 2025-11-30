@@ -1,6 +1,6 @@
 #pragma once
 
-struct PlayerCamera
+struct PlayerCamera : IComponentData
 {
 	Entity player;
 	Vector3 offset;

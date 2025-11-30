@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 #include <cstddef>
+#include <type_traits>
+#include <utility>
 
 /// <summary>
 /// Archetypeで型を識別する際の型情報を表す構造体です。
@@ -14,9 +16,27 @@ struct TypeInfo
 	uint64_t	hash;		// 型ハッシュ
 	size_t		size;		// sizeof(T)
 	size_t		alignment;	// alignof(T)
+	void (*copy_construct)(void* dest, const void* src);
+	void (*move_construct)(void* dest, void* src);
+	void (*destroy)(void* target);
 
-	constexpr TypeInfo(const char* name, uint64_t hash, size_t size, size_t alignment)
-		: name(name), hash(hash), size(size), alignment(alignment) {
+	constexpr TypeInfo(
+		const char* name,
+		uint64_t hash,
+		size_t size,
+		size_t alignment,
+		void (*copy_construct)(void*, const void*),
+		void (*move_construct)(void*, void*),
+		void (*destroy)(void*)
+	)
+		: name(name)
+		, hash(hash)
+		, size(size)
+		, alignment(alignment)
+		, copy_construct(copy_construct)
+		, move_construct(move_construct)
+		, destroy(destroy)
+	{
 	}
 
 	// 等価演算子
@@ -63,5 +83,47 @@ template<typename T>
 constexpr TypeInfo GetTypeInfo()
 {
 	constexpr const char* name = TypeName<T>();
-	return TypeInfo(name, HashString(name), sizeof(T), alignof(T));
+
+	auto copy_construct = [](void* dest, const void* src)
+	{
+		if constexpr (!std::is_trivially_copyable_v<T>)
+		{
+			new (dest) T(*static_cast<const T*>(src));
+		}
+		else
+		{
+			memcpy(dest, src, sizeof(T));
+		}
+	};
+
+	auto move_construct = [](void* dest, void* src)
+	{
+		if constexpr (!std::is_trivially_copyable_v<T>)
+		{
+			new (dest) T(std::move(*static_cast<T*>(src)));
+			static_cast<T*>(src)->~T();
+		}
+		else
+		{
+			memcpy(dest, src, sizeof(T));
+		}
+	};
+
+	auto destroy = [](void* target)
+		{
+			if constexpr (!std::is_trivially_destructible_v<T>)
+			{
+				static_cast<T*>(target)->~T();
+			}
+		};
+
+	return TypeInfo(
+		name,
+		HashString(name),
+		sizeof(T),
+		alignof(T),
+		copy_construct,
+		move_construct,
+		destroy
+	);
 }

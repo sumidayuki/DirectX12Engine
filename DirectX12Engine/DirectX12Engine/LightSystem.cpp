@@ -1,13 +1,14 @@
 #include "LightSystem.h"
+#include "Light.hlsli"
 
-void LightSystem::Start(ComponentManager& cm, World& world)
+void LightSystem::Start(World& world)
 {
     // ライト情報を格納するためのGraphicsBufferを作成
     m_lightBuffer.Attach(new GraphicsBuffer(
         GraphicsBuffer::Target::Structured,
         GraphicsBuffer::UsageFlags::LockBufferForWrite,
         MAX_LIGHT,
-        sizeof(Light)
+        sizeof(LightLayout)
     ));
 
     DescriptorAllocator* allocator = world.GetSrvAllocator();
@@ -19,33 +20,32 @@ void LightSystem::Start(ComponentManager& cm, World& world)
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.Buffer.FirstElement = 0;
     srvDesc.Buffer.NumElements = MAX_LIGHT;
-    srvDesc.Buffer.StructureByteStride = sizeof(Light);
+    srvDesc.Buffer.StructureByteStride = sizeof(LightLayout);
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
     m_lightBufferGpuHandle = allocator->CreateSRV(m_lightBuffer->GetNativeBufferPtr(), srvDesc);
 }
 
-void LightSystem::Update(ComponentManager& cm, World& world)
+void LightSystem::Update(World& world)
 {
     // アクティブなライトのリストを一時的に作成
     static std::vector<Light> activeLights;
     activeLights.clear();
 
-    View<Transform, Light> view(cm);
+    View<Transform, Light> view(world);
     TransformSystem* transformSystem = world.GetSystem<TransformSystem>();
 
     // シーン内の全てのライトを走査
     for (auto [entity, transform, light] : view)
     {
-        if (light.enabled)
+        if (entity.enabled)
         {
             // Transformコンポーネントからワールド座標と向きを計算し、
             // Light構造体に設定する
             light.position = transform.position;
 
             // ワールド座標系でのライトの向き（direction）を算出する。
-            const Vector3 FORWARD = Vector3(0.0f, 0.0f, -1.0f);
-            light.direction = transform.rotation * FORWARD; // 適切なQuaternion-Vector乗算を使用
+            light.direction = transform.rotation * Vector3::forward;
             light.direction.Normalized(); // 念のため正規化
             
             activeLights.push_back(light);
@@ -63,8 +63,8 @@ void LightSystem::Update(ComponentManager& cm, World& world)
     // ライト情報が1つ以上あれば、バッファに書き込む
     if (m_activeLightCount > 0)
     {
-        Light* lockedPointer = (Light*)m_lightBuffer->LockBufferForWrite(0, m_activeLightCount);
-        memcpy(lockedPointer, activeLights.data(), m_activeLightCount * sizeof(Light));
+        LightLayout* lockedPointer = (LightLayout*)m_lightBuffer->LockBufferForWrite(0, m_activeLightCount);
+        memcpy(lockedPointer, activeLights.data(), m_activeLightCount * sizeof(LightLayout));
         m_lightBuffer->UnlockBufferAfterWrite();
     }
 }

@@ -8,7 +8,7 @@ enum class CollisionState
 	Exit,
 };
 
-struct CollisionInfo
+struct CollisionInfo : IComponentData
 {
 	Entity other = INVALID_ENTITY;
 	CollisionState state = CollisionState::None;

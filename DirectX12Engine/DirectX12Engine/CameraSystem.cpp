@@ -38,9 +38,9 @@ const Matrix4x4& CameraSystem::GetProjectionMatrix(Camera& camera) const
 	return camera.projectionMatrix;
 }
 
-void CameraSystem::InternalRender(ComponentManager& cm, World& world)
+void CameraSystem::InternalRender(World& world)
 {
-	View<Transform, Camera> view(cm);
+	View<Transform, Camera> view(world);
 
 	for (auto [entity, transform, camera] : view)
 	{

@@ -171,7 +171,7 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
         totalSpecular += currentSpecular;
     }
 
-    float3 ambient = float3(0.1, 0.1, 0.1) * objectData.diffuseColor.rgb;
+    float3 ambient = float3(0.5, 0.5, 0.5) * objectData.diffuseColor.rgb;
     float3 finalColor = (ambient + totalDiffuse) * textureColor.rgb + totalSpecular;
 
     return float4(finalColor, textureColor.a * objectData.diffuseColor.a);

@@ -12,7 +12,7 @@ class World
 
 private:
 	EntityManager							m_em;
-	ComponentManager						m_cm;
+	ArchetypeManager						m_am;
 	std::vector<std::unique_ptr<System>>	m_systems;
 	std::unique_ptr<DescriptorAllocator>	m_srvAllocator;
 	CameraSystem*							m_cameraSystem;
@@ -37,13 +37,34 @@ public:
 	/// エンティティを作成します。
 	/// </summary>
 	/// <returns>Entity型で値を返します。</returns>
-	Entity CreateEntity(const std::string& name = "空のエンティティ");
+	Entity CreateEntity(const std::string& name = "空のエンティティ", LayerMask layer = Layers::Default);
 
 	/// <summary>
-	/// ComponentManagerへの参照を取得します。
+	/// ArchetypeManagerへの参照を取得します。
 	/// </summary>
-	/// <returns>ComponentManagerの参照</returns>
-	ComponentManager& GetComponentManager() { return m_cm; }
+	/// <returns></returns>
+	ArchetypeManager& GetArchetypeManager() { return m_am; }
+
+	/// <summary>
+	/// 頂点配列とインデックス配列からメッシュを生成し、エンティティを作成します。
+	/// </summary>
+	/// <param name="vertices"></param>
+	/// <param name="indices"></param>
+	/// <returns></returns>
+	Entity CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32_t>&& indices, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false);
+
+	/// <summary>
+	/// 一辺の長さを指定して立方体を生成します。
+	/// </summary>
+	/// <param name="xLength"></param>
+	/// <param name="yLength"></param>
+	/// <param name="zLegnth"></param>
+	/// <param name="color"></param>
+	/// <param name="isWireframe"></param>
+	/// <returns></returns>
+	Entity CreateCube(float xLength, float yLength, float zLegnth, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false);
+
+	Entity CreateSphere(float radius, uint16_t slices, uint16_t stacks, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false);
 
 	Entity CreateWithSprite
 
@@ -91,7 +112,8 @@ public:
 		const std::wstring& path,
 		Transform* parent,
 		const Vector3& localPosition,
-		const Quaternion& localRotation
+		const Quaternion& localRotation,
+		LayerMask layer = Layers::Default
 	);
 
 	Entity CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
@@ -116,7 +138,7 @@ public:
 	/// </summary>
 	/// <typeparam name="T">コンポーネントタイプ</typeparam>
 	/// <returns>見つけたエンティティ</returns>
-	template<typename T> Entity FindEntityOfType() { return m_cm.GetStorage<T>()->GetEntities()[0]; }
+	template<typename T> Entity FindEntityOfType();
 
 	/// <summary>
 	/// 特定のエンティティに指定したコンポーネントを追加します。
@@ -124,7 +146,7 @@ public:
 	/// <typeparam name="T">追加したいコンポーネントを指定します。</typeparam>
 	/// <param name="e">コンポーネントを追加するエンティティ</param>
 	/// <param name="c">追加するコンポーネントの初期状態を設定します。</param>
-	template <typename T> void AddComponent(Entity e, const T& c) { m_cm.AddComponent(e, c); }
+	template <ComponentType T> T* AddComponent(Entity e, const T& c) { return m_am.AddComponent(e, c); }
 
 	/// <summary>
 	/// 特定のエンティティから指定したコンポーネントを取得します。
@@ -132,7 +154,7 @@ public:
 	/// <typeparam name="T">取得したいコンポーネントを指定します。</typeparam>
 	/// <param name="e">コンポーネント取得先のエンティティ</param>
 	/// <returns>取得したコンポーネントをポインタ型で返します。</returns>
-	template <typename T> T* GetComponent(Entity e) { return m_cm.GetComponent<T>(e); }
+	template <ComponentType T> T* GetComponent(Entity e) { return m_am.GetComponent<T>(e); }
 
 	/// <summary>
 	/// 特定のエンティティが指定したコンポーネントを所持しているか確認します。
@@ -140,7 +162,7 @@ public:
 	/// <typeparam name="T">確認したいコンポーネントを指定します。</typeparam>
 	/// <param name="e">確認したいエンティティ</param>
 	/// <returns>所持していたら true 所持していなければ false を返します。</returns>
-	template <typename T> bool HasComponent(Entity e) { return m_cm.HasComponent<T>(e); }
+	template <ComponentType T> bool HasComponent(Entity e) { return m_am.GetComponent<T>(e) != nullptr; }
 
 	/// <summary>
 	/// 指定したシステムを追加します。
@@ -186,3 +208,28 @@ private:
 	/// <param name="world"></param>
 	void Draw(World& world);
 };
+
+template<typename T>
+inline Entity World::FindEntityOfType()
+{
+	// T のみを含む Archetype に対応する Chunk のリストを取得
+	std::vector<Chunk*> chunks = m_am.GetChunks<T>();
+
+	if (chunks.empty())
+	{
+		// 該当するChunkがない場合、無効なEntityを返す
+		return Entity{ (EntitySize)-1, (EntitySize)-1 };
+	}
+
+	// 最初に見つかったChunk
+	Chunk* firstChunk = chunks.front();
+
+	if (firstChunk->GetCount() > 0)
+	{
+		// Chunk内に一つでもEntityがあれば、その最初のEntityを返す
+		return firstChunk->GetEntity(0);
+	}
+
+	// Chunkが空の場合 (起こりにくいが念のため)
+	return Entity{ (EntitySize)-1, (EntitySize)-1 };
+}

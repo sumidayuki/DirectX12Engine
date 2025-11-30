@@ -3,5 +3,5 @@
 class ProjectileSystem : public System
 {
 private:
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };

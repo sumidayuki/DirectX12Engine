@@ -10,8 +10,8 @@ Bounds::Bounds(const Vector3& center, const Vector3& size)
 
 void Bounds::SetMinMax(const Vector3& min, const Vector3& max)
 {
-    m_extents = (max + min) * 0.5f;
-    m_center = min + m_extents;
+    m_center = (max + min) * 0.5f;
+    m_extents = (max - min) * 0.5f;
 }
 
 

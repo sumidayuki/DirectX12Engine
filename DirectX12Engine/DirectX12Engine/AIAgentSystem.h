@@ -9,5 +9,5 @@ public:
 	void ResetAI(AIAgent& aiAgent);
 
 private:
-	void Update(ComponentManager& cm, World& world) override;
+	void Update(World& world) override;
 };

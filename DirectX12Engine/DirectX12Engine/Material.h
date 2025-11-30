@@ -41,5 +41,5 @@ public:
     /// <param name="allocator">SRVを確保するためのディスクリプタアロケータ</param>
     void SetTexture(TextureSlot slot, Texture2D* texture);
 
-    Texture2D* GetTexture(TextureSlot slot) const { return m_textures[(int)slot].Get(); }
+    Texture2D* GetTexture(TextureSlot slot) const;
 };

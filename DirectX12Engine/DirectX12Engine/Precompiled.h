@@ -64,6 +64,9 @@ using ComPtr = Microsoft::WRL::ComPtr<T>;
 // Entityの型
 using EntitySize = uint32_t; 
 
+// Layerマスクの型
+using LayerMask = uint32_t;
+
 //------------------------------------------------------------------------------------------------------------
 // コンパイル時定数
 //------------------------------------------------------------------------------------------------------------
@@ -127,7 +130,7 @@ class Graphics;
 // ------------------------------------------
 // Entity
 struct Entity;
-class EntityManager;			
+class EntityManager;
 
 // Component
 class ComponentManager;
@@ -177,6 +180,7 @@ class Keyboard;
 #include "Vector4.h"
 #include "Quaternion.h"
 #include "Matrix4x4.h"
+#include "Ray.h"
 #include "Rect.h"
 #include "Plane.h"
 #include "Bounds.h"
@@ -186,6 +190,7 @@ class Keyboard;
 
 // システム関連
 #include "Reference.h"
+#include "Layers.h"
 #include "FNV-1a.h"
 #include "Resolution.h"
 #include "Singleton.h"
@@ -225,10 +230,14 @@ class Keyboard;
 // Utils
 #include "Utils.h"
 
+// Archetype
+#include "Archetype.h"
+#include "ArchetypeManager.h"
+#include "Chunk.h"
+
 // Component
-#include "ComponentManager.h"
-#include "IComponentStorage.h"
-#include "ComponentStorage.h"
+#include "IComponentData.h"
+#include "Layer.h"
 #include "Input.h"
 #include "Sprite.h"
 #include "Velocity.h"
@@ -241,15 +250,21 @@ class Keyboard;
 #include "Light.h"
 #include "SpriteRenderer.h"
 #include "MeshRenderer.h"
+#include "WFMeshRenderer.h"
 #include "CollisionInfo.h"
+#include "SphereCollider.h"
+#include "BoxCollider.h"
+#include "AABBCollider.h"
 #include "CircleCollider2D.h"
 #include "BoxCollider2D.h"
+#include "DebugRenderer.h"
 #include "MeshFilter.h"
 #include "Animator.h"
 #include "SkinnedMeshRenderer.h"
 #include "Projectile.h"
 #include "AIAgent.h"
 
+#include "Physics.h"
 #include "GeometryUtility.h"
 
 // System

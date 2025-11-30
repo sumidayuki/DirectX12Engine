@@ -3,7 +3,7 @@
 /// <summary>
 /// 速さを表すコンポーネントです。
 /// </summary>
-struct Velocity
+struct Velocity : IComponentData
 {
 	float speed;
 };
