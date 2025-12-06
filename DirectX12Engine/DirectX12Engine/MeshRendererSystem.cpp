@@ -304,12 +304,19 @@ void MeshRendererSystem::Draw(World& world)
             Material* material = renderer.materials[subMesh.materialIndex];
             if (!material) continue;
 
+            const Material::ShaderFlags& flags = material->GetShaderFlags();
+
             // オブジェクト定数バッファ更新
             ObjectConstantsLayout constants;
-            constants.worldMatrix = worldMatrix.Transpose();
-            constants.diffuseColor = material->GetDiffuseColor();
-            constants.specularColor = material->GetSpecularColor();
-            constants.shininess = 64.0f;
+            constants.baseColor = material->GetBaseColor();
+            constants.roughness = material->GetRoughness();
+            constants.metallic = material->GetMetallic();
+            constants.emissiveColor = material->GetEmissiveColor();
+            constants.alphaCutoff = material->GetBaseColor().a < 1.0f && flags.IsAlphaTested ? 0.5f : 0.0f;
+            constants.shaderFlagsBits =
+                (flags.HasNormalMap             << 0) |
+                (flags.HasMatellicRoughnessMap  << 1) |
+                (flags.IsAlphaTested            << 2);
 
             BYTE* dest = m_mappedObjectConstants + (frameOffset + m_currentObjectBufferIndex) * alignedSize;
             memcpy(dest, &constants, sizeof(ObjectConstantsLayout));
@@ -319,18 +326,49 @@ void MeshRendererSystem::Draw(World& world)
 
             m_currentObjectBufferIndex++;
 
-            // テクスチャSRV設定
-            Texture2D* texture = material->GetTexture(Material::TextureSlot::Diffuse);
-            if (!texture)
+            // m_frameDescriptorHeap は DescriptorHeap のインスタンス
+            DescriptorHeap* srvHeap = m_frameDescriptorHeap.Get();
+            if (!srvHeap) return; // ヒープが初期化されていない場合はスキップ
+
+            UINT descriptorSize = srvHeap->GetStride();
+
+            // GPU可視なフレームヒープ内の、このドローコールのデスクリプタブロックの先頭を取得
+            D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = srvHeap->GetCPUDescriptorHandle(m_currentDescriptorIndex);
+            D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = srvHeap->GetGPUDescriptorHandle(m_currentDescriptorIndex);
+
+            // 全ての PBR テクスチャスロット (Material::TextureSlot::Max = 5) を反復処理
+            for (int i = 0; i < (int)Material::TextureSlot::Max; ++i)
             {
-                texture = m_defaultWhiteTexture.Get();
+                Material::TextureSlot slot = (Material::TextureSlot)i;
+                Texture2D* texture = material->GetTexture(slot);
+
+                // テクスチャが存在しない場合はデフォルトのテクスチャを使用
+                if (!texture)
+                {
+                    // 適切なデフォルトテクスチャを選択 (例: Normal(t1)には青のノーマルマップ、他は白)
+                    texture = m_defaultWhiteTexture.Get();
+                }
+
+                // デスクリプタをコピーするフレームヒープ内の位置
+                D3D12_CPU_DESCRIPTOR_HANDLE destHandle = currentCpuHandle;
+                // i * descriptorSize で正確なオフセットを計算
+                destHandle.ptr += (SIZE_T)i * descriptorSize;
+
+                // ソースの CPU ハンドル (Texture2Dが持つSRV) を取得
+                // Texture2Dに GetSRVHandle() が実装されているものと仮定
+                D3D12_CPU_DESCRIPTOR_HANDLE srcHandle = texture->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
+
+                // デスクリプタをフレームヒープにコピー
+                Graphics::GetD3D12Device()->CopyDescriptorsSimple(
+                    1, destHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
             }
 
-            if (texture)
-            {
-                D3D12_GPU_DESCRIPTOR_HANDLE texHandle = GetSRV(texture, srvAllocator);
-                commandList->SetGraphicsRootDescriptorTable(2, texHandle);
-            }
+
+            // ルートシグネチャのテクスチャスロット (2番目のルートパラメーター) に、このブロックの先頭をバインド
+            commandList->SetGraphicsRootDescriptorTable(2, currentGpuHandle);
+
+            // フレームヒープのインデックスを更新 (次のドローコールの開始位置に進める)
+            m_currentDescriptorIndex += (int)Material::TextureSlot::Max;
 
             // 描画コマンド発行
             commandList->DrawIndexedInstanced(subMesh.indexCount, 1, subMesh.startIndex, 0, 0);

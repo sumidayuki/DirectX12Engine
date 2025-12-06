@@ -10,15 +10,29 @@ public:
     // シェーダー内のテクスチャスロットに対応させるためのインデックス
     enum class TextureSlot
     {
-        Diffuse = 0,  // 基本色テクスチャ (t0)
-        Normal,       // 法線マップ (t1)
-        Specular,     // 鏡面反射マップ (t2)
+        Diffuse = 0,        // 基本色テクスチャ      (t0)
+        //Normal,             // 法線マップ            (t1)
+        //MetallicRoughness,  // 金属度と粗さマップ    (t2)
+        //Occlusion,          // 環境遮蔽マップ        (t3)
+        //Emissive,           // 自発光カラー          (t4)
         Max
     };
 
+    // マテリアルが使用するシェーダ機能フラグ
+    struct ShaderFlags
+    {
+        bool HasNormalMap               = false;
+        bool HasMatellicRoughnessMap    = false;
+        bool IsAlphaTested              = false;
+    };
+
 private:
-    Color m_diffuseColor;   // 拡散反射色
-    Color m_specularColor;  // 鏡面反射色
+    Color m_baseColor;
+    float m_roughness;
+    float m_metallic;
+    Color m_emissiveColor;
+
+    ShaderFlags m_shaderFlags;
 
     // テクスチャへのポインタ（参照カウントのため）
     ComPtr<Texture2D> m_textures[(int)TextureSlot::Max];
@@ -27,11 +41,18 @@ public:
     Material();
     ~Material() = default;
 
-    void SetDiffuseColor(const Color& color) { m_diffuseColor = color; }
-    const Color& GetDiffuseColor() const { return m_diffuseColor; }
+    void SetBaseColor(const Color& color) { m_baseColor = color; }
+    void SetRoughness(float r) { m_roughness = r; }
+    void SetMetallic(float m) { m_metallic = m; }
+    void SetEmissiveColor(const Color& color) { m_emissiveColor = color; }
 
-    void SetSpecularColor(const Color& color) { m_specularColor = color; }
-    const Color& GetSpecularColor() const { return m_specularColor; }
+    const Color& GetBaseColor() const { return m_baseColor; }
+    const float& GetRoughness() const { return m_roughness; }
+    const float& GetMetallic() const { return m_metallic; }
+    const Color& GetEmissiveColor() const { return m_emissiveColor; }
+
+    const ShaderFlags& GetShaderFlags() const { return m_shaderFlags; }
+    ShaderFlags& GetMutableShaderFlags() { return m_shaderFlags; }
 
     /// <summary>
     /// 指定されたスロットにテクスチャを設定し、アロケータからデスクリプタを確保します。

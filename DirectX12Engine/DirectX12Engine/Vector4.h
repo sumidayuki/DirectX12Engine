@@ -37,4 +37,6 @@ public:
 	Vector4(const Vector2& vector, float z, float w);
 
 	Vector4(const Vector3& vector, float w);
+
+	Vector4(const Color& color);
 };

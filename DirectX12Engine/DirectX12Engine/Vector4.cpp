@@ -42,3 +42,11 @@ Vector4::Vector4(const Vector3& vector, float w)
 	, w(w)
 {
 }
+
+Vector4::Vector4(const Color& color)
+	: x(color.r)
+	, y(color.g)
+	, z(color.b)
+	, w(color.a)
+{
+}

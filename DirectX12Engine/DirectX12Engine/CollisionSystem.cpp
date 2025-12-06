@@ -133,11 +133,11 @@ void CollisionSystem::Update(World& world)
 	// Sphereの登録とデバッグ描画
 	for (auto [entity, collider, transform] : sphereView)
 	{
-		if (!entity.enabled) continue;
 		Vector3 center = TransformSystem::GetInstance()->GetPosition(transform) + collider.offset;
-		grid.AddEntity(entity, center);
-
-		// 色の決定ロジックも共通化可能ですが、ここでは簡易的に
+		if (collider.isEnable)
+		{
+			grid.AddEntity(entity, center);
+		}
 		Color c = (collider.info.state == CollisionState::Enter || collider.info.state == CollisionState::Stay) ? Color::red : Color::green;
 		DebugManager::GetInstance()->DrawSphere(center, collider.radius, c);
 	}
@@ -145,10 +145,11 @@ void CollisionSystem::Update(World& world)
 	// AABBの登録とデバッグ描画
 	for (auto [entity, collider, transform] : aabbView)
 	{
-		if (!entity.enabled) continue;
 		Vector3 center = TransformSystem::GetInstance()->GetPosition(transform) + collider.offset;
-		grid.AddEntity(entity, center);
-
+		if (collider.isEnable)
+		{
+			grid.AddEntity(entity, center);
+		}
 		Vector3 half = collider.bounds.GetSize() * 0.5f;
 		Color c = (collider.info.state == CollisionState::Enter || collider.info.state == CollisionState::Stay) ? Color::red : Color::green;
 		DebugManager::GetInstance()->DrawAABB(center - half, center + half, c);
@@ -184,12 +185,14 @@ void CollisionSystem::Update(World& world)
 		};
 
 	// Sphereについて回す
-	for (auto [entity, collider, transform] : sphereView) {
-		if (entity.enabled) processCollisions(entity, collider.info, transform);
+	for (auto [entity, collider, transform] : sphereView) 
+	{
+		if (collider.isEnable) processCollisions(entity, collider.info, transform);
 	}
 
 	// AABBについて回す
-	for (auto [entity, collider, transform] : aabbView) {
-		if (entity.enabled) processCollisions(entity, collider.info, transform);
+	for (auto [entity, collider, transform] : aabbView) 
+	{
+		if (collider.isEnable) processCollisions(entity, collider.info, transform);
 	}
 }

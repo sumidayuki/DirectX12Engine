@@ -285,9 +285,9 @@ void SkinnedMeshRendererSystem::Draw(World& world)
             // スキンメッシュ用定数バッファの更新
             SkinnedObjectConstantsLayout constants;
             constants.worldMatrix = worldMatrix.Transpose();
-            constants.diffuseColor = material->GetDiffuseColor();
-            constants.specularColor = material->GetSpecularColor();
-            constants.shininess = 64.0f;
+            constants.diffuseColor = material->GetBaseColor();
+            constants.specularColor = material->GetEmissiveColor();
+            constants.shininess = material->GetMetallic();
 
             // ボーン行列の書き込み（最大ボーン数を超えないよう制限）
             const size_t boneCount = std::min

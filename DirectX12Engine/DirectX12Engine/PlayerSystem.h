@@ -16,6 +16,8 @@ private:
 
 	Transform* m_coll;
 
+	SphereCollider* m_attackRangeColl;
+
 	float m_attackRange;
 
 	float m_stateTimer;

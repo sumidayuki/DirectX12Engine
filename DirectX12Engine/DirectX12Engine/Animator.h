@@ -31,4 +31,6 @@ struct Animator : IComponentData
 	// ボーンの最終的な変換行列
 	// AnimationSystemが毎フレーム計算し、SkinnedMeshRendererSystemが使用します。
 	std::vector<Matrix4x4> finalBoneMatrices;
+
+	std::vector<Matrix4x4> socketGlobalMatrices;
 };

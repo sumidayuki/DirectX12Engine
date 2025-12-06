@@ -11,11 +11,17 @@ struct SceneConstants
 // HLSL側のcbufferと一致させ、256バイトアライメントを考慮したサイズにします
 struct ObjectConstantsLayout
 {
-    Matrix4x4 worldMatrix;
-    Color     diffuseColor;
-    Color     specularColor; // 鏡面反射の色
-    float     shininess;     // 光沢度
-    float     obj_padding[3]; // パディング
+    Matrix4x4 worldMatrix; // 64 bytes
+
+    // PBR パラメーター
+    Vector4   baseColor;     // 16 bytes (RGBA)
+    float     roughness;       // 4 bytes
+    float     metallic;        // 4 bytes
+    Vector4   emissiveColor;
+    float     alphaCutoff;     // 4 bytes (アルファテスト用)
+
+    UINT      shaderFlagsBits; // 4 bytes (各ビットが機能をON/OFF)
+    float     padding[2];      // 8 bytes (アライメント調整用)
 };
 
 // Material.hの TextureSlot::Max (ここでは3だが、多めに8とする)

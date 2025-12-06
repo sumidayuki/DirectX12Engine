@@ -76,8 +76,7 @@ void Application::WorkerThreadEntryPoint()
     SpriteRendererSystem::StaticConstructor();
 
     // メッシュレンダラーシステムの初期化
-    MeshRendererSystem::StaticConstructor();
-    WFMeshRendererSystem::StaticConstructor();
+    //MeshRendererSystem::StaticConstructor();
 
     SkinnedMeshRendererSystem::StaticConstructor();
 
@@ -170,8 +169,7 @@ void Application::WorkerThreadEntryPoint()
     DebugManager::GetInstance()->DestroySingleton();
 
     // メッシュレンダラーシステムの終了処理
-    MeshRendererSystem::StaticDestructor();
-	WFMeshRendererSystem::StaticDestructor();
+    //MeshRendererSystem::StaticDestructor();
 
     SkinnedMeshRendererSystem::StaticDestructor();
 

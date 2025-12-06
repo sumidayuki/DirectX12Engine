@@ -120,7 +120,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Precompiled.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>"$(SolutionDir)External\Assimp\include";%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\Assimp\include;$(SolutionDir)External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,8 +156,11 @@
     <ClCompile Include="AnimationSystem.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ArchetypeManager.cpp" />
+    <ClCompile Include="ArrowSystem.cpp" />
     <ClCompile Include="AssetImporter.cpp" />
     <ClCompile Include="AssetManager.cpp" />
+    <ClCompile Include="AttackableSystem.cpp" />
+    <ClCompile Include="BoneSocketSystem.cpp" />
     <ClCompile Include="Bounds.cpp" />
     <ClCompile Include="ButtonControl.cpp" />
     <ClCompile Include="CameraSystem.cpp" />
@@ -177,6 +180,7 @@
     <ClCompile Include="GeometryUtility.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="GraphicsBuffer.cpp" />
+    <ClCompile Include="HPSystem.cpp" />
     <ClCompile Include="InputControls.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputSystem.cpp" />
@@ -217,7 +221,6 @@
     <ClCompile Include="Vector3.cpp" />
     <ClCompile Include="Vector3Int.cpp" />
     <ClCompile Include="Vector4.cpp" />
-    <ClCompile Include="WFMeshRendererSystem.cpp" />
     <ClCompile Include="Windows-NativeWindow.cpp" />
     <ClCompile Include="Precompiled.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -245,6 +248,10 @@
     <ClInclude Include="ArrowSystem.h" />
     <ClInclude Include="AssetImporter.h" />
     <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="Attackable.h" />
+    <ClInclude Include="AttackableSystem.h" />
+    <ClInclude Include="BoneSocket.h" />
+    <ClInclude Include="BoneSocketSystem.h" />
     <ClInclude Include="Bounds.h" />
     <ClInclude Include="BoxCollider.h" />
     <ClInclude Include="BoxCollider2D.h" />
@@ -258,6 +265,7 @@
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="CommandBuffer.h" />
+    <ClInclude Include="Damageable.h" />
     <ClInclude Include="DebugLineRenderer.h" />
     <ClInclude Include="DebugManager.h" />
     <ClInclude Include="DebugRenderer.h" />
@@ -278,6 +286,8 @@
     <ClInclude Include="GeometryUtility.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="GraphicsBuffer.h" />
+    <ClInclude Include="HP.h" />
+    <ClInclude Include="HPSystem.h" />
     <ClInclude Include="IComponentData.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InputControls.h" />
@@ -319,6 +329,8 @@
     <ClInclude Include="Screen.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderBytecode.h" />
+    <ClInclude Include="ShaderRegistry.h" />
+    <ClInclude Include="ShaderUtils.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SkinnedMeshRenderer.h" />
@@ -343,7 +355,6 @@
     <ClInclude Include="Vector4.h" />
     <ClInclude Include="View.h" />
     <ClInclude Include="WFMeshRenderer.h" />
-    <ClInclude Include="WFMeshRendererSystem.h" />
     <ClInclude Include="Windows-NativeWindow.h" />
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="Rect.h" />

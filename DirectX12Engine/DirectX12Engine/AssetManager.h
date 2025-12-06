@@ -34,7 +34,7 @@ private:
 	TextureImporter m_texImp;
 	ModelImporter m_modImp;
 
-	std::unordered_map<std::wstring, Texture2D*> m_textureCache;
+	std::unordered_map<std::wstring, ComPtr<Texture2D>> m_textureCache;
 	std::unordered_map<std::wstring, ModelData*> m_modelCache;
 
 private:
@@ -100,7 +100,7 @@ inline T* AssetManager::GetAsset(AssetType type, const std::wstring& path)
 	switch (type)
 	{
 	case AssetType::Texture:
-		if (m_textureCache.count(path)) return (T*)m_textureCache[path];
+		if (m_textureCache.count(path)) return (T*)m_textureCache[path].Get();
 
 	case AssetType::Model:
 		if (m_modelCache.count(path)) return (T*)m_modelCache[path];

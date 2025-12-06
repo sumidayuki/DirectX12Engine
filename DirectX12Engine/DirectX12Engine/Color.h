@@ -201,7 +201,7 @@ public:
     Color(const float components[4]);
 
     // キャスト演算子のオーバーロード
-    operator const float* () const { return components; }
+    operator const float* () const { return components; } 
 
     // 線形補間
     static Color LerpUnclamped(const Color& from, const Color& to, float t);

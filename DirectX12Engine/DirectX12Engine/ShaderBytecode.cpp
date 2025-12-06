@@ -20,3 +20,17 @@ ShaderBytecode::ShaderBytecode(const wchar_t* path, const char* entryPointName, 
 		assert(0);
 	}
 }
+
+ShaderBytecode::ShaderBytecode(const wchar_t* path, const char* entryPointName, const char* shaderModel, const D3D_SHADER_MACRO* defines)
+{
+	ComPtr<ID3DBlob> errorMessage;
+
+	if (D3DCompileFromFile(path, defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPointName, shaderModel, 0, 0, m_bytecode.ReleaseAndGetAddressOf(), errorMessage.ReleaseAndGetAddressOf()) < 0)
+	{
+		if (errorMessage)
+		{
+			OutputDebugStringA((const char*)errorMessage->GetBufferPointer());
+		}
+		assert(0);
+	}
+}

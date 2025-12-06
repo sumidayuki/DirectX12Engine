@@ -16,4 +16,6 @@ struct Light : IComponentData
 	float  spotAngle = 30.0f;					// Spotで使用（円錐の角度）
 
 	LightType type = LightType::Directional;
+	int enabled = 1;                           // int (4 bytes) - activeLightsに入れるので通常は1
+	float padding[2] = { 0.0f, 0.0f };          // float2 (8 bytes)
 };

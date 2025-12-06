@@ -3,6 +3,7 @@
 #include "PlayerTag.h"
 #include "PlayerCamera.h"
 #include "ScopedProfiler.h"
+#include "Arrow.h"
 
 void PlayerSystem::Move(Transform& transform, Input& input, Animator& animator)
 {
@@ -69,9 +70,13 @@ void PlayerSystem::Attack(Transform& transform, World& world)
 	projectile.speed = 1000.0f;
 	world.AddComponent<Projectile>(a, projectile);
 
+	world.AddComponent<Attackable>(a, Attackable{});
+
 	SphereCollider collider;
 	collider.radius = 10.0f;
 	world.AddComponent<SphereCollider>(a, collider);
+
+	world.AddComponent<Arrow>(a, Arrow{});
 }
 
 void PlayerSystem::Start(World& world)
@@ -101,6 +106,7 @@ void PlayerSystem::Update(World& world)
 			world.AddComponent<AABBCollider>(coll, bColl);
 
 			m_coll = world.GetComponent<Transform>(coll);
+
 		}
 
 		m_coll->position = transform.position + Vector3::up * 90;

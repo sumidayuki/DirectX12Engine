@@ -274,9 +274,6 @@
     <Filter Include="ゲームエンジン\数学\光線">
       <UniqueIdentifier>{c79065c6-33f1-4ada-9371-af578aad28b0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\ECS\System\MeshRendererSystem\WF">
-      <UniqueIdentifier>{1550fed4-2afe-4e53-880a-3bbf9f5a021d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\ECS\コンポーネント\MeshRenderer\WF">
       <UniqueIdentifier>{0660becd-4729-461a-97eb-d96290d0e10b}</UniqueIdentifier>
     </Filter>
@@ -309,6 +306,27 @@
     </Filter>
     <Filter Include="ゲームエンジン\ECS\コンポーネント\Collider\AABB">
       <UniqueIdentifier>{85ffa155-12c3-4730-8ad2-bacccc1a2c15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\BoneSocket">
+      <UniqueIdentifier>{ee5ce629-1381-4d55-9f43-7c29d16235db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\BoneSocketSystem">
+      <UniqueIdentifier>{0b77efba-ee00-4392-960d-98e41db04ad1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\HP">
+      <UniqueIdentifier>{6759d83c-cd20-4ee1-8909-cc007ec3a65e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\HPSystem">
+      <UniqueIdentifier>{9eb45801-30f3-417b-82db-6116fc58ea4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Attackable">
+      <UniqueIdentifier>{b52ea007-b1cb-44d2-ac5c-dc752975f120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\System\AttackableSystem">
+      <UniqueIdentifier>{02392b65-b38f-477f-86e6-542fd1e8caa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\ECS\コンポーネント\Damageable">
+      <UniqueIdentifier>{730b6433-7123-43e1-84de-4e21c449f045}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -516,9 +534,6 @@
     <ClCompile Include="Physics.cpp">
       <Filter>ゲームエンジン\システム\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="WFMeshRendererSystem.cpp">
-      <Filter>ゲームエンジン\ECS\System\MeshRendererSystem\WF</Filter>
-    </ClCompile>
     <ClCompile Include="SpatialHashGrid2D.cpp">
       <Filter>ゲームエンジン\ECS\System\CollisionSystem\SpatialHashGrid\2D</Filter>
     </ClCompile>
@@ -530,6 +545,18 @@
     </ClCompile>
     <ClCompile Include="DebugLineRenderer.cpp">
       <Filter>ゲームエンジン\システム\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="BoneSocketSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\BoneSocketSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="HPSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\HPSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="AttackableSystem.cpp">
+      <Filter>ゲームエンジン\ECS\System\AttackableSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrowSystem.cpp">
+      <Filter>ゲーム\Character\Player\Arrow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -878,9 +905,6 @@
     <ClInclude Include="Physics.h">
       <Filter>ゲームエンジン\システム\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="WFMeshRendererSystem.h">
-      <Filter>ゲームエンジン\ECS\System\MeshRendererSystem\WF</Filter>
-    </ClInclude>
     <ClInclude Include="WFMeshRenderer.h">
       <Filter>ゲームエンジン\ECS\コンポーネント\MeshRenderer\WF</Filter>
     </ClInclude>
@@ -919,6 +943,33 @@
     </ClInclude>
     <ClInclude Include="AABBCollider.h">
       <Filter>ゲームエンジン\ECS\コンポーネント\Collider\AABB</Filter>
+    </ClInclude>
+    <ClInclude Include="BoneSocket.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\BoneSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="BoneSocketSystem.h">
+      <Filter>ゲームエンジン\ECS\System\BoneSocketSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="HP.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\HP</Filter>
+    </ClInclude>
+    <ClInclude Include="HPSystem.h">
+      <Filter>ゲームエンジン\ECS\System\HPSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Attackable.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Attackable</Filter>
+    </ClInclude>
+    <ClInclude Include="AttackableSystem.h">
+      <Filter>ゲームエンジン\ECS\System\AttackableSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Damageable.h">
+      <Filter>ゲームエンジン\ECS\コンポーネント\Damageable</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderRegistry.h">
+      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderUtils.h">
+      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

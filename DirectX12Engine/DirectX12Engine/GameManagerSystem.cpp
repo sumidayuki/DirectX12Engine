@@ -10,6 +10,9 @@ bool GameManagerSystem::Load(World& world)
 	world.AddComponent<PlayerTag>(player, PlayerTag{});
 	world.AddComponent<Input>(player, Input{});
 	world.AddComponent<Velocity>(player, Velocity{});
+	HP playerHP;
+	playerHP.maxHP = 100;
+	world.AddComponent<HP>(player, playerHP);
 	
 	// プレイヤーカメラの設定
 	float fov = 60.0f;
@@ -46,6 +49,10 @@ bool GameManagerSystem::Load(World& world)
 	coll.bounds = Bounds(Vector3(0, 0, 0), Vector3(90, 240, 90));
 	coll.offset = Vector3(0, 120, 0);
 	world.AddComponent<AABBCollider>(warrok, coll);
+	HP warrokHP;
+	warrokHP.maxHP = 50;
+	world.AddComponent<HP>(warrok, warrokHP);
+	world.AddComponent<Damageable>(warrok, Damageable{});
 
 	return true;
 }

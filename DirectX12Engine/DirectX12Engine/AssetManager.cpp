@@ -181,9 +181,5 @@ void AssetManager::Clear()
     }
     m_modelCache.clear();
 
-    for (auto& pair : m_textureCache)
-    {
-        delete pair.second;
-    }
     m_textureCache.clear();
 }

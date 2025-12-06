@@ -2,8 +2,10 @@
 #include "Graphics.h" // GetD3D12Device() のためにインクルード
 
 Material::Material()
-    : m_diffuseColor(Color::white),
-    m_specularColor(Color(0.2f, 0.2f, 0.2f, 1.f)) // デフォルトの鏡面反射色は控えめな灰色に
+    : m_baseColor(Color::white)
+    , m_roughness(1.0f)
+    , m_metallic(0.0f)
+    , m_emissiveColor(Color::black)
 {
     // 全てのポインタとハンドルをゼロクリア
     for (int i = 0; i < (int)TextureSlot::Max; ++i)

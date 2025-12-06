@@ -1,139 +1,101 @@
 #include "Shader.h"
+#include "ShaderUtils.h"
 
-Shader::Shader(const std::wstring& vsPath, const std::string& vsEntry, const std::string& vsTarget, const std::wstring& psPath, const std::string& psEntry, const std::string& psTarget)
-{
-	ID3D12Device* d3d12Device = Graphics::GetD3D12Device();
-
-	ComPtr<ShaderBytecode> vertexShader;
-	vertexShader.Attach(new ShaderBytecode(vsPath.c_str(), vsEntry.c_str(), vsTarget.c_str()));
-
-	ComPtr<ShaderBytecode> pixelShader;
-	pixelShader.Attach(new ShaderBytecode(psPath.c_str(), psEntry.c_str(), psTarget.c_str()));
-
-	// ルートシグネチャ
-	D3D12_ROOT_PARAMETER rootParameters[5];
-	memset(rootParameters, 0, sizeof(rootParameters));
-
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[0].Descriptor.ShaderRegister = 0;
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].Descriptor.ShaderRegister = 1;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-	D3D12_DESCRIPTOR_RANGE ranges[1];
-	memset(ranges, 0, sizeof(ranges));
-	ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	ranges[0].NumDescriptors = (UINT)Material::TextureSlot::Max;
-	ranges[0].BaseShaderRegister = 0;
-	ranges[0].RegisterSpace = 0;
-	ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(ranges);
-	rootParameters[2].DescriptorTable.pDescriptorRanges = ranges;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	D3D12_DESCRIPTOR_RANGE lightRanges[1];
-	memset(lightRanges, 0, sizeof(lightRanges));
-	lightRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	lightRanges[0].NumDescriptors = 1;
-	lightRanges[0].BaseShaderRegister = 3;
-	lightRanges[0].RegisterSpace = 0;
-	lightRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[3].DescriptorTable.NumDescriptorRanges = _countof(lightRanges);
-	rootParameters[3].DescriptorTable.pDescriptorRanges = lightRanges;
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[4].Descriptor.ShaderRegister = 2;
-	rootParameters[4].Descriptor.RegisterSpace = 0;
-	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	D3D12_STATIC_SAMPLER_DESC sampler;
-	memset(&sampler, 0, sizeof(sampler));
-	sampler.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	sampler.MaxLOD = D3D12_FLOAT32_MAX;
-	sampler.ShaderRegister = 0;
-	sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	D3D12_ROOT_SIGNATURE_DESC rsDesc;
-	memset(&rsDesc, 0, sizeof(rsDesc));
-	rsDesc.NumParameters = _countof(rootParameters);
-	rsDesc.pParameters = rootParameters;
-	rsDesc.pStaticSamplers = &sampler;
-	rsDesc.NumStaticSamplers = 1;
-	rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-	ComPtr<ID3DBlob> serializeRootSignature;
-	ComPtr<ID3DBlob> errorBlob;
-	HRESULT hr = D3D12SerializeRootSignature(&rsDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &serializeRootSignature, &errorBlob);
-	if (FAILED(hr))
-	{
-		if (errorBlob)
-		{
-			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-		}
-		assert(SUCCEEDED(hr));
-	}
-
-	hr = d3d12Device->CreateRootSignature(0, serializeRootSignature->GetBufferPointer(), serializeRootSignature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature));
-	assert(SUCCEEDED(hr));
-
-	static const D3D12_INPUT_ELEMENT_DESC inputElements[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	};
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-	psoDesc.pRootSignature = m_rootSignature.Get();
-	psoDesc.VS = { vertexShader->GetBytecodePointer(), vertexShader->GetBytecodeLength() };
-	psoDesc.PS = { pixelShader->GetBytecodePointer(), pixelShader->GetBytecodeLength() };
-	psoDesc.InputLayout = { inputElements, _countof(inputElements) };
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-	psoDesc.SampleDesc.Count = 1;
-	psoDesc.SampleMask = UINT_MAX;
-
-	psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
-
-	psoDesc.DepthStencilState.DepthEnable = TRUE;
-	psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-	psoDesc.DepthStencilState.StencilEnable = FALSE;
-
-	psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
-	psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	psoDesc.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	psoDesc.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-	psoDesc.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-	if (FAILED(d3d12Device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(m_pipelineState.ReleaseAndGetAddressOf()))))
-	{
-		assert(0);
-	}
-}
-
-void Shader::CreateRootSignature()
+Shader::Shader(const ShaderInfo& info)
+	: m_info(info)
 {
 }
 
-void Shader::CreatePipelineState(const D3D12_INPUT_ELEMENT_DESC* inputElements, UINT numInputElements, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& basePsoDesc, ShaderBytecode* vertexShader, ShaderBytecode* pixelShader)
+bool Shader::Create(ID3D12RootSignature* rootSig)
 {
+    ID3D12Device* device = Graphics::GetD3D12Device();
+
+    // HLSLコンパイル
+    m_vertexShader.Attach(new ShaderBytecode(m_info.hlslPath.c_str(), m_info.vsEntry.c_str(), m_info.vsShaderModel.c_str()));
+    m_pixelShader.Attach(new ShaderBytecode(m_info.hlslPath.c_str(), m_info.psEntry.c_str(), m_info.psShaderModel.c_str()));
+
+    if (!m_vertexShader || !m_pixelShader) return false;
+
+    // Input Layout の構築 (JSONの順序からオフセットを計算)
+    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElements;
+    UINT currentOffset = 0;
+
+    for (const auto& input : m_info.inputLayoutJson)
+    {
+        DXGI_FORMAT format = FormatMap.at(input.Format); // 文字列をDXGI_FORMATに変換
+
+        D3D12_INPUT_ELEMENT_DESC element = {};
+        element.SemanticName = input.Semantic.c_str();
+        element.SemanticIndex = 0; // JSONに無いが、ここでは0と仮定
+        element.Format = format;
+        element.InputSlot = 0;
+        element.AlignedByteOffset = currentOffset;
+        element.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+        element.InstanceDataStepRate = 0;
+
+        inputElements.push_back(element);
+        currentOffset += (UINT)GetFormatByteSize(format); // 次のオフセットを計算
+    }
+
+    // PSOディスクリプタの構築
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+    psoDesc.pRootSignature = rootSig;
+
+    // シェーダーバイトコードを設定
+    psoDesc.VS = { m_vertexShader->GetBytecodePointer(), m_vertexShader->GetBytecodeLength() };
+    psoDesc.PS = { m_pixelShader->GetBytecodePointer(), m_pixelShader->GetBytecodeLength() };
+
+    // 入力レイアウトを設定
+    psoDesc.InputLayout = { inputElements.data(), (UINT)inputElements.size() };
+
+    // プリミティブトポロジーの設定
+    psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // JSONの内容に応じて変換・設定
+
+    // ラスタライザーステート (RasterizerInfoから変換)
+    D3D12_RASTERIZER_DESC rsDesc;
+    memset(&rsDesc, 0, sizeof(rsDesc));
+    rsDesc.FillMode = FillModeMap.at(m_info.rasterizer.FillMode);
+    rsDesc.CullMode = CullModeMap.at(m_info.rasterizer.CullMode);
+    rsDesc.FrontCounterClockwise = m_info.rasterizer.FrontCCW;
+    psoDesc.RasterizerState = rsDesc;
+
+    // デプスステンシルステート (DepthInfoから変換)
+    D3D12_DEPTH_STENCIL_DESC dsDesc;
+    dsDesc.DepthEnable = m_info.depth.Enable;
+    dsDesc.DepthWriteMask = (m_info.depth.WriteMask == "All") ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    dsDesc.DepthFunc = FuncMap.at(m_info.depth.Func);
+    psoDesc.DepthStencilState = dsDesc;
+
+    // ブレンドステート (BlendInfoから変換)
+    D3D12_BLEND_DESC blendDesc;
+    blendDesc.RenderTarget[0].BlendEnable = m_info.blend.Enable;
+    if (m_info.blend.Enable)
+    {
+        blendDesc.RenderTarget[0].SrcBlend = BlendMap.at(m_info.blend.Src);
+        blendDesc.RenderTarget[0].DestBlend = BlendMap.at(m_info.blend.Dst);
+        blendDesc.RenderTarget[0].BlendOp = BlendOpMap.at(m_info.blend.Op);
+        // RGBとAlphaのブレンド設定は同じと仮定
+        blendDesc.RenderTarget[0].SrcBlendAlpha = blendDesc.RenderTarget[0].SrcBlend;
+        blendDesc.RenderTarget[0].DestBlendAlpha = blendDesc.RenderTarget[0].DestBlend;
+        blendDesc.RenderTarget[0].BlendOpAlpha = blendDesc.RenderTarget[0].BlendOp;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+    }
+    psoDesc.BlendState = blendDesc;
+
+    // 出力フォーマット
+    psoDesc.NumRenderTargets = 1;
+    psoDesc.RTVFormats[0] = FormatMap.at(m_info.rtvFormatString);
+    psoDesc.DSVFormat = FormatMap.at(m_info.dsvFormatString);
+    psoDesc.SampleDesc.Count = 1;
+
+    // PSOの生成
+    HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(m_graphicsPipelineState.ReleaseAndGetAddressOf()));
+
+    if (FAILED(hr))
+    {
+        assert(false);
+        return false;
+    }
+
+    return true;
 }

@@ -8,7 +8,7 @@ void Time::StaticConstructor()
     m_lastLevelLoadTime = std::chrono::high_resolution_clock::now();
 
     // FPS
-    m_captureFramerate = 165;
+    m_captureFramerate = 240;
     m_frameCount = 0;
     m_framesPerSecond = 0.0f;
 

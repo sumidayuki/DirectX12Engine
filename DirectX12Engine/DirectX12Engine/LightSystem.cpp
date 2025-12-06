@@ -8,7 +8,7 @@ void LightSystem::Start(World& world)
         GraphicsBuffer::Target::Structured,
         GraphicsBuffer::UsageFlags::LockBufferForWrite,
         MAX_LIGHT,
-        sizeof(LightLayout)
+        sizeof(Light)
     ));
 
     DescriptorAllocator* allocator = world.GetSrvAllocator();
@@ -20,7 +20,7 @@ void LightSystem::Start(World& world)
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.Buffer.FirstElement = 0;
     srvDesc.Buffer.NumElements = MAX_LIGHT;
-    srvDesc.Buffer.StructureByteStride = sizeof(LightLayout);
+    srvDesc.Buffer.StructureByteStride = sizeof(Light);
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
     m_lightBufferGpuHandle = allocator->CreateSRV(m_lightBuffer->GetNativeBufferPtr(), srvDesc);
@@ -63,8 +63,8 @@ void LightSystem::Update(World& world)
     // ライト情報が1つ以上あれば、バッファに書き込む
     if (m_activeLightCount > 0)
     {
-        LightLayout* lockedPointer = (LightLayout*)m_lightBuffer->LockBufferForWrite(0, m_activeLightCount);
-        memcpy(lockedPointer, activeLights.data(), m_activeLightCount * sizeof(LightLayout));
+        Light* lockedPointer = (Light*)m_lightBuffer->LockBufferForWrite(0, m_activeLightCount);
+        memcpy(lockedPointer, activeLights.data(), m_activeLightCount * sizeof(Light));
         m_lightBuffer->UnlockBufferAfterWrite();
     }
 }

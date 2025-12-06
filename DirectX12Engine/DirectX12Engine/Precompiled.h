@@ -52,6 +52,8 @@
 // DirectX 入力コンポーネント
 #include <xinput.h>                         // XInput
 
+// Json
+#include <nlohmann/json.hpp>				// Jsonパーサーライブラリ
 
 //-----------------------------------------------------------------------------------------------------
 // using
@@ -60,6 +62,9 @@
 // COMポインタ
 template<typename T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+// nlohmann
+using Json = nlohmann::json;
 
 // Entityの型
 using EntitySize = uint32_t; 
@@ -216,6 +221,7 @@ class Keyboard;
 #include "Material.h"
 #include "Skeleton.h"
 #include "Animation.h"
+#include "Shader.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"
@@ -258,11 +264,15 @@ class Keyboard;
 #include "CircleCollider2D.h"
 #include "BoxCollider2D.h"
 #include "DebugRenderer.h"
+#include "BoneSocket.h"
 #include "MeshFilter.h"
 #include "Animator.h"
 #include "SkinnedMeshRenderer.h"
 #include "Projectile.h"
 #include "AIAgent.h"
+#include "HP.h"
+#include "Attackable.h"
+#include "Damageable.h"
 
 #include "Physics.h"
 #include "GeometryUtility.h"

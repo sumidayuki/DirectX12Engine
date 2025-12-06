@@ -180,13 +180,19 @@ void AnimationSystem::Update(World& world)
 
 		// 最終的な行列を計算
 		animator.finalBoneMatrices.resize(animator.skeleton->GetBoneCount());
+		animator.socketGlobalMatrices.resize(animator.skeleton->GetBoneCount());
 		for (const auto& [boneName, boneInfo] : animator.skeleton->GetBoneInfoMap())
 		{
 			auto it = boneTransforms.find(boneName);
 			if (it != boneTransforms.end())
 			{
-				// グローバル逆変換行列 * グローバルボーン変換行列 * ボーンのオフセット行列
-				animator.finalBoneMatrices[boneInfo.id] = boneInfo.offsetMatrix * it->second * animator.skeleton->GetGlobalInverseTransform();
+				Matrix4x4 globalTransform = it->second;
+
+				// SkinnedMeshRenderer用の行列
+				animator.finalBoneMatrices[boneInfo.id] = boneInfo.offsetMatrix * globalTransform * animator.skeleton->GetGlobalInverseTransform();
+
+				// BoneSocket用の行列 (ボーンのグローバル変換行列そのまま)
+				animator.socketGlobalMatrices[boneInfo.id] = globalTransform;
 			}
 		}
 	}

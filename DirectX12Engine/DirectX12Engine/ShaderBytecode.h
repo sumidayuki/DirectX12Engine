@@ -16,6 +16,15 @@ public:
 	ShaderBytecode(const wchar_t* path, const char* entryPointName, const char* shaderModel);
 
 	/// <summary>
+	/// HLSLで記述されたファイルをマクロ付きでコンパイルしてバイトコードを作成します。
+	/// </summary>
+	/// <param name="path">シェーダーファイルパス</param>
+	/// <param name="entryPointName">エントリーポイント名</param>
+	/// <param name="shaderModel">シェーダーモデル</param>
+	/// <param name="defines">コンパイル時に使用するマクロ定義リスト</param>
+	ShaderBytecode(const wchar_t* path, const char* entryPointName, const char* shaderModel, const D3D_SHADER_MACRO* defines);
+
+	/// <summary>
 	/// バイトコードのバイト数を取得します。
 	/// </summary>
 	/// <returns></returns>

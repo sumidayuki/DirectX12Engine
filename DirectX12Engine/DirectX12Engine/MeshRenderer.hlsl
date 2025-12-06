@@ -102,50 +102,51 @@ void CalculateLight(Light light, ObjectConstantsLayout obj, float3 pixelPos, flo
     {
         case 0: // Directional Light
         {
-            lightDir = normalize(-light.direction);
+                lightDir = normalize(-light.direction);
             // 減衰はなし
-            break;
-        }
+                break;
+            }
         case 1: // Point Light
         {
-            float3 toLightVec = light.position - pixelPos;
-            float dist = length(toLightVec);
+                float3 toLightVec = light.position - pixelPos;
+                float dist = length(toLightVec);
             
             // 光の範囲外なら、ここで処理を終了
-            if (dist > light.range)
+                if (dist > light.range)
                     return;
 
-            lightDir = normalize(toLightVec);
+                lightDir = normalize(toLightVec);
             
             // 距離による減衰 (範囲の端で滑らかに0になる)
-            float distFactor = 1.0 - smoothstep(light.range * 0.75, light.range, dist);
-            attenuation = distFactor * distFactor;
-            break;
-        }
+                float distFactor = 1.0 - smoothstep(light.range * 0.75, light.range, dist);
+                attenuation = distFactor * distFactor;
+                break;
+            }
         case 2: // Spot Light
         {
-            float3 toLightVec = light.position - pixelPos;
-            float dist = length(toLightVec);
+                float3 toLightVec = light.position - pixelPos;
+                float dist = length(toLightVec);
 
-            if (dist > light.range)
-            return;
+                if (dist > light.range)
+                    return;
             
-            lightDir = normalize(toLightVec);
+                lightDir = normalize(toLightVec);
             
             // 距離による減衰
-            float distFactor = 1.0 - smoothstep(light.range * 0.75, light.range, dist);
-            attenuation = distFactor * distFactor;
+                float distFactor = 1.0 - smoothstep(light.range * 0.75, light.range, dist);
+                attenuation = distFactor * distFactor;
             
             // スポットライトの円錐による減衰
-            float spotFactor = dot(-lightDir, normalize(light.direction));
-            float spotAttenuation = smoothstep(light.spotAngle, light.spotAngle + 0.05, spotFactor);
-            attenuation *= spotAttenuation;
-            break;
-        }
+                float spotFactor = dot(-lightDir, normalize(light.direction));
+                float spotAttenuation = smoothstep(light.spotAngle, light.spotAngle + 0.05, spotFactor);
+                attenuation *= spotAttenuation;
+                break;
+            }
     }
     
     // 光が届かなければ処理を終了
-    if (attenuation <= 0.001) return;
+    if (attenuation <= 0.001)
+        return;
 
     // 共通のライティング計算
     // Diffuse

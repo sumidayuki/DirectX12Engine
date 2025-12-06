@@ -66,10 +66,10 @@ ModelData* ModelImporter::Import()
     // 現在の設定に基づいてインポートフラグを設定
     // aiProcess_Triangulate: すべてのプリミティブを三角形に変換
     unsigned int flags = aiProcess_Triangulate;
-    if (m_flipUVs)           flags |= aiProcess_FlipUVs;            // UV座標をY軸で反転
-    if (m_generateNormals)    flags |= aiProcess_GenSmoothNormals;   // スムーズ法線を生成
-    if (m_calculateTangents)  flags |= aiProcess_CalcTangentSpace;   // 接線と従法線を計算
-    if (m_joinIdenticalVertices) flags |= aiProcess_JoinIdenticalVertices; // 重複した頂点を結合
+    if (m_flipUVs)                  flags |= aiProcess_FlipUVs;            // UV座標をY軸で反転
+    if (m_generateNormals)          flags |= aiProcess_GenSmoothNormals;   // スムーズ法線を生成
+    if (m_calculateTangents)        flags |= aiProcess_CalcTangentSpace;   // 接線と従法線を計算
+    if (m_joinIdenticalVertices)    flags |= aiProcess_JoinIdenticalVertices; // 重複した頂点を結合
 
     const std::string path_s = WStringToString(path);
     if (path_s.empty())
@@ -115,11 +115,28 @@ void ModelImporter::ProcessMaterials(const aiScene* scene, ModelData* modelData)
 Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* scene)
 {
     Material* newMaterial = new Material();
+    Material::ShaderFlags& flags = newMaterial->GetMutableShaderFlags();
 
-    // ディフューズカラーのプロパティを読み込む
+    // ベースカラーのプロパティを読み込む
     aiColor4D color;
-    if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color) == AI_SUCCESS) {
-        newMaterial->SetDiffuseColor({ color.r, color.g, color.b, color.a });
+    if (aiGetMaterialColor(mat, AI_MATKEY_BASE_COLOR, &color) == AI_SUCCESS) 
+    {
+        newMaterial->SetBaseColor({ color.r, color.g, color.b, color.a });
+    }
+
+    // Roughness / Metallic の読み込み
+    float fval;
+
+    // Roughnessの読み込み
+    if (aiGetMaterialFloat(mat, AI_MATKEY_ROUGHNESS_FACTOR, &fval) == AI_SUCCESS)
+    {
+        newMaterial->SetRoughness(fval);
+    }
+
+    // Metallicの読み込み
+    if (aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &fval) == AI_SUCCESS)
+    {
+        newMaterial->SetMetallic(fval);
     }
 
     // ディフューズテクスチャが存在すればロード
@@ -136,10 +153,13 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
             // 埋め込みテクスチャをロード（圧縮または非圧縮）
             if (embeddedTexture->mHeight == 0) // 圧縮形式
             { 
+                OutputDebugStringW((L"圧縮形式で埋め込みテクスチャを読み込み \n"));
                 diffuseTexture = textureImporter.Import(embeddedTexture->pcData, embeddedTexture->mWidth);
             }
             else // 非圧縮形式
             { 
+                OutputDebugStringW((L"非圧縮形式で埋め込みテクスチャを読み込み \n"));
+
                 diffuseTexture = textureImporter.Import(
                     embeddedTexture->mWidth, embeddedTexture->mHeight, DXGI_FORMAT_R8G8B8A8_UNORM,
                     embeddedTexture->pcData, embeddedTexture->mWidth * sizeof(aiTexel));
@@ -151,10 +171,14 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
             std::filesystem::path modelPath = GetAssetPath();
             std::filesystem::path texturePath = modelPath.parent_path() / path.C_Str();
 
-            if (std::filesystem::exists(texturePath)) {
+            OutputDebugStringW((L"外部テクスチャをファイルパスから" + texturePath.wstring() + L"\n").c_str());
+
+            if (std::filesystem::exists(texturePath)) 
+            {
                 diffuseTexture = textureImporter.Import(texturePath.c_str());
             }
-            else {
+            else 
+            {
                 OutputDebugStringW((L"ModelImporter Warning: External texture not found at " + texturePath.wstring() + L"\n").c_str());
             }
         }
@@ -162,6 +186,137 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
         if (diffuseTexture)
         {
             newMaterial->SetTexture(Material::TextureSlot::Diffuse, diffuseTexture);
+        }
+    }
+
+    // 法線マップ(Normal Map)の処理とフラグ設定
+    if (mat->GetTextureCount(aiTextureType_NORMALS) > 0)
+    {
+        aiString path;
+        mat->GetTexture(aiTextureType_NORMALS, 0, &path);
+        Texture2D* normalTexture = new Texture2D();
+        TextureImporter textureImporter;
+
+        const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
+        if (embeddedTexture)
+        {
+            // 埋め込みテクスチャをロード（圧縮または非圧縮）
+            if (embeddedTexture->mHeight == 0) // 圧縮形式
+            {
+                OutputDebugStringW((L"圧縮形式で埋め込みテクスチャを読み込み \n"));
+                normalTexture = textureImporter.Import(embeddedTexture->pcData, embeddedTexture->mWidth);
+            }
+            else // 非圧縮形式
+            {
+                OutputDebugStringW((L"非圧縮形式で埋め込みテクスチャを読み込み \n"));
+
+                normalTexture = textureImporter.Import(
+                    embeddedTexture->mWidth, embeddedTexture->mHeight, DXGI_FORMAT_R8G8B8A8_UNORM,
+                    embeddedTexture->pcData, embeddedTexture->mWidth * sizeof(aiTexel));
+            }
+        }
+        else
+        {
+            // 外部テクスチャをファイルパスからロード
+            std::filesystem::path modelPath = GetAssetPath();
+            std::filesystem::path texturePath = modelPath.parent_path() / path.C_Str();
+
+            OutputDebugStringW((L"外部テクスチャをファイルパスから" + texturePath.wstring() + L"\n").c_str());
+
+            if (std::filesystem::exists(texturePath))
+            {
+                normalTexture = textureImporter.Import(texturePath.c_str());
+            }
+            else
+            {
+                OutputDebugStringW((L"ModelImporter Warning: External texture not found at " + texturePath.wstring() + L"\n").c_str());
+            }
+        }
+
+        if (normalTexture)
+        {
+            newMaterial->SetTexture(Material::TextureSlot::Diffuse, normalTexture);
+            flags.HasNormalMap = true;
+        }
+    }
+
+    // Metallic / Roughness Map の設定とフラグ設定
+    if (mat->GetTextureCount(aiTextureType_METALNESS) > 0 || mat->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
+    {
+        aiString path;
+        aiTextureType texType = aiTextureType_UNKNOWN;
+
+        // 優先順位: METALNESS -> DIFFUSE_ROUGHNESS
+        if (mat->GetTextureCount(aiTextureType_METALNESS) > 0)
+        {
+            texType = aiTextureType_METALNESS;
+        }
+        else if (mat->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
+        {
+            texType = aiTextureType_DIFFUSE_ROUGHNESS;
+        }
+
+        if (texType != aiTextureType_UNKNOWN)
+        {
+            mat->GetTexture(texType, 0, &path);
+
+            Texture2D* metallicRoughnessTexture = nullptr;
+            TextureImporter textureImporter;
+
+            // モデルファイルに埋め込まれたテクスチャの処理
+            const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
+            if (embeddedTexture)
+            {
+                // 埋め込みテクスチャをロード（圧縮または非圧縮）
+                if (embeddedTexture->mHeight == 0) // 圧縮形式
+                {
+                    metallicRoughnessTexture = textureImporter.Import(embeddedTexture->pcData, embeddedTexture->mWidth);
+                }
+                else // 非圧縮形式 (aiTexel* を利用)
+                {
+                    metallicRoughnessTexture = textureImporter.Import(
+                        embeddedTexture->mWidth, embeddedTexture->mHeight, DXGI_FORMAT_R8G8B8A8_UNORM,
+                        embeddedTexture->pcData, embeddedTexture->mWidth * sizeof(aiTexel));
+                }
+            }
+            else
+            {
+                // 外部テクスチャをファイルパスからロード
+                std::filesystem::path modelPath = GetAssetPath();
+                std::filesystem::path texturePath = modelPath.parent_path() / path.C_Str();
+
+                if (std::filesystem::exists(texturePath))
+                {
+                    metallicRoughnessTexture = textureImporter.Import(texturePath.c_str());
+                }
+                else
+                {
+                    OutputDebugStringW((L"ModelImporter Warning: Metallic/Roughness texture not found at " + texturePath.wstring() + L"\n").c_str());
+                }
+            }
+
+            if (metallicRoughnessTexture)
+            {
+                //newMaterial->SetTexture(Material::TextureSlot::MetallicRoughness, metallicRoughnessTexture);
+
+                flags.HasMatellicRoughnessMap = true;
+            }
+        }
+    }
+
+    aiBlendMode blendMode;
+    // aiGetMaterialIntegerでブレンドモードを取得し、AlphaTest/AlphaBlendのフラグを設定するロジックを追加
+    if (aiGetMaterialInteger(mat, AI_MATKEY_BLEND_FUNC, (int*)&blendMode) == AI_SUCCESS)
+    {
+        if (blendMode == aiBlendMode_Additive || blendMode == aiBlendMode_Default)
+        {
+            // ここで不透明度やカットアウトの閾値（AI_MATKEY_OPACITYやAI_MATKEY_ALPHA_TEST）もチェックする
+            float opacity = 1.0f;
+            aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &opacity);
+
+            if (opacity < 1.0f) {
+                flags.IsAlphaTested = true;
+            }
         }
     }
 
@@ -308,9 +463,44 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, ModelData* modelData
         {
             aiNodeAnim* channel = ai_animation->mChannels[j];
             BoneAnimation boneAnim;
-            for (unsigned int k = 0; k < channel->mNumPositionKeys; ++k) { boneAnim.positions.push_back({ {channel->mPositionKeys[k].mValue.x, channel->mPositionKeys[k].mValue.y, channel->mPositionKeys[k].mValue.z}, (float)channel->mPositionKeys[k].mTime }); }
-            for (unsigned int k = 0; k < channel->mNumRotationKeys; ++k) { boneAnim.rotations.push_back({ {channel->mRotationKeys[k].mValue.x, channel->mRotationKeys[k].mValue.y, channel->mRotationKeys[k].mValue.z, channel->mRotationKeys[k].mValue.w}, (float)channel->mRotationKeys[k].mTime }); }
-            for (unsigned int k = 0; k < channel->mNumScalingKeys; ++k) { boneAnim.scales.push_back({ {channel->mScalingKeys[k].mValue.x, channel->mScalingKeys[k].mValue.y, channel->mScalingKeys[k].mValue.z}, (float)channel->mScalingKeys[k].mTime }); }
+            for (unsigned int k = 0; k < channel->mNumPositionKeys; ++k) 
+            { 
+                boneAnim.positions.push_back(
+                    { 
+                        {
+                            channel->mPositionKeys[k].mValue.x, 
+                            channel->mPositionKeys[k].mValue.y, 
+                            channel->mPositionKeys[k].mValue.z
+                        }, 
+                        (float)channel->mPositionKeys[k].mTime 
+                    }
+                ); 
+            }
+            for (unsigned int k = 0; k < channel->mNumRotationKeys; ++k) 
+            { 
+                boneAnim.rotations.push_back(
+                    { 
+                        {
+                            channel->mRotationKeys[k].mValue.x, 
+                            channel->mRotationKeys[k].mValue.y, 
+                            channel->mRotationKeys[k].mValue.z, 
+                            channel->mRotationKeys[k].mValue.w}, 
+                            (float)channel->mRotationKeys[k].mTime 
+                    }
+                ); 
+            }
+            for (unsigned int k = 0; k < channel->mNumScalingKeys; ++k) 
+            { 
+                boneAnim.scales.push_back(
+                    { 
+                        {
+                            channel->mScalingKeys[k].mValue.x, 
+                            channel->mScalingKeys[k].mValue.y, 
+                            channel->mScalingKeys[k].mValue.z}, 
+                            (float)channel->mScalingKeys[k].mTime 
+                    }
+                ); 
+            }
             newAnimation->GetMutableBoneAnimations()[channel->mNodeName.C_Str()] = boneAnim;
         }
         modelData->animations[animName] = newAnimation;

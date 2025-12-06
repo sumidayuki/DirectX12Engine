@@ -10,6 +10,8 @@ struct Transform : public IComponentData
 	Entity parent = INVALID_ENTITY;
 	std::vector<Entity> children;
 
+	bool isActive = true;
+
 	Vector3 position = Vector3(0.0f, 0.0f, 0.0f);
 	Quaternion rotation = Quaternion::identity;
 	Vector3 scale = Vector3(1.0f, 1.0f, 1.0f);
