@@ -201,6 +201,7 @@ class Keyboard;
 #include "Singleton.h"
 #include "Screen.h"
 #include "ScopedProfiler.h"
+#include "StringUtility.h"
 #include "Windows-NativeWindow.h"
 #include "Application.h"
 

@@ -47,15 +47,19 @@ Shader* ShaderImporter::Import()
 	}
 	catch (const Json::parse_error& e)
 	{
-		assert(0);
+		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
 	}
 	catch (const Json::type_error& e)
 	{
-		assert(0);
+		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
 	}
 	catch (const Json::other_error& e)
 	{
-		assert(0);
+		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
+	}
+	catch (const Json::exception& e)
+	{
+		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
 	}
 
 	return new Shader(info);
@@ -63,82 +67,70 @@ Shader* ShaderImporter::Import()
 
 void ShaderImporter::ProcessPath(const Json& json, ShaderInfo& info)
 {
-	// パスキーが存在していてかつパスが文字列で書かれているか確認します。
-	if (json.contains("HLSLPath") && json["HLSLPath"].is_string())
-	{
-		info.hlslPath = json["HLSLPath"];
-	}
-	else
-	{
-		assert(0);
-	}
-
-	if (json.contains("VS_Entry") && json["VS_Entry"].is_string())
-	{
-		info.vsEntry = json["VS_Entry"];
-	}
-	else
-	{
-		assert(0);
-	}
-
-	if (json.contains("VS_ShaderModel") && json["VS_ShaderModel"].is_string())
-	{
-		info.vsShaderModel = json["VS_ShaderModel"];
-	}
-	else
-	{
-		assert(0);
-	}
-
-	if (json.contains("PS_Entry") && json["PS_Entry"].is_string())
-	{
-		info.psEntry = json["PS_Entry"];
-	}
-	else
-	{
-		assert(0);
-	}
-
-	if (json.contains("PS_ShaderModel") && json["PS_ShaderModel"].is_string())
-	{
-		info.psShaderModel = json["PS_ShaderModel"];
-	}
-	else
-	{
-		assert(0);
-	}
+	info.hlslPath = UTF8toUTF16LE::Convert(json.at("HLSLPath").get<std::string>());
+	info.vsEntry = json.at("VS_Entry").get<std::string>();
+	info.vsShaderModel = json.at("VS_ShaderModel").get<std::string>();
+	info.psEntry = json.at("PS_Entry").get<std::string>();
+	info.psShaderModel = json.at("PS_ShaderModel").get<std::string>();
 }
 
 void ShaderImporter::ProcessInputLayout(const Json& json, ShaderInfo& info)
 {
-	for (int i = 0; i < json["InputLayout"].size(); i++)
+	// 配列全体を取得（キーが見つからない場合は例外がスローされます）
+	const Json& array = json.at("InputLayout");
+
+	for (const auto& element : array)
 	{
-		json["InputLayout"][i];
+		// 各JSONオブジェクトから "Semantic" と "Format" の値を取得(値の型が一致しない場合に例外がスローされます)
+		InputElement inputElement;
+		inputElement.Semantic = element.at("Semantic").get<std::string>();
+		inputElement.Format = element.at("Format").get<std::string>();
+		info.inputLayout.push_back(inputElement);
 	}
-	
 }
 
 void ShaderImporter::ProcessPrimitiveTopology(const Json& json, ShaderInfo& info)
 {
+	info.primitiveTopology = json.value("PrimitiveTopology", "Triangle");
 }
 
 void ShaderImporter::ProcessRasterizer(const Json& json, ShaderInfo& info)
 {
+	const Json& config = json.value("Rasterizer", Json::object());
+	RasterizerInfo rasterizerInfo;
+	rasterizerInfo.FillMode = config.value("FillMode", "Solid");
+	rasterizerInfo.CullMode = config.value("CullMode", "Back");
+	rasterizerInfo.FrontCCW = config.value("FrontCCW", false);
+	info.rasterizer = rasterizerInfo;
 }
 
 void ShaderImporter::ProcessDepth(const Json& json, ShaderInfo& info)
 {
+	const Json& config = json.value("Depth", Json::object());
+	DepthInfo depthInfo;
+	depthInfo.Enable = config.value("Enable", true);
+	depthInfo.WriteMask = config.value("WriteMask", "ALL");
+	depthInfo.Func = config.value("Func", "Less");
+	info.depth = depthInfo;
 }
 
 void ShaderImporter::ProcessBlend(const Json& json, ShaderInfo& info)
 {
+	const Json& config = json.value("Blend", Json::object());
+	BlendInfo blendInfo;
+	blendInfo.Enable = config.value("Enable", false);
+	blendInfo.Src = config.value("Src", "SRC_ALPHA");
+	blendInfo.Dst = config.value("Dst", "INV_SRC_ALPHA");
+	blendInfo.Op = config.value("Op", "ADD");
+	info.blend = blendInfo;
 }
 
 void ShaderImporter::ProcessRTVFormat(const Json& json, ShaderInfo& info)
 {
+	info.rtvFormatString = json.value("RTVFormat", "R8G8B8A8_UNORM");
 }
 
 void ShaderImporter::ProcessDSVFormat(const Json& json, ShaderInfo& info)
 {
+	info.dsvFormatString = json.value("DSVFormat", "D32_FLOAT");
 }

@@ -7,11 +7,6 @@ struct InputElement
     std::string Format; // 文字列のまま保持し、パース時に変換
 };
 
-struct PrimitiveTopologyInfo
-{
-    std::string Type;
-};
-
 struct RasterizerInfo
 {
     std::string FillMode;
@@ -47,8 +42,8 @@ struct ShaderInfo
     std::string psShaderModel;
 
     // PSO固定機能情報
-    std::vector<InputElement> inputLayoutJson; // JSONをそのまま保持
-    PrimitiveTopologyInfo primitiveTopology;
+    std::vector<InputElement> inputLayout; // JSONをそのまま保持
+    std::string primitiveTopology;
     RasterizerInfo rasterizer;
     DepthInfo depth;
     BlendInfo blend;
@@ -62,6 +57,7 @@ class Shader : public Reference
 private:
     ShaderInfo m_info;
     ComPtr<ID3D12PipelineState> m_graphicsPipelineState;
+    ComPtr<ID3D12PipelineState> m_skinningGPSO;
 
     // コンパイル済みバイトコード
     ComPtr<ShaderBytecode> m_vertexShader;
@@ -75,5 +71,5 @@ public:
     /// </summary>
     bool Create(ID3D12RootSignature* rootSig);
 
-    ID3D12PipelineState* GetPSO() const { return m_graphicsPipelineState.Get(); }
+    ID3D12PipelineState* GetPSO(bool isSkinning = false) const { return isSkinning ? m_skinningGPSO.Get() : m_graphicsPipelineState.Get(); }
 };

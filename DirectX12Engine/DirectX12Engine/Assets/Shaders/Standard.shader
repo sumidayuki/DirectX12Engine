@@ -1,9 +1,9 @@
 {
     "HLSLPath": "MeshRenderer.hlsl",
     "VS_Entry" : "VSMain",
-    "VS_ShaderModel" : "vs_5_1"
+    "VS_ShaderModel" : "vs_5_1",
     "PS_Entry": "PSMain",
-    "PS_ShaderModel" : "ps_5_1"
+    "PS_ShaderModel" : "ps_5_1",
 
     "InputLayout": 
     [
@@ -13,10 +13,7 @@
         { "Semantic": "TANGENT",  "Format": "R32G32B32_FLOAT" }
     ],
 
-    "PrimitiveTopology":
-    {
-        "Type": "Triangle"
-    }
+    "PrimitiveTopology": "Triangle",
 
     "Rasterizer": 
     {
@@ -40,13 +37,7 @@
         "Op": "ADD"
     },
 
-    "RTVFormat": 
-    {
-        "R8G8B8A8_UNORM"
-    },
-    
-    "DSVFormat": 
-    {
-        "D32_FLOAT"
-    }
+    "RTVFormat": "R8G8B8A8_UNORM",
+
+    "DSVFormat":  "D32_FLOAT"
 }

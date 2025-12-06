@@ -4,6 +4,7 @@
 static const std::unordered_map<std::string, DXGI_FORMAT> FormatMap =
 {
     { "R32G32B32A32_FLOAT", DXGI_FORMAT_R32G32B32A32_FLOAT },
+    { "R32G32B32A32_SINT",  DXGI_FORMAT_R32G32B32A32_SINT },
     { "R32G32B32_FLOAT",    DXGI_FORMAT_R32G32B32_FLOAT },
     { "R32G32_FLOAT",       DXGI_FORMAT_R32G32_FLOAT },
     { "R8G8B8A8_UNORM",     DXGI_FORMAT_R8G8B8A8_UNORM },
@@ -54,6 +55,7 @@ inline size_t GetFormatByteSize(DXGI_FORMAT format)
     switch (format)
     {
     case DXGI_FORMAT_R32G32B32A32_FLOAT: return 16;
+    case DXGI_FORMAT_R32G32B32A32_SINT: return 16;
     case DXGI_FORMAT_R32G32B32_FLOAT:    return 12;
     case DXGI_FORMAT_R32G32_FLOAT:       return 8;
     case DXGI_FORMAT_R8G8B8A8_UNORM:     return 4;

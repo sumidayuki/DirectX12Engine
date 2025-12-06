@@ -8,8 +8,10 @@
 class ShaderRegistry
 {
 private:
+	static inline ComPtr<ID3D12RootSignature> m_rootSignature;
+
 	// パスとShaderオブジェクトのマップ
-	static inline std::unordered_map<std::wstring, ComPtr<Shader>> m_shaderCache;
+	static inline std::unordered_map<std::string, ComPtr<Shader>> m_shaderCache;
 
 private:
 	static void StaticConstructor();
@@ -18,5 +20,5 @@ private:
 	static void AllShadersCompile();
 
 public:
-	static void GetShader(const std::wstring& path);
+	static const Shader* GetShader(const std::string& path);
 };

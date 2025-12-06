@@ -206,12 +206,15 @@
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderBytecode.cpp" />
+    <ClCompile Include="ShaderImporter.cpp" />
+    <ClCompile Include="ShaderRegistry.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="SkinnedMeshRendererSystem.cpp" />
     <ClCompile Include="SpatialHashGrid.cpp" />
     <ClCompile Include="SpatialHashGrid2D.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteRendererSystem.cpp" />
+    <ClCompile Include="StringUtility.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="TextureImporter.cpp" />
@@ -329,6 +332,7 @@
     <ClInclude Include="Screen.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderBytecode.h" />
+    <ClInclude Include="ShaderImporter.h" />
     <ClInclude Include="ShaderRegistry.h" />
     <ClInclude Include="ShaderUtils.h" />
     <ClInclude Include="Singleton.h" />

@@ -91,9 +91,6 @@
     <Filter Include="ゲームエンジン\リソース\アセットインポーター">
       <UniqueIdentifier>{72c1ab85-6ac5-4e16-abbb-0127033cdea4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\リソース\アセットインポーター\テクスチャ">
-      <UniqueIdentifier>{aa87146c-9a86-4dea-919a-88b673a240a8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\数学\軸平行境界ボックス%28AABB%29">
       <UniqueIdentifier>{3eb73c6b-ba3b-4785-9475-dd69043fad67}</UniqueIdentifier>
     </Filter>
@@ -147,9 +144,6 @@
     </Filter>
     <Filter Include="ゲームエンジン\リソース\アセット\アニメーション">
       <UniqueIdentifier>{9527c971-850e-4e97-adc6-74c096d28bfc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ゲームエンジン\リソース\アセットインポーター\モデル">
-      <UniqueIdentifier>{bdef09f6-b28a-40ad-b2fc-8c750cd7e826}</UniqueIdentifier>
     </Filter>
     <Filter Include="ゲーム\Character">
       <UniqueIdentifier>{af1113e5-464e-4fbf-b21e-848d228b4d91}</UniqueIdentifier>
@@ -328,6 +322,15 @@
     <Filter Include="ゲームエンジン\ECS\コンポーネント\Damageable">
       <UniqueIdentifier>{730b6433-7123-43e1-84de-4e21c449f045}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセットインポーター\Shader">
+      <UniqueIdentifier>{c2efe569-abed-40a0-8004-a8a4e938f16c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセットインポーター\Texture">
+      <UniqueIdentifier>{aa87146c-9a86-4dea-919a-88b673a240a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセットインポーター\Model">
+      <UniqueIdentifier>{bdef09f6-b28a-40ad-b2fc-8c750cd7e826}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -436,7 +439,7 @@
       <Filter>ゲームエンジン\リソース\アセット\テクスチャ</Filter>
     </ClCompile>
     <ClCompile Include="TextureImporter.cpp">
-      <Filter>ゲームエンジン\リソース\アセットインポーター\テクスチャ</Filter>
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Texture</Filter>
     </ClCompile>
     <ClCompile Include="Bounds.cpp">
       <Filter>ゲームエンジン\数学\軸平行境界ボックス%28AABB%29</Filter>
@@ -460,7 +463,7 @@
       <Filter>ゲームエンジン\ECS\System\MeshRendererSystem</Filter>
     </ClCompile>
     <ClCompile Include="ModelImporter.cpp">
-      <Filter>ゲームエンジン\リソース\アセットインポーター\モデル</Filter>
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Model</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>ゲームエンジン\リソース\アセット\マテリアル</Filter>
@@ -557,6 +560,15 @@
     </ClCompile>
     <ClCompile Include="ArrowSystem.cpp">
       <Filter>ゲーム\Character\Player\Arrow</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderRegistry.cpp">
+      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderImporter.cpp">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtility.cpp">
+      <Filter>ゲームエンジン\システム\文字列</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -732,10 +744,10 @@
       <Filter>ゲームエンジン\リソース\アセット\テクスチャ</Filter>
     </ClInclude>
     <ClInclude Include="FilterMode.h">
-      <Filter>ゲームエンジン\リソース\アセットインポーター\テクスチャ</Filter>
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Texture</Filter>
     </ClInclude>
     <ClInclude Include="TextureImporter.h">
-      <Filter>ゲームエンジン\リソース\アセットインポーター\テクスチャ</Filter>
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Texture</Filter>
     </ClInclude>
     <ClInclude Include="Sprite.h">
       <Filter>ゲームエンジン\リソース\アセット\スプライト</Filter>
@@ -765,7 +777,7 @@
       <Filter>ゲームエンジン\ECS\System\MeshRendererSystem</Filter>
     </ClInclude>
     <ClInclude Include="ModelImporter.h">
-      <Filter>ゲームエンジン\リソース\アセットインポーター\モデル</Filter>
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Model</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>ゲームエンジン\リソース\アセット\マテリアル</Filter>
@@ -810,7 +822,7 @@
       <Filter>ゲームエンジン\ECS\System\AnimationSystem</Filter>
     </ClInclude>
     <ClInclude Include="ModelImporterSettings.h">
-      <Filter>ゲームエンジン\リソース\アセットインポーター\モデル</Filter>
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Model</Filter>
     </ClInclude>
     <ClInclude Include="PlayerSystem.h">
       <Filter>ゲーム\Character\Player</Filter>
@@ -970,6 +982,9 @@
     </ClInclude>
     <ClInclude Include="ShaderUtils.h">
       <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderImporter.h">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
