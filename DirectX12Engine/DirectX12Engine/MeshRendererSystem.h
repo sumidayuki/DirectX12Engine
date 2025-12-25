@@ -1,35 +1,5 @@
 #pragma once
 
-struct SceneConstants
-{
-    int activeLightCount;
-    float padding[3];
-    Vector4 cameraWorldPosition;
-};
-
-// オブジェクトごと（マテリアルごと）の定数
-// HLSL側のcbufferと一致させ、256バイトアライメントを考慮したサイズにします
-struct ObjectConstantsLayout
-{
-    Matrix4x4 worldMatrix; // 64 bytes
-
-    // PBR パラメーター
-    Vector4   baseColor;     // 16 bytes (RGBA)
-    float     roughness;       // 4 bytes
-    float     metallic;        // 4 bytes
-    Vector4   emissiveColor;
-    float     alphaCutoff;     // 4 bytes (アルファテスト用)
-
-    UINT      shaderFlagsBits; // 4 bytes (各ビットが機能をON/OFF)
-    float     padding[2];      // 8 bytes (アライメント調整用)
-};
-
-// Material.hの TextureSlot::Max (ここでは3だが、多めに8とする)
-static constexpr UINT MAX_SRV_TEXTURES_PER_OBJECT = 8;
-// 1 (Materials: t0) + 8 (Textures: t1以降) = 9 スロット
-static constexpr UINT MESH_DESCRIPTOR_SLOTS_PER_OBJECT = 1 + MAX_SRV_TEXTURES_PER_OBJECT;
-static constexpr UINT MESH_TEXTURES_SLOT_OFFSET = 1;
-
 /// <summary>
 /// 3Dメッシュを描画するシステムです。
 /// </summary>
@@ -38,10 +8,6 @@ class MeshRendererSystem : public System
 private:
     friend class Application;
 
-    // 共有リソース
-    static inline ComPtr<ID3D12PipelineState> m_graphicsPipelineState;
-    static inline ComPtr<ID3D12RootSignature> m_rootSignature;
-
     static inline ComPtr<Texture2D> m_defaultWhiteTexture;
 
     // DescriptorAllocatorの代わりに、フレーム全体で共有するGPU可視なデスクリプタヒープ
@@ -49,15 +15,12 @@ private:
     // 現在のフレームで次に利用可能なデスクリプタヒープの開始インデックス
     static inline UINT m_currentDescriptorIndex = 0;
 
-    // リングバッファとして使用するオブジェクト定数バッファ
+    // 定数バッファリソース (リングバッファ)
     static inline ComPtr<GraphicsBuffer> m_objectConstantBufferRing;
     // CPUから書き込むためのマップ済みポインタ
     static inline BYTE* m_mappedObjectConstants = nullptr;
     // 現在のフレームで描画したオブジェクトの数（リングバッファのインデックス）
     static inline UINT m_currentObjectBufferIndex = 0;
-
-    // シーンごとの定数バッファ
-    ComPtr<GraphicsBuffer> m_sceneConstantBuffer;
 
     std::unordered_map<Texture2D*, D3D12_GPU_DESCRIPTOR_HANDLE> m_srvCache;
 

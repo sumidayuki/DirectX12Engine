@@ -45,6 +45,8 @@
 #include <dwrite_3.h>                       // DirectWrite
 #include <d3d11on12.h>                      // Direct3D11 on Direct3D12
 #include <d2d1_3.h>                         // Direct2D1
+#include <d3d12shader.h>
+#include "d3dx12.h"
 
 // DirectX オーディオコンポーネント
 #include <xaudio2.h>                        // XAudio2
@@ -219,10 +221,10 @@ class Keyboard;
 #include "Texture.h"
 #include "Texture2D.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "Material.h"
 #include "Skeleton.h"
 #include "Animation.h"
-#include "Shader.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"

@@ -120,7 +120,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Precompiled.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\Assimp\include;$(SolutionDir)External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\Assimp\include;$(SolutionDir)External;$(SolutionDir)External\include\directx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -194,6 +194,7 @@
     <ClCompile Include="MeshRendererSystem.cpp" />
     <ClCompile Include="ModelImporter.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="Path.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlayerCameraSystem.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="ModelImporter.h" />
     <ClInclude Include="ModelImporterSettings.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="Path.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlayerTag.h" />
@@ -378,7 +380,11 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Camera.hlsli" />
     <None Include="Light.hlsli" />
+    <None Include="Material.hlsli" />
+    <None Include="MeshRenderer.hlsli" />
+    <None Include="SkinnedMeshRenderer.hlsli" />
     <None Include="SpriteRenderer.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -390,6 +396,7 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
       <FileType>Document</FileType>
     </None>
+    <None Include="Standard.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="LineShader.hlsl">
@@ -411,7 +418,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </FxCompile>
-    <FxCompile Include="MeshRenderer.hlsl">
+    <FxCompile Include="Standard.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -420,20 +427,6 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.1</ShaderModel>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="SkinnedMeshRenderer.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.1</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.1</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,10 +1,10 @@
 #include "DescriptorAllocator.h"
 
-DescriptorAllocator::DescriptorAllocator(UINT capacity, UINT frameCount, DescriptorHeapType type) 
+DescriptorAllocator::DescriptorAllocator(UINT capacity, UINT frameCount, DescriptorHeapType type)
     : m_type(type)
     , m_frameCount(frameCount)
     , m_descriptorsPerFrame(capacity)
-    , m_capacity(capacity * frameCount)
+    , m_capacity(capacity* frameCount)
     , m_currentFrameIndex(0)
     , m_currentOffsetInFrame(0)
 {
@@ -41,16 +41,20 @@ DescriptorAllocator::DescriptorAllocator(UINT capacity, UINT frameCount, Descrip
     heapDesc.Flags = flags;
     heapDesc.NodeMask = 0;
 
-    HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_heap));
-
-    m_cpuStart = m_heap->GetCPUDescriptorHandleForHeapStart();
-
-    if (flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)
-    {
-        m_gpuStart = m_heap->GetGPUDescriptorHandleForHeapStart();
-    }
+    m_heap.Attach(new DescriptorHeap(type, m_capacity, flags == D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE));
 
     m_handleIncrementSize = device->GetDescriptorHandleIncrementSize(dxType);
+
+    // ハンドル初期化
+    m_cpuStart = m_heap->GetCPUDescriptorHandle(0);
+    if (flags == D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)
+    {
+        m_gpuStart = m_heap->GetGPUDescriptorHandle(0);
+    }
+    else
+    {
+        m_gpuStart = {};
+    }
 }
 
 void DescriptorAllocator::BeginFrame(UINT frameIndex)
@@ -59,11 +63,12 @@ void DescriptorAllocator::BeginFrame(UINT frameIndex)
     m_currentOffsetInFrame = 0;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE DescriptorAllocator::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)
+D3D12_GPU_DESCRIPTOR_HANDLE DescriptorAllocator::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, D3D12_CPU_DESCRIPTOR_HANDLE* outCpuHandle)
 {
     if (m_currentOffsetInFrame >= m_descriptorsPerFrame) {
         // 容量不足
         assert(false);
+        if (outCpuHandle) *outCpuHandle = {};
         return {};
     }
 
@@ -75,10 +80,16 @@ D3D12_GPU_DESCRIPTOR_HANDLE DescriptorAllocator::CreateSRV(ID3D12Resource* resou
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_cpuStart;
     cpuHandle.ptr += static_cast<SIZE_T>(absoluteOffset) * m_handleIncrementSize;
 
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_gpuStart;
+    gpuHandle.ptr += static_cast<SIZE_T>(absoluteOffset) * m_handleIncrementSize;
+
+    // SRVを作成
     device->CreateShaderResourceView(resource, &srvDesc, cpuHandle);
 
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_gpuStart;
-    gpuHandle.ptr += static_cast<size_t>(absoluteOffset) * m_handleIncrementSize;
+    if (outCpuHandle) // <- 追加: CPUハンドルが必要な場合は格納
+    {
+        *outCpuHandle = cpuHandle;
+    }
 
     ++m_currentOffsetInFrame;
 

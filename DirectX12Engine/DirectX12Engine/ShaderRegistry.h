@@ -11,14 +11,15 @@ private:
 	static inline ComPtr<ID3D12RootSignature> m_rootSignature;
 
 	// パスとShaderオブジェクトのマップ
-	static inline std::unordered_map<std::string, ComPtr<Shader>> m_shaderCache;
+	static inline std::unordered_map<std::string, Shader*> m_shaderCache;
 
-private:
+public:
 	static void StaticConstructor();
 	static void StaticDestructor();
 	static void LoadShader(const std::wstring& path);
 	static void AllShadersCompile();
 
 public:
-	static const Shader* GetShader(const std::string& path);
+	static Shader* GetShader(const std::string& path);
+	static ID3D12RootSignature* GetRootSignature() { return m_rootSignature.Get(); }
 };

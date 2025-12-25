@@ -7,7 +7,8 @@ bool MainScene::Load()
 {
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/player.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Arrow.fbx");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/floor-01.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Floor.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Wall-A.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Warrok-00.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Meshes/PT_Lowpoly_Armors_Female_Moduar_Free.fbx");
 	// Worldにシステムを追加
@@ -70,7 +71,7 @@ void MainScene::Start()
 		lightTransform->position = Vector3(-1000, 100, -1000);
 	}
 
-	Entity floor = m_world.CreateWithModel(L"Assets/floor-01.fbx", nullptr, Vector3::zero, Quaternion::identity, Layers::Environment);
+	Entity floor = m_world.CreateCube(2000.0f, 1.0f, 2000.0f, Layers::Environment, Color::green, false);
 	
 	Entity wall0 = m_world.CreateCube(2000.0f, 500.0f, 1.0f, Layers::Environment, Color::yellow, false);
 	m_world.GetComponent<Transform>(wall0)->position = Vector3(0, 250, 1000);

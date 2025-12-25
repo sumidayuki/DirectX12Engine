@@ -24,6 +24,8 @@ public:
 	/// <param name="defines">コンパイル時に使用するマクロ定義リスト</param>
 	ShaderBytecode(const wchar_t* path, const char* entryPointName, const char* shaderModel, const D3D_SHADER_MACRO* defines);
 
+	ID3DBlob* GetBytecode() const { return m_bytecode.Get(); }
+
 	/// <summary>
 	/// バイトコードのバイト数を取得します。
 	/// </summary>

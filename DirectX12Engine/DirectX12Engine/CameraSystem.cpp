@@ -1,12 +1,6 @@
 #include "CameraSystem.h"
 #include "TransformSystem.h"
-
-// 定数バッファのメモリレイアウトを表す構造体
-struct CameraLayout
-{
-	Matrix4x4 viewMatrix;
-	Matrix4x4 projMatrix;
-};
+#include "Camera.hlsli"
 
 const Matrix4x4& CameraSystem::GetWorldToCameraMatrix(Transform& transform, World& world) const
 {
@@ -59,8 +53,10 @@ void CameraSystem::InternalRender(World& world)
 
 		// 定数バッファに書き込む
 		CameraLayout* lockedPointer = (CameraLayout*)camera.cameraBuffer->LockBufferForWrite();
-		lockedPointer->viewMatrix = GetWorldToCameraMatrix(transform, world).Transpose();
-		lockedPointer->projMatrix = GetProjectionMatrix(camera).Transpose();
+		lockedPointer->view = GetWorldToCameraMatrix(transform, world).Transpose();
+		lockedPointer->proj = GetProjectionMatrix(camera).Transpose();
+		lockedPointer->position = transform.position; // この行を追加
+		lockedPointer->padding0 = 0.0f; // パディングも初期化
 		camera.cameraBuffer->UnlockBufferAfterWrite();
 
 		// コマンド「プリミティブトポロジーを変更する」をコマンドリストに追加

@@ -8,8 +8,11 @@ private:
 private:
 	ComPtr<GraphicsBuffer> m_lightBuffer;					// 全てのライト情報を格納する構造化バッファ
 	D3D12_GPU_DESCRIPTOR_HANDLE m_lightBufferGpuHandle;		// m_lightBufferのSRVを格納するデスクリプタヒープ
+	D3D12_CPU_DESCRIPTOR_HANDLE m_lightBufferCpuHandle;
 
-	int m_activeLightCount = 0; // 現在有効なライトの数
+	ComPtr<ID3D12DescriptorHeap> m_staticSrvHeap;
+
+	int m_activeLightCount; // 現在有効なライトの数
 
 public:
 	/// <summary>
@@ -17,11 +20,14 @@ public:
 	/// </summary>
 	int GetActiveLightCount() const { return m_activeLightCount; }
 
+	GraphicsBuffer* GetLightBuffer() { return m_lightBuffer.Get(); }
+
 	/// <summary>
 	/// このシステムが管理するデスクリプタヒープを取得します。
 	/// （MeshRendererSystemがSetDescriptorHeapsで設定するために使用）
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetLightBufferGpuHandle() const { return m_lightBufferGpuHandle; }
+	D3D12_CPU_DESCRIPTOR_HANDLE GetLightBufferCpuHandle() const { return m_lightBufferCpuHandle; }
 
 private:
 	/// <summary>

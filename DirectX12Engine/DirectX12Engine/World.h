@@ -27,7 +27,7 @@ private:
 	void CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants);
 
 public:
-	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(2048, Graphics::BackBafferCount, DescriptorHeapType::CBV_SRV_UAV); }
+	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(50000, Graphics::BackBafferCount, DescriptorHeapType::CBV_SRV_UAV); }
 
 	DescriptorAllocator* GetSrvAllocator() { return m_srvAllocator.get(); }
 
@@ -185,7 +185,7 @@ public:
 				return ptr;
 			}
 		}
-		throw std::runtime_error("System not found");
+		return nullptr;
 	}
 
 private:

@@ -6,61 +6,45 @@
 /// </summary>
 class Material : public Reference
 {
-public:
-    // シェーダー内のテクスチャスロットに対応させるためのインデックス
-    enum class TextureSlot
-    {
-        Diffuse = 0,        // 基本色テクスチャ      (t0)
-        //Normal,             // 法線マップ            (t1)
-        //MetallicRoughness,  // 金属度と粗さマップ    (t2)
-        //Occlusion,          // 環境遮蔽マップ        (t3)
-        //Emissive,           // 自発光カラー          (t4)
-        Max
-    };
-
-    // マテリアルが使用するシェーダ機能フラグ
-    struct ShaderFlags
-    {
-        bool HasNormalMap               = false;
-        bool HasMatellicRoughnessMap    = false;
-        bool IsAlphaTested              = false;
-    };
-
 private:
-    Color m_baseColor;
-    float m_roughness;
-    float m_metallic;
-    Color m_emissiveColor;
+    // シェーダー
+    Shader* m_shader;
 
-    ShaderFlags m_shaderFlags;
-
-    // テクスチャへのポインタ（参照カウントのため）
-    ComPtr<Texture2D> m_textures[(int)TextureSlot::Max];
+	std::vector<uint8_t> m_constantBufferData;                  // 定数バッファデータ
+    std::unordered_map<uint64_t, ComPtr<Texture2D>> m_textures;   
 
 public:
     Material();
-    ~Material() = default;
+    ~Material();
 
-    void SetBaseColor(const Color& color) { m_baseColor = color; }
-    void SetRoughness(float r) { m_roughness = r; }
-    void SetMetallic(float m) { m_metallic = m; }
-    void SetEmissiveColor(const Color& color) { m_emissiveColor = color; }
+    // シェーダーの設定（ここでバッファをリサイズする）
+    void SetShader(Shader* shader);
+    Shader* GetShader() const { return m_shader; }
 
-    const Color& GetBaseColor() const { return m_baseColor; }
-    const float& GetRoughness() const { return m_roughness; }
-    const float& GetMetallic() const { return m_metallic; }
-    const Color& GetEmissiveColor() const { return m_emissiveColor; }
+    void SetColor(uint64_t id, const Color& value);
+    void SetColor(std::string_view name, const Color& value) { SetColor(Shader::PropertyToID(name), value); }
 
-    const ShaderFlags& GetShaderFlags() const { return m_shaderFlags; }
-    ShaderFlags& GetMutableShaderFlags() { return m_shaderFlags; }
+    void SetFloat(uint64_t id, float value);
+    void SetFloat(std::string_view name, float value) { SetFloat(Shader::PropertyToID(name), value); }
 
-    /// <summary>
-    /// 指定されたスロットにテクスチャを設定し、アロケータからデスクリプタを確保します。
-    /// </summary>
-    /// <param name="slot">テクスチャを設定するスロット</param>
-    /// <param name="texture">設定するテクスチャ</param>
-    /// <param name="allocator">SRVを確保するためのディスクリプタアロケータ</param>
-    void SetTexture(TextureSlot slot, Texture2D* texture);
+    void SetVector(uint64_t id, const Vector4& value);
+	void SetVector(std::string_view name, const Vector4& value) { SetVector(Shader::PropertyToID(name), value); }
 
-    Texture2D* GetTexture(TextureSlot slot) const;
+    void SetMatrix(uint64_t id, const Matrix4x4& value);
+	void SetMatrix(std::string_view name, const Matrix4x4& value) { SetMatrix(Shader::PropertyToID(name), value); }
+
+    // テクスチャ設定
+    void SetTexture(uint64_t id, Texture2D* texture);
+    void SetTexture(std::string_view name, Texture2D* texture) { SetTexture(Shader::PropertyToID(name), texture); }
+    
+    Texture2D* GetTexture(uint64_t id) const;
+
+    void SetBaseColor(const Color& color) { SetColor(Shader::PropertyToID("_BaseColor"), color); }
+    void SetMainTexture(Texture2D* tex) { SetTexture(Shader::PropertyToID("_MainTex"), tex); }
+
+    const void* GetConstantBufferData() const { return m_constantBufferData.data(); }
+
+    size_t GetConstantBufferSize() const { return m_constantBufferData.size(); }
+
+    const std::unordered_map<uint64_t, ComPtr<Texture2D>>& GetTextures() const { return m_textures; }
 };

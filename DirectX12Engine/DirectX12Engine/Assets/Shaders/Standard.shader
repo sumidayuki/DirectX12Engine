@@ -1,5 +1,5 @@
 {
-    "HLSLPath": "MeshRenderer.hlsl",
+    "HLSLPath": "Standard.hlsl",
     "VS_Entry" : "VSMain",
     "VS_ShaderModel" : "vs_5_1",
     "PS_Entry": "PSMain",

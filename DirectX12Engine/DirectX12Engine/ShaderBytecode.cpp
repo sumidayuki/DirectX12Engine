@@ -8,7 +8,7 @@ ShaderBytecode::ShaderBytecode(const wchar_t* path, const char* entryPointName, 
 	ComPtr<ID3DBlob> errorMessage;
 
 	// テキストファイル（.hlsl）に記述されたシェーダーコードをコンパイルしてバイナリコードに変換します。
-	if (D3DCompileFromFile(path, nullptr, nullptr, entryPointName, shaderModel, 0, 0, m_bytecode.ReleaseAndGetAddressOf(), errorMessage.ReleaseAndGetAddressOf()) < 0)
+	if (D3DCompileFromFile(path, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPointName, shaderModel, 0, 0, m_bytecode.ReleaseAndGetAddressOf(), errorMessage.ReleaseAndGetAddressOf()) < 0)
 	{
 		// コンパイルエラー文字列がある場合は、Visual Studioの「出力」ウィンドウに表示する
 		if (errorMessage)

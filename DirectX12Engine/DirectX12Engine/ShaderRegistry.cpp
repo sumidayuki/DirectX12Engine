@@ -4,115 +4,77 @@
 
 void ShaderRegistry::StaticConstructor()
 {
+    ShaderRegistry::LoadShader(L"Assets/Shaders/Standard.shader"); // Standardシェーダーを明示的に読み込む
 }
 
 void ShaderRegistry::StaticDestructor()
 {
-	m_shaderCache.clear();
+    m_shaderCache.clear();
 }
 
 void ShaderRegistry::AllShadersCompile()
 {
     ID3D12Device* d3d12Device = Graphics::GetD3D12Device();
 
-    // ルートシグネチャ (変更なし)
-    D3D12_ROOT_PARAMETER rootParameters[5];
-    memset(rootParameters, 0, sizeof(rootParameters));
+    CD3DX12_DESCRIPTOR_RANGE ranges[6];
+    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0
+    ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); // t1
+    ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2); // t2
+    ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3); // t3
+    ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4); // t4
+    ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5); // t5
 
-    rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameters[0].Descriptor.ShaderRegister = 0;
-    rootParameters[0].Descriptor.RegisterSpace = 0;
-    rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    CD3DX12_ROOT_PARAMETER rootParameters[10];
 
-    rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameters[1].Descriptor.ShaderRegister = 1;
-    rootParameters[1].Descriptor.RegisterSpace = 0;
-    rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    rootParameters[0].InitAsConstantBufferView(0); // b0
+    rootParameters[1].InitAsConstantBufferView(1); // b1
+    rootParameters[2].InitAsConstants(1, 2);       // b2
+    rootParameters[3].InitAsConstantBufferView(3); // b3
 
-    D3D12_DESCRIPTOR_RANGE ranges[1];
-    memset(ranges, 0, sizeof(ranges));
-    ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    ranges[0].NumDescriptors = (UINT)Material::TextureSlot::Max;
-    ranges[0].BaseShaderRegister = 0;
-    ranges[0].RegisterSpace = 0;
-    ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    rootParameters[4].InitAsDescriptorTable(1, &ranges[0]); // t0
 
-    rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(ranges);
-    rootParameters[2].DescriptorTable.pDescriptorRanges = ranges;
-    rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[5].InitAsDescriptorTable(1, &ranges[1]); // t1
+    rootParameters[6].InitAsDescriptorTable(1, &ranges[2]); // t2
+    rootParameters[7].InitAsDescriptorTable(1, &ranges[3]); // t3
+    rootParameters[8].InitAsDescriptorTable(1, &ranges[4]); // t4
+    rootParameters[9].InitAsDescriptorTable(1, &ranges[5]); // t5
 
-    D3D12_DESCRIPTOR_RANGE lightRanges[1];
-    memset(lightRanges, 0, sizeof(lightRanges));
-    lightRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    lightRanges[0].NumDescriptors = 1;
-    lightRanges[0].BaseShaderRegister = 3;
-    lightRanges[0].RegisterSpace = 0;
-    lightRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    CD3DX12_STATIC_SAMPLER_DESC sampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
-    rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParameters[3].DescriptorTable.NumDescriptorRanges = _countof(lightRanges);
-    rootParameters[3].DescriptorTable.pDescriptorRanges = lightRanges;
-    rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc;
+    rootSigDesc.Init(10, rootParameters, 1, &sampler, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-    rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameters[4].Descriptor.ShaderRegister = 2;
-    rootParameters[4].Descriptor.RegisterSpace = 0;
-    rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-    D3D12_STATIC_SAMPLER_DESC sampler = {};
-    sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-    sampler.MaxLOD = D3D12_FLOAT32_MAX;
-    sampler.ShaderRegister = 0;
-    sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-    D3D12_ROOT_SIGNATURE_DESC rsDesc = {};
-    rsDesc.NumParameters = _countof(rootParameters);
-    rsDesc.pParameters = rootParameters;
-    rsDesc.pStaticSamplers = &sampler;
-    rsDesc.NumStaticSamplers = 1;
-    rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-    ComPtr<ID3DBlob> serializedRootSignature;
-    ComPtr<ID3DBlob> errorBlob;
-    HRESULT hr = D3D12SerializeRootSignature(&rsDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &serializedRootSignature, &errorBlob);
+    ComPtr<ID3DBlob> signature;
+    ComPtr<ID3DBlob> error;
+    HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error);
     if (FAILED(hr))
     {
-        if (errorBlob)
-        {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-        }
-        assert(SUCCEEDED(hr));
+        if (error) OutputDebugStringA((char*)error->GetBufferPointer());
     }
 
-    hr = d3d12Device->CreateRootSignature(0, serializedRootSignature->GetBufferPointer(), serializedRootSignature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature));
+    hr = d3d12Device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature));
+
     assert(SUCCEEDED(hr));
 
-	for (auto& shader : m_shaderCache)
-	{
-		shader.second->Create(m_rootSignature.Get());
-	}
+    for (auto& shader : m_shaderCache)
+    {
+        shader.second->Create(m_rootSignature.Get());
+    }
 }
 
 void ShaderRegistry::LoadShader(const std::wstring& path)
 {
-	ShaderImporter importer;
-	Shader* impShader = importer.Import(path);
-	ComPtr<Shader> newShader;
-	newShader.Attach(impShader);
-	m_shaderCache[UTF16LEtoUTF8::Convert(importer.GetFileNameWithoutExtension())] = newShader;
+    ShaderImporter importer;
+    Shader* impShader = importer.Import(path);
+    m_shaderCache[UTF16LEtoUTF8::Convert(importer.GetFileNameWithoutExtension())] = impShader;
 }
-
-const Shader* ShaderRegistry::GetShader(const std::string& path)
+Shader* ShaderRegistry::GetShader(const std::string& path)
 {
     auto it = m_shaderCache.find(path);
-    if (!it._Ptr)
+    if (m_shaderCache.end() == it)
     {
         assert(0);
+        return nullptr;
     }
-    return it->second.Get();
+    return it->second;
 }

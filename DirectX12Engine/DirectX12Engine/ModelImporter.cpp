@@ -115,29 +115,69 @@ void ModelImporter::ProcessMaterials(const aiScene* scene, ModelData* modelData)
 Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* scene)
 {
     Material* newMaterial = new Material();
-    Material::ShaderFlags& flags = newMaterial->GetMutableShaderFlags();
 
     // ベースカラーのプロパティを読み込む
     aiColor4D color;
-    if (aiGetMaterialColor(mat, AI_MATKEY_BASE_COLOR, &color) == AI_SUCCESS) 
+    if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color) != AI_SUCCESS) 
     {
-        newMaterial->SetBaseColor({ color.r, color.g, color.b, color.a });
+        color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
     }
+    newMaterial->SetBaseColor({ color.r, color.g, color.b, color.a });
 
-    // Roughness / Metallic の読み込み
+
+	if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &color) != AI_SUCCESS)
+	{
+		color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+    newMaterial->SetColor("_SpecularColor", { color.r, color.g, color.b, color.a });
+
+	if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &color) != AI_SUCCESS)
+	{
+        color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+    newMaterial->SetColor("_AmbientColor", { color.r, color.g, color.b, color.a });
+
+
+	if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_TRANSPARENT, &color) != AI_SUCCESS)
+	{
+        color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+    newMaterial->SetColor("_TransparentColor", { color.r, color.g, color.b, color.a });
+
+	if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_REFLECTIVE, &color) != AI_SUCCESS)
+	{
+		color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+    newMaterial->SetColor("_ReflectiveColor", { color.r, color.g, color.b, color.a });
+
+	// エミッシブカラーのプロパティを読み込む
+	if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &color) != AI_SUCCESS)
+	{
+		color = aiColor4D(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+    newMaterial->SetColor("_EmissiveColor", { color.r, color.g, color.b, color.a });
+
     float fval;
 
+    if(aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &fval) != AI_SUCCESS)
+	{
+		fval = 0.0f;
+	}
+	newMaterial->SetFloat("_Shininess", fval);
+
     // Roughnessの読み込み
-    if (aiGetMaterialFloat(mat, AI_MATKEY_ROUGHNESS_FACTOR, &fval) == AI_SUCCESS)
+    if (aiGetMaterialFloat(mat, AI_MATKEY_ROUGHNESS_FACTOR, &fval) != AI_SUCCESS)
     {
-        newMaterial->SetRoughness(fval);
+		fval = 1.0f;
     }
+    newMaterial->SetFloat("_Roughness", fval);
 
     // Metallicの読み込み
-    if (aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &fval) == AI_SUCCESS)
+    if (aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &fval) != AI_SUCCESS)
     {
-        newMaterial->SetMetallic(fval);
+		fval = 0.0f;
     }
+    newMaterial->SetFloat("_Metallic", fval);
 
     // ディフューズテクスチャが存在すればロード
     if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
@@ -185,7 +225,7 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
 
         if (diffuseTexture)
         {
-            newMaterial->SetTexture(Material::TextureSlot::Diffuse, diffuseTexture);
+            newMaterial->SetMainTexture(diffuseTexture);
         }
     }
 
@@ -235,8 +275,7 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
 
         if (normalTexture)
         {
-            newMaterial->SetTexture(Material::TextureSlot::Diffuse, normalTexture);
-            flags.HasNormalMap = true;
+            newMaterial->SetTexture("_NormalTex", normalTexture);
         }
     }
 
@@ -297,9 +336,7 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
 
             if (metallicRoughnessTexture)
             {
-                //newMaterial->SetTexture(Material::TextureSlot::MetallicRoughness, metallicRoughnessTexture);
-
-                flags.HasMatellicRoughnessMap = true;
+                newMaterial->SetTexture("_MetallicRoughnessTex", metallicRoughnessTexture);
             }
         }
     }
@@ -313,10 +350,6 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
             // ここで不透明度やカットアウトの閾値（AI_MATKEY_OPACITYやAI_MATKEY_ALPHA_TEST）もチェックする
             float opacity = 1.0f;
             aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &opacity);
-
-            if (opacity < 1.0f) {
-                flags.IsAlphaTested = true;
-            }
         }
     }
 

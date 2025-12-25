@@ -4,6 +4,7 @@
 #include "DebugManager.h"
 #include "TitleScene.h"
 #include "MainScene.h"
+#include "ShaderRegistry.h"
 
 void Application::Run()
 {
@@ -76,9 +77,12 @@ void Application::WorkerThreadEntryPoint()
     SpriteRendererSystem::StaticConstructor();
 
     // メッシュレンダラーシステムの初期化
-    //MeshRendererSystem::StaticConstructor();
+    MeshRendererSystem::StaticConstructor();
 
     SkinnedMeshRendererSystem::StaticConstructor();
+
+    ShaderRegistry::StaticConstructor();
+    ShaderRegistry::AllShadersCompile();
 
     DebugManager::CreateSingleton();
 	DebugManager::GetInstance()->Initialize();
@@ -127,6 +131,7 @@ void Application::WorkerThreadEntryPoint()
             // ゲーム画面をフレームバッファにレンダリング
             FrameResource* currentFrameResource = Graphics::GetCurrentFrameResource();
 
+            currentFrameResource->BeginFrame();
             currentFrameResource->Update();
             currentFrameResource->Render();
 
@@ -169,9 +174,11 @@ void Application::WorkerThreadEntryPoint()
     DebugManager::GetInstance()->DestroySingleton();
 
     // メッシュレンダラーシステムの終了処理
-    //MeshRendererSystem::StaticDestructor();
+    MeshRendererSystem::StaticDestructor();
 
     SkinnedMeshRendererSystem::StaticDestructor();
+
+    ShaderRegistry::StaticDestructor();
 
     // スプライトレンダラーシステムの終了処理
     SpriteRendererSystem::StaticDestructor();

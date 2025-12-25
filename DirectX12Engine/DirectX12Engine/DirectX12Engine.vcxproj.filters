@@ -139,9 +139,6 @@
     <Filter Include="ゲームエンジン\リソース\アセット\スケルトン">
       <UniqueIdentifier>{67c73285-69cf-4992-a9e3-ecfa31690707}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ゲームエンジン\リソース\アセット\シェーダー">
-      <UniqueIdentifier>{396ef0f2-1b2d-44dd-93df-fd3e744c5542}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ゲームエンジン\リソース\アセット\アニメーション">
       <UniqueIdentifier>{9527c971-850e-4e97-adc6-74c096d28bfc}</UniqueIdentifier>
     </Filter>
@@ -331,6 +328,15 @@
     <Filter Include="ゲームエンジン\リソース\アセットインポーター\Model">
       <UniqueIdentifier>{bdef09f6-b28a-40ad-b2fc-8c750cd7e826}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\システム\Path">
+      <UniqueIdentifier>{9fc0cb1f-a081-4b3c-9b27-21e081333063}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセット\Shader">
+      <UniqueIdentifier>{396ef0f2-1b2d-44dd-93df-fd3e744c5542}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセット\Shader\HLSL">
+      <UniqueIdentifier>{baf4f9a3-d9f7-49d0-9f45-c87396fb3e7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -484,7 +490,7 @@
       <Filter>ゲームエンジン\リソース\アセット\メッシュ</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+      <Filter>ゲームエンジン\リソース\アセット\Shader</Filter>
     </ClCompile>
     <ClCompile Include="Skeleton.cpp">
       <Filter>ゲームエンジン\リソース\アセット\スケルトン</Filter>
@@ -562,13 +568,16 @@
       <Filter>ゲーム\Character\Player\Arrow</Filter>
     </ClCompile>
     <ClCompile Include="ShaderRegistry.cpp">
-      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+      <Filter>ゲームエンジン\リソース\アセット\Shader</Filter>
     </ClCompile>
     <ClCompile Include="ShaderImporter.cpp">
       <Filter>ゲームエンジン\リソース\アセットインポーター\Shader</Filter>
     </ClCompile>
     <ClCompile Include="StringUtility.cpp">
       <Filter>ゲームエンジン\システム\文字列</Filter>
+    </ClCompile>
+    <ClCompile Include="Path.cpp">
+      <Filter>ゲームエンジン\システム\Path</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -804,7 +813,7 @@
       <Filter>ゲームエンジン\リソース\アセット\スケルトン</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+      <Filter>ゲームエンジン\リソース\アセット\Shader</Filter>
     </ClInclude>
     <ClInclude Include="MeshFilter.h">
       <Filter>ゲームエンジン\ECS\コンポーネント\MeshFilter</Filter>
@@ -978,32 +987,47 @@
       <Filter>ゲームエンジン\ECS\コンポーネント\Damageable</Filter>
     </ClInclude>
     <ClInclude Include="ShaderRegistry.h">
-      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+      <Filter>ゲームエンジン\リソース\アセット\Shader</Filter>
     </ClInclude>
     <ClInclude Include="ShaderUtils.h">
-      <Filter>ゲームエンジン\リソース\アセット\シェーダー</Filter>
+      <Filter>ゲームエンジン\リソース\アセット\Shader</Filter>
     </ClInclude>
     <ClInclude Include="ShaderImporter.h">
       <Filter>ゲームエンジン\リソース\アセットインポーター\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Path.h">
+      <Filter>ゲームエンジン\システム\Path</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
       <Filter>ゲームエンジン\ECS\System\SpriteRendererSystem</Filter>
     </None>
+    <None Include="Material.hlsli">
+      <Filter>ゲームエンジン\リソース\アセット\マテリアル</Filter>
+    </None>
+    <None Include="MeshRenderer.hlsli">
+      <Filter>ゲームエンジン\ECS\System\MeshRendererSystem</Filter>
+    </None>
+    <None Include="Camera.hlsli">
+      <Filter>ゲームエンジン\ECS\System\CameraSystem</Filter>
+    </None>
     <None Include="Light.hlsli">
-      <Filter>ゲームエンジン\ECS\コンポーネント\Light</Filter>
+      <Filter>ゲームエンジン\ECS\System\LightSystem</Filter>
+    </None>
+    <None Include="SkinnedMeshRenderer.hlsli">
+      <Filter>ゲームエンジン\ECS\System\SkinnedMeshRendererSystem</Filter>
+    </None>
+    <None Include="Standard.hlsli">
+      <Filter>ゲームエンジン\リソース\アセット\Shader\HLSL</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="MeshRenderer.hlsl">
-      <Filter>ゲームエンジン\ECS\System\MeshRendererSystem</Filter>
-    </FxCompile>
-    <FxCompile Include="SkinnedMeshRenderer.hlsl">
-      <Filter>ゲームエンジン\ECS\System\SkinnedMeshRendererSystem</Filter>
-    </FxCompile>
     <FxCompile Include="LineShader.hlsl">
       <Filter>ゲームエンジン\グラフィックス\シェーダー\LineShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Standard.hlsl">
+      <Filter>ゲームエンジン\リソース\アセット\Shader\HLSL</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

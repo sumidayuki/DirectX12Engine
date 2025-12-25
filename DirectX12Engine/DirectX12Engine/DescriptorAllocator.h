@@ -7,7 +7,7 @@
 class DescriptorAllocator
 {
 private:
-    ComPtr<ID3D12DescriptorHeap> m_heap;
+    ComPtr<DescriptorHeap> m_heap;
     D3D12_CPU_DESCRIPTOR_HANDLE m_cpuStart;
     D3D12_GPU_DESCRIPTOR_HANDLE m_gpuStart;
     UINT m_handleIncrementSize;
@@ -43,9 +43,9 @@ public:
     /// <param name="resource"></param>
     /// <param name="srvDesc"></param>
     /// <returns></returns>
-    D3D12_GPU_DESCRIPTOR_HANDLE CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
+    D3D12_GPU_DESCRIPTOR_HANDLE CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, D3D12_CPU_DESCRIPTOR_HANDLE* outCpuHandle = nullptr);
 
-    ID3D12DescriptorHeap* GetHeap() const { return m_heap.Get(); }
+    DescriptorHeap* GetHeap() const { return m_heap.Get(); }
     D3D12_GPU_DESCRIPTOR_HANDLE GetGPUStart() const { return m_gpuStart; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetCPUStart() const { return m_cpuStart; }
 

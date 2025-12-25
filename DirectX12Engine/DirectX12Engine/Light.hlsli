@@ -1,3 +1,6 @@
+#ifndef LIGHT_HLSLI
+#define LIGHT_HLSLI
+
 #include "TypeMarshalling.hlsli"
 
 struct LightLayout
@@ -7,5 +10,8 @@ struct LightLayout
     float range;
     float3 direction;
     float spotAngle;
-    uint type;
+    uint type; // LightType
+    uint padding[3];
 };
+
+#endif

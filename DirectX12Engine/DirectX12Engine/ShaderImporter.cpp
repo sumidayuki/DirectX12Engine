@@ -1,5 +1,14 @@
 #include "ShaderImporter.h"
 
+std::string ReadAllText(const std::wstring& path)
+{
+	std::ifstream ifs(path, std::ios::binary);
+	if (!ifs) return {};
+
+	return std::string((std::istreambuf_iterator<char>(ifs)),
+		std::istreambuf_iterator<char>());
+}
+
 ShaderImporter::ShaderImporter()
 {
 }
@@ -34,7 +43,12 @@ Shader* ShaderImporter::Import()
 	try
 	{
 		// Json全体をパースしてルートオブジェクトを取得
-		Json json = Json::parse(path);
+		std::string text = ReadAllText(path);
+
+		// debug: 最初の数文字確認
+		OutputDebugStringA(text.substr(0, 20).c_str());
+
+		Json json = Json::parse(text);
 
 		ProcessPath(json, info);
 		ProcessInputLayout(json, info);
@@ -47,19 +61,27 @@ Shader* ShaderImporter::Import()
 	}
 	catch (const Json::parse_error& e)
 	{
-		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
+		std::ostringstream oss;
+		oss << "JSON要素の解析中にエラーが発生: " << e.what() << "\n";
+		OutputDebugStringA(oss.str().c_str());
 	}
 	catch (const Json::type_error& e)
 	{
-		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
+		std::ostringstream oss;
+		oss << "JSON要素の解析中にエラーが発生: " << e.what() << "\n";
+		OutputDebugStringA(oss.str().c_str());
 	}
 	catch (const Json::other_error& e)
 	{
-		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
+		std::ostringstream oss;
+		oss << "JSON要素の解析中にエラーが発生: " << e.what() << "\n";
+		OutputDebugStringA(oss.str().c_str());
 	}
 	catch (const Json::exception& e)
 	{
-		std::cerr << "JSON要素の解析中にエラーが発生: " << e.what() << std::endl;
+		std::ostringstream oss;
+		oss << "JSON要素の解析中にエラーが発生: " << e.what() << "\n";
+		OutputDebugStringA(oss.str().c_str());
 	}
 
 	return new Shader(info);
@@ -72,6 +94,8 @@ void ShaderImporter::ProcessPath(const Json& json, ShaderInfo& info)
 	info.vsShaderModel = json.at("VS_ShaderModel").get<std::string>();
 	info.psEntry = json.at("PS_Entry").get<std::string>();
 	info.psShaderModel = json.at("PS_ShaderModel").get<std::string>();
+
+	OutputDebugStringW((L"Shaderのパス読み込みに成功\n"));
 }
 
 void ShaderImporter::ProcessInputLayout(const Json& json, ShaderInfo& info)
@@ -87,11 +111,14 @@ void ShaderImporter::ProcessInputLayout(const Json& json, ShaderInfo& info)
 		inputElement.Format = element.at("Format").get<std::string>();
 		info.inputLayout.push_back(inputElement);
 	}
+
+	OutputDebugStringW((L"ShaderのInputLayout読み込みに成功\n"));
 }
 
 void ShaderImporter::ProcessPrimitiveTopology(const Json& json, ShaderInfo& info)
 {
 	info.primitiveTopology = json.value("PrimitiveTopology", "Triangle");
+	OutputDebugStringW((L"ShaderのPrimitiveTopology読み込みに成功\n"));
 }
 
 void ShaderImporter::ProcessRasterizer(const Json& json, ShaderInfo& info)
@@ -102,6 +129,7 @@ void ShaderImporter::ProcessRasterizer(const Json& json, ShaderInfo& info)
 	rasterizerInfo.CullMode = config.value("CullMode", "Back");
 	rasterizerInfo.FrontCCW = config.value("FrontCCW", false);
 	info.rasterizer = rasterizerInfo;
+	OutputDebugStringW((L"ShaderのRasteraizer読み込みに成功\n"));
 }
 
 void ShaderImporter::ProcessDepth(const Json& json, ShaderInfo& info)
@@ -112,6 +140,7 @@ void ShaderImporter::ProcessDepth(const Json& json, ShaderInfo& info)
 	depthInfo.WriteMask = config.value("WriteMask", "ALL");
 	depthInfo.Func = config.value("Func", "Less");
 	info.depth = depthInfo;
+	OutputDebugStringW((L"ShaderのDepth読み込みに成功\n"));
 }
 
 void ShaderImporter::ProcessBlend(const Json& json, ShaderInfo& info)
@@ -123,14 +152,17 @@ void ShaderImporter::ProcessBlend(const Json& json, ShaderInfo& info)
 	blendInfo.Dst = config.value("Dst", "INV_SRC_ALPHA");
 	blendInfo.Op = config.value("Op", "ADD");
 	info.blend = blendInfo;
+	OutputDebugStringW((L"ShaderのBlend読み込みに成功\n"));
 }
 
 void ShaderImporter::ProcessRTVFormat(const Json& json, ShaderInfo& info)
 {
 	info.rtvFormatString = json.value("RTVFormat", "R8G8B8A8_UNORM");
+	OutputDebugStringW((L"ShaderのRTVFormat読み込みに成功\n"));
 }
 
 void ShaderImporter::ProcessDSVFormat(const Json& json, ShaderInfo& info)
 {
 	info.dsvFormatString = json.value("DSVFormat", "D32_FLOAT");
+	OutputDebugStringW((L"ShaderのDSVFormat読み込みに成功\n"));
 }

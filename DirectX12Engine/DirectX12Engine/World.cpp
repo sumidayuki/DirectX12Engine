@@ -87,9 +87,12 @@ Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32
 	std::vector<Material*> materials;
 	materials.resize(1);
 	materials[0] = new Material();
-	materials[0]->SetTexture(Material::TextureSlot::Diffuse, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png"));
+	materials[0]->SetMainTexture(AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png"));
 	materials[0]->SetBaseColor(color);
-	materials[0]->SetEmissiveColor(Color::white);
+	materials[0]->SetColor("_Emmisive", Color::white);
+	materials[0]->SetFloat("_Metallic", 0.0f);
+	materials[0]->SetFloat("_Roughness", 1.0f);
+	materials[0]->SetFloat("_Shininess", 32.0f);
 
 	if (isWireframe)
 	{
@@ -349,14 +352,14 @@ void World::AddSystem(std::unique_ptr<System> sys)
 bool World::Load(World& world)
 {
 	world.AddSystem(std::make_unique<CameraSystem>());
+	world.AddSystem(std::make_unique<LightSystem>());
 	world.AddSystem(std::make_unique<SpriteRendererSystem>());
-	//world.AddSystem(std::make_unique<MeshRendererSystem>());
+	world.AddSystem(std::make_unique<MeshRendererSystem>());
 	world.AddSystem(std::make_unique<AnimationSystem>());
 	world.AddSystem(std::make_unique<BoneSocketSystem>());
 	world.AddSystem(std::make_unique<TransformSystem>());
 	world.AddSystem(std::make_unique<CollisionSystem>());
 	world.AddSystem(std::make_unique<SkinnedMeshRendererSystem>());
-	world.AddSystem(std::make_unique<LightSystem>());
 	world.AddSystem(std::make_unique<InputSystem>());
 	world.AddSystem(std::make_unique<ProjectileSystem>());
 	world.AddSystem(std::make_unique<AIAgentSystem>());
