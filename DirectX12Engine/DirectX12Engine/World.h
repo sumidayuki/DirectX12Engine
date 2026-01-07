@@ -45,13 +45,23 @@ public:
 	/// <returns></returns>
 	ArchetypeManager& GetArchetypeManager() { return m_am; }
 
+	Entity CreateWithLight
+	(
+		const LightType& type, 
+		const Color& color = Color::white, 
+		const float range = 1000.0f, 
+		Transform* parent = nullptr, 
+		const Vector3& pos = Vector3::zero, 
+		const Quaternion& rot = Quaternion::identity
+	);
+
 	/// <summary>
 	/// 頂点配列とインデックス配列からメッシュを生成し、エンティティを作成します。
 	/// </summary>
 	/// <param name="vertices"></param>
 	/// <param name="indices"></param>
 	/// <returns></returns>
-	Entity CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32_t>&& indices, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false);
+	Entity CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32_t>&& indices, std::vector<Vector2>&& uvs, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false, Texture2D* tex = nullptr);
 
 	/// <summary>
 	/// 一辺の長さを指定して立方体を生成します。
@@ -62,9 +72,9 @@ public:
 	/// <param name="color"></param>
 	/// <param name="isWireframe"></param>
 	/// <returns></returns>
-	Entity CreateCube(float xLength, float yLength, float zLegnth, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false);
+	Entity CreateCube(float xLength, float yLength, float zLegnth, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false, Texture2D* tex = nullptr);
 
-	Entity CreateSphere(float radius, uint16_t slices, uint16_t stacks, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false);
+	Entity CreateSphere(float radius, uint16_t slices, uint16_t stacks, LayerMask layer = Layers::Default, Color color = Color::white, bool isWireframe = false, Texture2D* tex = nullptr);
 
 	Entity CreateWithSprite
 

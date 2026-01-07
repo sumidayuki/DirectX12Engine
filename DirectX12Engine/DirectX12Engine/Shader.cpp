@@ -70,13 +70,20 @@ void Shader::Reflect(ID3DBlob* vsBytecode, ID3DBlob* psBytecode)
 
         }
 
-        // テクスチャや構造化バッファ (t0, t1...) のリソース登録もここで行う
-        for (UINT i = 0; i < shaderDesc.BoundResources; ++i) {
-            D3D12_SHADER_INPUT_BIND_DESC resDesc;
-            reflection->GetResourceBindingDesc(i, &resDesc);
-            m_resourceTable[PropertyToID(resDesc.Name)] = { resDesc.BindPoint };
+        // テクスチャリソースを登録する。
+        for (UINT i = 0; i < shaderDesc.BoundResources; ++i)
+        {
+			D3D12_SHADER_INPUT_BIND_DESC resourceDesc;
+			reflection->GetResourceBindingDesc(i, &resourceDesc);
+			if (resourceDesc.Type == D3D_SIT_TEXTURE)
+			{
+				m_resourceTable[PropertyToID(resourceDesc.Name)] =
+				{
+					resourceDesc.BindPoint
+				};
+			}
         }
-        };
+    };
 
     InternalReflect(vsBytecode);
     InternalReflect(psBytecode);

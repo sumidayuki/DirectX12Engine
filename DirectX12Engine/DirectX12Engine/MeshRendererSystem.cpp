@@ -1,29 +1,22 @@
 #include "MeshRendererSystem.h"
-#include "TransformSystem.h"
-#include "CameraSystem.h"
-#include "LightSystem.h"
 #include "ShaderRegistry.h"
 #include "Standard.hlsli"
 
 // 1フレームあたりに描画可能なオブジェクトの最大数
-constexpr UINT MAX_OBJECTS_PER_FRAME = 2048;
+constexpr UINT MAX_OBJECTS_PER_FRAME = 1024;
 
-// このシステムで共有するグラフィックスリソースを初期化します
 void MeshRendererSystem::StaticConstructor()
 {
 }
 
 void MeshRendererSystem::StaticDestructor()
 {
-    // リングバッファのマップを解除
     if (m_objectConstantBufferRing && m_mappedObjectConstants)
     {
         m_objectConstantBufferRing->UnlockBufferAfterWrite();
         m_mappedObjectConstants = nullptr;
     }
-
-    m_defaultWhiteTexture = nullptr;
-    m_objectConstantBufferRing = nullptr;
+    m_objectConstantBufferRing.Reset();
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE MeshRendererSystem::GetSRV(Texture2D* tex, DescriptorAllocator* allocator)
@@ -46,30 +39,23 @@ D3D12_GPU_DESCRIPTOR_HANDLE MeshRendererSystem::GetSRV(Texture2D* tex, Descripto
 
 void MeshRendererSystem::Start(World& world)
 {
-    TextureImporter importer;
-    m_defaultWhiteTexture.Attach(importer.Import(L"Assets/White.png"));
-
-    // リングバッファの初期化
-    // D3D12の定数バッファの要件である256バイトアライメントを計算
-    const UINT alignedObjectConstantsSize = (sizeof(ObjectLayout) + 255) & ~255;
-
-    // フレームバッファ数 x オブジェクト最大数 分の領域を確保
+    // 定数バッファの作成 (256バイトアライメント)
+    const UINT alignedSize = (sizeof(ObjectLayout) + 255) & ~255;
     m_objectConstantBufferRing.Attach(new GraphicsBuffer(
         GraphicsBuffer::Target::Constant,
-        GraphicsBuffer::UsageFlags::LockBufferForWrite, // CPUから書き込み可能なアップロードヒープに作成
+        GraphicsBuffer::UsageFlags::LockBufferForWrite,
         Graphics::BackBafferCount * MAX_OBJECTS_PER_FRAME,
-        alignedObjectConstantsSize
+        alignedSize
     ));
 
-    // バッファを永続的にマップしておく
     m_mappedObjectConstants = (BYTE*)m_objectConstantBufferRing->LockBufferForWrite();
-
-    // インデックスを初期化
     m_currentObjectBufferIndex = 0;
 }
 
 void MeshRendererSystem::Draw(World& world)
 {
+    m_srvCache.clear();
+
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
     DescriptorAllocator* srvAllocator = world.GetSrvAllocator();
 
@@ -80,38 +66,40 @@ void MeshRendererSystem::Draw(World& world)
 
     CameraSystem* cameraSystem = world.GetSystem<CameraSystem>();
     LightSystem* lightSystem = world.GetSystem<LightSystem>();
+
     if (!cameraSystem || !lightSystem) return;
 
     Camera* camera = cameraSystem->GetCurrent();
     if (!camera) return;
 
-    // 0: CameraLayout (b0)
+    // Slot 0: CameraLayout (b0)
     commandList->SetGraphicsRootConstantBufferView(0, cameraSystem->GetCameraBuffer(*camera)->GetNativeBufferPtr()->GetGPUVirtualAddress());
 
-    // 2: LightConstants (b2) - ライト数など
+    // Slot 2: LightConstants (b2)
     commandList->SetGraphicsRoot32BitConstant(2, lightSystem->GetActiveLightCount(), 0);
 
-    // オブジェクト用リングバッファのセットアップ
-    m_currentObjectBufferIndex = 0;
+    // Slot 4: Lights (t0)
+    if (lightSystem->GetActiveLightCount() > 0)
+    {
+        commandList->SetGraphicsRootDescriptorTable(4, lightSystem->GetLightBufferGpuHandle());
+    }
 
+    m_currentObjectBufferIndex = 0;
     const UINT frameIndex = Graphics::GetCurrentFrameResource()->GetFrameIndex();
-    const UINT alignedSize = m_objectConstantBufferRing->GetStride();
-    const UINT frameOffset = frameIndex * MAX_OBJECTS_PER_FRAME;
+    const UINT alignedObjectConstantsSize = m_objectConstantBufferRing->GetStride();
+    const UINT bufferOffsetForFrame = frameIndex * MAX_OBJECTS_PER_FRAME;
     const D3D12_GPU_VIRTUAL_ADDRESS gpuAddressBase = m_objectConstantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
 
-    // 描画対象のエンティティを取得
     View<Transform, MeshFilter, MeshRenderer> view(world);
     for (auto [entity, transform, meshFilter, renderer] : view)
     {
         if (!meshFilter.mesh) continue;
-        Mesh* mesh = meshFilter.mesh;
-        if (!mesh) continue;
 
-        // 入力アセンブラ設定（IAステージ）
-        GraphicsBuffer* vertexBuffer = mesh->GetVertexBuffer();
-        GraphicsBuffer* indexBuffer = mesh->GetIndexBuffer();
+        GraphicsBuffer* vertexBuffer = meshFilter.mesh->GetVertexBuffer();
+        GraphicsBuffer* indexBuffer = meshFilter.mesh->GetIndexBuffer();
         if (!vertexBuffer || !indexBuffer) continue;
 
+        // IA設定
         D3D12_VERTEX_BUFFER_VIEW vbView = {};
         vbView.BufferLocation = vertexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
         vbView.StrideInBytes = vertexBuffer->GetStride();
@@ -126,65 +114,67 @@ void MeshRendererSystem::Draw(World& world)
 
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        // サブメッシュごとの描画処理
-        const Matrix4x4& worldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
+        const Matrix4x4& worldMatrix = transform.localToWorldMatrix;
 
-        for (UINT i = 0; i < mesh->GetSubMeshCount(); ++i)
+        for (UINT i = 0; i < meshFilter.mesh->GetSubMeshCount(); ++i)
         {
-            if (m_currentObjectBufferIndex >= MAX_OBJECTS_PER_FRAME)
+            if (m_currentObjectBufferIndex + 1 >= MAX_OBJECTS_PER_FRAME)
             {
-                OutputDebugStringA("Warning: Maximum drawable object count reached.\n");
+                OutputDebugStringA("MeshRenderer Warning: Max objects reached.\n");
                 break;
             }
 
-            const SubMesh& subMesh = mesh->GetSubMesh(i);
-            if (subMesh.materialIndex >= renderer.materials.size()) continue;
-
-            Material* material = renderer.materials[subMesh.materialIndex];
+            const auto& submesh = meshFilter.mesh->GetSubMesh(i);
+            if (submesh.materialIndex >= renderer.materials.size()) continue;
+            Material* material = renderer.materials[submesh.materialIndex];
             if (!material) continue;
 
-            ObjectLayout layout;
-            layout.world = worldMatrix.Transpose();
+            // --- 1. Object Constants (Slot 1 / b1) ---
+            ObjectLayout constants;
+            constants.world = worldMatrix.Transpose();
 
-            BYTE* dest = m_mappedObjectConstants + (frameOffset + m_currentObjectBufferIndex) * alignedSize;
-            memcpy(dest, &layout, sizeof(ObjectLayout));
+            BYTE* dest = m_mappedObjectConstants + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
+            memcpy(dest, &constants, sizeof(ObjectLayout));
 
-            D3D12_GPU_VIRTUAL_ADDRESS objGpuAddr = gpuAddressBase + (frameOffset + m_currentObjectBufferIndex) * alignedSize;
+            D3D12_GPU_VIRTUAL_ADDRESS objGpuAddr = gpuAddressBase + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
             commandList->SetGraphicsRootConstantBufferView(1, objGpuAddr);
-
             m_currentObjectBufferIndex++;
 
-            BYTE* destMat = m_mappedObjectConstants + (frameOffset + m_currentObjectBufferIndex) * alignedSize;
-            memcpy(destMat, material->GetConstantBufferData(), material->GetConstantBufferSize());
+            // --- 2. Material Constants (Slot 3 / b3) ---
+            BYTE* destMat = m_mappedObjectConstants + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
+            if (material->GetConstantBufferSize() > 0 && material->GetConstantBufferSize() <= alignedObjectConstantsSize)
+            {
+                memcpy(destMat, material->GetConstantBufferData(), material->GetConstantBufferSize());
+            }
 
-            D3D12_GPU_VIRTUAL_ADDRESS matGpuAddr = gpuAddressBase + (frameOffset + m_currentObjectBufferIndex) * alignedSize;
+            D3D12_GPU_VIRTUAL_ADDRESS matGpuAddr = gpuAddressBase + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
             commandList->SetGraphicsRootConstantBufferView(3, matGpuAddr);
             m_currentObjectBufferIndex++;
 
-            // t0: ライト構造化バッファ
-            commandList->SetGraphicsRootDescriptorTable(4, lightSystem->GetLightBufferGpuHandle());
-
-            int texSlot = 0;
-            for (auto const& [id, texture] : material->GetTextures()) 
+            // --- 3. Textures (Slot 4 + n / t1...) ---
+            const auto& resourceTable = material->GetShader()->GetResourceTable();
+            for (auto const& [id, info] : resourceTable)
             {
+                if (info.bindPoint == 0) continue; // t0はライト用なのでスキップ
+
                 Texture2D* tex = material->GetTexture(id);
+                if (!tex)
+                {
+                    tex = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png");
+                }
 
-                // マテリアルに設定されていない場合は、デフォルトの白テクスチャを使う
-                if (!tex) tex = m_defaultWhiteTexture.Get();
-
-                if (tex) 
+                if (tex)
                 {
                     D3D12_GPU_DESCRIPTOR_HANDLE handle = GetSRV(tex, srvAllocator);
-                    commandList->SetGraphicsRootDescriptorTable(5 + texSlot, handle);
-					texSlot++;
+                    commandList->SetGraphicsRootDescriptorTable(4 + info.bindPoint, handle);
                 }
             }
 
-            // 描画コマンド発行
-            if (material && material->GetShader())
+            // --- 4. Draw ---
+            if (material->GetShader())
             {
                 commandList->SetPipelineState(material->GetShader()->GetPSO(false));
-                commandList->DrawIndexedInstanced(subMesh.indexCount, 1, subMesh.startIndex, 0, 0);
+                commandList->DrawIndexedInstanced(submesh.indexCount, 1, submesh.startIndex, 0, 0);
             }
         }
     }

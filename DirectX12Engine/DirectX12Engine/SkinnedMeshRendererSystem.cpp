@@ -56,6 +56,8 @@ void SkinnedMeshRendererSystem::Start(World& world)
 
 void SkinnedMeshRendererSystem::Draw(World& world)
 {
+	m_srvCache.clear();
+
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
     DescriptorAllocator* srvAllocator = world.GetSrvAllocator();
 
@@ -162,17 +164,28 @@ void SkinnedMeshRendererSystem::Draw(World& world)
                 commandList->SetGraphicsRootConstantBufferView(3, matGpuAddr); // Bind to b3 (Param 3)
                 m_currentObjectBufferIndex++;
 
-                int texSlot = 0;
-                for (auto const& [id, texture] : material->GetTextures())
-                {
-                    Texture2D* tex = material->GetTexture(id);
-                    if (!tex) tex = MeshRendererSystem::GetDefaultWhiteTexture();
+                const auto& resourceTable = material->GetShader()->GetResourceTable();
 
+                for (auto const& [id, info] : resourceTable)
+                {
+                    if (info.bindPoint == 0) continue;
+
+                    // 2. マテリアルからテクスチャを取得
+                    Texture2D* tex = material->GetTexture(id);
+
+                    // 3. マテリアルに設定されていない場合のみ、デフォルトの白テクスチャを割り当てる
+                    if (!tex)
+                    {
+                        tex = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png");
+                    }
+
+                    // 4. 正しいレジスタ番号に対応するルートパラメータにセット
+                    // PBR.hlsl では t1(_MainTex), t2(_NormalTex) ... となっています。
+                    // lights(t0) が RootParam 4 なので、tN は 4 + N 番にセットします。
                     if (tex)
                     {
                         D3D12_GPU_DESCRIPTOR_HANDLE handle = GetSRV(tex, srvAllocator);
-                        commandList->SetGraphicsRootDescriptorTable(5 + texSlot, handle);
-                        texSlot++;
+                        commandList->SetGraphicsRootDescriptorTable(4 + info.bindPoint, handle);
                     }
                 }
 

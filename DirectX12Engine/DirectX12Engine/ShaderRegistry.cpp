@@ -5,6 +5,7 @@
 void ShaderRegistry::StaticConstructor()
 {
     ShaderRegistry::LoadShader(L"Assets/Shaders/Standard.shader"); // Standardシェーダーを明示的に読み込む
+	ShaderRegistry::LoadShader(L"Assets/Shaders/PBR.shader");   // Spriteシェーダーを明示的に読み込む
 }
 
 void ShaderRegistry::StaticDestructor()

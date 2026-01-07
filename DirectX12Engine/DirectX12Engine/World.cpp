@@ -1,4 +1,5 @@
 #include "World.h"
+#include "ShaderRegistry.h"
 
 void World::CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants)
 {
@@ -53,175 +54,186 @@ Entity World::CreateEntity(const std::string& name, LayerMask layer)
 	return entity;
 }
 
-Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32_t>&& indices, LayerMask layer, Color color, bool isWireframe)
+Entity World::CreateWithLight(const LightType& type, const Color& color, const float range, Transform* parent, const Vector3& pos, const Quaternion& rot)
 {
-	Entity entity = CreateEntity("空のエンティティ", layer);
+	Entity entity = CreateEntity();
 
-	// メッシュを包含する最小のAABBを計算します。
-	Vector3 min = vertices[0];
-	Vector3 max = vertices[0];
-	for (size_t i = 1; i < vertices.size(); i++)
-	{
-		min = Vector3::Min(vertices[i], min);
-		max = Vector3::Max(vertices[i], max);
+	Light light;
+	light.type = type;
+	light.color = color;
+	light.range = range;
+	AddComponent<Light>(entity, light);
+
+	// ライトの向きをTransformの回転で制御する
+	Transform* lightTransform = GetComponent<Transform>(entity);
+	TransformSystem::GetInstance()->SetParent(*lightTransform, parent);
+	lightTransform->position = pos;
+	lightTransform->rotation = rot;
+
+	return Entity();
+}
+
+Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32_t>&& indices, std::vector<Vector2>&& uvs, LayerMask layer, Color color, bool isWireframe, Texture2D* tex)
+{
+	Entity entity = CreateEntity("Generated Mesh", layer);
+
+	// 1. UVが空の場合のフォールバック (XZ投影)
+	if (uvs.empty()) {
+		uvs.resize(vertices.size());
+		for (size_t i = 0; i < vertices.size(); i++) {
+			uvs[i] = Vector2(vertices[i].x, vertices[i].z);
+		}
 	}
-	
+
+	// 2. Normal と Tangent の計算用バッファ
+	std::vector<Vector3> calculatedNormals(vertices.size(), Vector3::zero);
+	std::vector<Vector3> calculatedTangents(vertices.size(), Vector3::zero);
+
+	for (size_t i = 0; i < indices.size(); i += 3)
+	{
+		uint32_t i0 = indices[i], i1 = indices[i + 1], i2 = indices[i + 2];
+		Vector3 edge1 = vertices[i1] - vertices[i0];
+		Vector3 edge2 = vertices[i2] - vertices[i0];
+
+		// --- Normal の計算 ---
+		Vector3 faceNormal = Vector3::Cross(edge1, edge2);
+		calculatedNormals[i0] += faceNormal;
+		calculatedNormals[i1] += faceNormal;
+		calculatedNormals[i2] += faceNormal;
+
+		// --- Tangent の計算 ---
+		Vector2 duv1 = uvs[i1] - uvs[i0];
+		Vector2 duv2 = uvs[i2] - uvs[i0];
+		float f = (duv1.x * duv2.y - duv2.x * duv1.y);
+		f = (abs(f) > 1e-6f) ? 1.0f / f : 0.0f;
+
+		Vector3 tangent = (edge1 * duv2.y - edge2 * duv1.y) * f;
+		calculatedTangents[i0] += tangent;
+		calculatedTangents[i1] += tangent;
+		calculatedTangents[i2] += tangent;
+	}
+
 	Mesh* mesh = new Mesh();
-	
-	for (int i = 0; i < vertices.size(); i++)
+	for (size_t i = 0; i < vertices.size(); i++)
 	{
 		Mesh::Vertex vertex;
 		vertex.position = vertices[i];
-		vertex.normal = Vector3::up; // 仮の法線
-		vertex.uv = Vector2::zero;    // 仮のUV
+		vertex.uv = uvs[i];
+		vertex.normal = Vector3::Normalize(calculatedNormals[i]);
+
+		if (calculatedTangents[i].SqrMagnitude() > 0.0001f)
+			vertex.tangent = Vector3::Normalize(calculatedTangents[i]);
+		else
+			vertex.tangent = Vector3(1, 0, 0);
+
 		mesh->AddVertex(vertex);
 	}
+
 	mesh->AddSubMesh(0, (UINT)indices.size(), 0);
 	mesh->SetIndices(std::move(indices), 0);
 	mesh->SetupMesh();
 
+	// 以降、RendererとMaterialの設定（既存通り）
 	MeshFilter* meshFilter = AddComponent<MeshFilter>(entity, {});
 	meshFilter->mesh = mesh;
 
-	// マテリアル配列の作成
-	std::vector<Material*> materials;
-	materials.resize(1);
-	materials[0] = new Material();
-	materials[0]->SetMainTexture(AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png"));
+	std::vector<Material*> materials(1, new Material());
+	materials[0]->SetMainTexture(tex ? tex : AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png"));
+	materials[0]->SetTexture("_NormalTex", AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_N.png"));
 	materials[0]->SetBaseColor(color);
-	materials[0]->SetColor("_Emmisive", Color::white);
-	materials[0]->SetFloat("_Metallic", 0.0f);
-	materials[0]->SetFloat("_Roughness", 1.0f);
-	materials[0]->SetFloat("_Shininess", 32.0f);
+	materials[0]->SetFloat("_Metallic", 0.1f);
+	materials[0]->SetFloat("_Roughness", 0.5f);
+	materials[0]->SetFloat("_Occlusion", 1.0f);
 
-	if (isWireframe)
-	{
-		WFMeshRenderer* wfMeshRenderer = AddComponent<WFMeshRenderer>(entity, {});
-		wfMeshRenderer->materials = materials;
+	if (isWireframe) {
+		WFMeshRenderer wr; wr.materials = materials; AddComponent<WFMeshRenderer>(entity, wr);
 	}
-	else
-	{
-		MeshRenderer* meshRenderer = AddComponent<MeshRenderer>(entity, {});
-		meshRenderer->materials = materials;
+	else {
+		MeshRenderer mr; mr.materials = materials; AddComponent<MeshRenderer>(entity, mr);
 	}
 
 	return entity;
 }
 
-Entity World::CreateCube(float xLength, float yLength, float zLength, LayerMask layer, Color color, bool isWireframe)
+Entity World::CreateCube(float xLength, float yLength, float zLength, LayerMask layer, Color color, bool isWireframe, Texture2D* tex)
 {
-	// 各辺の半分の長さを計算する
-	const Vector3 halfExtents = Vector3(xLength / 2, yLength / 2, zLength / 2);
+	const Vector3 h = Vector3(xLength * 0.5f, yLength * 0.5f, zLength * 0.5f);
 
-	// 頂点配列を作成する
-	std::vector<Vector3> vertices =
-	{
-		{ -halfExtents.x, -halfExtents.y, -halfExtents.z },   // 前面の左下
-		{ -halfExtents.x, +halfExtents.y, -halfExtents.z },   // 前面の左上
-		{ +halfExtents.x, -halfExtents.y, -halfExtents.z },   // 前面の右下
-		{ +halfExtents.x, +halfExtents.y, -halfExtents.z },   // 前面の右上
-
-		{ +halfExtents.x, -halfExtents.y, -halfExtents.z },   // 右面の左下
-		{ +halfExtents.x, +halfExtents.y, -halfExtents.z },   // 右面の左上
-		{ +halfExtents.x, -halfExtents.y, +halfExtents.z },   // 右面の右下
-		{ +halfExtents.x, +halfExtents.y, +halfExtents.z },   // 右面の右上
-
-		{ +halfExtents.x, -halfExtents.y, +halfExtents.z },   // 背面の左下
-		{ +halfExtents.x, +halfExtents.y, +halfExtents.z },   // 背面の左上
-		{ -halfExtents.x, -halfExtents.y, +halfExtents.z },   // 背面の右下
-		{ -halfExtents.x, +halfExtents.y, +halfExtents.z },   // 背面の右上
-
-		{ -halfExtents.x, -halfExtents.y, +halfExtents.z },   // 左面の左下
-		{ -halfExtents.x, +halfExtents.y, +halfExtents.z },   // 左面の左上
-		{ -halfExtents.x, -halfExtents.y, -halfExtents.z },   // 左面の右下
-		{ -halfExtents.x, +halfExtents.y, -halfExtents.z },   // 左面の右上
-
-		{ -halfExtents.x, +halfExtents.y, -halfExtents.z },   // 上面の左下
-		{ -halfExtents.x, +halfExtents.y, +halfExtents.z },   // 上面の左上
-		{ +halfExtents.x, +halfExtents.y, -halfExtents.z },   // 上面の右下
-		{ +halfExtents.x, +halfExtents.y, +halfExtents.z },   // 上面の右上
-
-		{ -halfExtents.x, -halfExtents.y, +halfExtents.z },   // 底面の左下
-		{ -halfExtents.x, -halfExtents.y, -halfExtents.z },   // 底面の左上
-		{ +halfExtents.x, -halfExtents.y, +halfExtents.z },   // 底面の右下
-		{ +halfExtents.x, -halfExtents.y, -halfExtents.z },   // 底面の右上
+	std::vector<Vector3> vertices = {
+		// Front
+		{-h.x, -h.y, -h.z}, {-h.x,  h.y, -h.z}, { h.x, -h.y, -h.z}, { h.x,  h.y, -h.z},
+		// Right
+		{ h.x, -h.y, -h.z}, { h.x,  h.y, -h.z}, { h.x, -h.y,  h.z}, { h.x,  h.y,  h.z},
+		// Back
+		{ h.x, -h.y,  h.z}, { h.x,  h.y,  h.z}, {-h.x, -h.y,  h.z}, {-h.x,  h.y,  h.z},
+		// Left
+		{-h.x, -h.y,  h.z}, {-h.x,  h.y,  h.z}, {-h.x, -h.y, -h.z}, {-h.x,  h.y, -h.z},
+		// Top
+		{-h.x,  h.y, -h.z}, {-h.x,  h.y,  h.z}, { h.x,  h.y, -h.z}, { h.x,  h.y,  h.z},
+		// Bottom
+		{-h.x, -h.y,  h.z}, {-h.x, -h.y, -h.z}, { h.x, -h.y,  h.z}, { h.x, -h.y, -h.z}
 	};
 
-	// インデックス配列を作成する
-	std::vector<uint32_t> indices =
-	{
-		 0,  1,  2,
-		 2,  1,  3,
-		 4,  5,  6,
-		 6,  5,  7,
-		 8,  9, 10,
-		10,  9, 11,
-		12, 13, 14,
-		14, 13, 15,
-		16, 17, 18,
-		18, 17, 19,
-		20, 21, 22,
-		22, 21, 23,
-	};
+	std::vector<Vector2> uvs;
+	// 全ての面に 0~1 のUVを割り当て
+	for (int i = 0; i < 6; ++i) {
+		uvs.push_back({ 0, 1 }); uvs.push_back({ 0, 0 }); uvs.push_back({ 1, 1 }); uvs.push_back({ 1, 0 });
+	}
 
-	return CreateWithMesh(std::move(vertices), std::move(indices), layer, color, isWireframe);
+	std::vector<uint32_t> indices;
+	for (uint32_t i = 0; i < 6; ++i) {
+		uint32_t offset = i * 4;
+		indices.push_back(offset + 0); indices.push_back(offset + 1); indices.push_back(offset + 2);
+		indices.push_back(offset + 2); indices.push_back(offset + 1); indices.push_back(offset + 3);
+	}
+
+	return CreateWithMesh(std::move(vertices), std::move(indices), std::move(uvs), layer, color, isWireframe, tex);
 }
 
-Entity World::CreateSphere(float radius, uint16_t slices, uint16_t stacks, LayerMask layer, Color color, bool isWireframe)
+Entity World::CreateSphere(float radius, uint16_t slices, uint16_t stacks, LayerMask layer, Color color, bool isWireframe, Texture2D* tex)
 {
-	// 頂点数を計算する
-	const int vertexCount = (slices + 1) * (stacks + 1);
-
-	// 頂点配列を作成する
 	std::vector<Vector3> vertices;
+	std::vector<Vector2> uvs;
 
-	// 1周分の角度θの増分を計算する
-	const float deltaTheta = 360.0f / slices;
-
-	// 半周分の角度φの増分を計算する
-	const float deltaPhi = 180.0f / stacks;
-
-	for (int j = 0; j < stacks + 1; j++)
+	for (int j = 0; j <= stacks; j++) 
 	{
-		// 角度φ (-90°～ +90°)
-		const float phi = -90 + deltaPhi * j;
-		const float y = radius * Mathf::Sin(phi * Mathf::Deg2Rad);
-		const float r = radius * Mathf::Cos(phi * Mathf::Deg2Rad);
+		float phi = Mathf::PI * (float)j / stacks;
+		float y = radius * cosf(phi);
+		float r = radius * sinf(phi);
 
-		for (int i = 0; i < slices + 1; i++)
+		for (int i = 0; i <= slices; i++) 
 		{
-			// 角度θ (0°～360°)
-			const float theta = deltaTheta * i;
-			const float x = r * Mathf::Cos(theta * Mathf::Deg2Rad);
-			const float z = r * Mathf::Sin(theta * Mathf::Deg2Rad);
+			float theta = 2.0f * Mathf::PI * (float)i / slices;
+			float x = r * cosf(theta);
+			float z = r * sinf(theta);
+
 			vertices.emplace_back(x, y, z);
+			// テクスチャが裏返る場合は、(1.0f - (float)i / slices) のように反転させます
+			uvs.emplace_back(1.0f - (float)i / slices, (float)j / stacks);
 		}
 	}
 
-	// インデックス数を計算する。
-	const int indexCount = slices * stacks * 6;
-
-	// インデックス配列を作成する
 	std::vector<uint32_t> indices;
-	indices.reserve(indexCount);
-
-	for (int j = 0; j < stacks; j++)
+	for (int j = 0; j < stacks; j++) 
 	{
-		for (int i = 0; i < slices; i++)
+		for (int i = 0; i < slices; i++) 
 		{
-			const int first = (j * (slices + 1)) + i;
-			const int second = first + slices + 1;
-			// 左下三角形
+			uint32_t first = (j * (slices + 1)) + i;
+			uint32_t second = first + slices + 1;
+
+			// インデックスの順序を [first, second, first + 1] から入れ替えて
+			// 面が外側を向くように調整します
 			indices.push_back(first);
-			indices.push_back(second);
-			indices.push_back(first + 1);
 			indices.push_back(first + 1);
 			indices.push_back(second);
+
+			indices.push_back(second);
+			indices.push_back(first + 1);
 			indices.push_back(second + 1);
 		}
 	}
 
-	return CreateWithMesh(std::move(vertices), std::move(indices), layer, color, isWireframe);
+	return CreateWithMesh(std::move(vertices), std::move(indices), std::move(uvs), layer, color, isWireframe, tex);
 }
 
 Entity World::CreateWithSprite(const wchar_t* path, const Rect& rect, const Vector2 pivot, float pixelsPerUnit, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
@@ -371,6 +383,9 @@ bool World::Load(World& world)
 	m_transformSystem = TransformSystem::GetInstance();
 
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/White.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/DefaultNormalMap.jpg");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/DefaultMetallicRoughnessMap.jpg");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/DefaultAOMap.jpg");
 
 	for (auto& sys : m_systems)
 	{

@@ -337,6 +337,9 @@
     <Filter Include="ゲームエンジン\リソース\アセット\Shader\HLSL">
       <UniqueIdentifier>{baf4f9a3-d9f7-49d0-9f45-c87396fb3e7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲームエンジン\リソース\アセットインポーター\Image">
+      <UniqueIdentifier>{d99ac91d-f00b-48ca-ad08-5598e04cb989}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -578,6 +581,9 @@
     </ClCompile>
     <ClCompile Include="Path.cpp">
       <Filter>ゲームエンジン\システム\Path</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageImporter.cpp">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Image</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -998,6 +1004,9 @@
     <ClInclude Include="Path.h">
       <Filter>ゲームエンジン\システム\Path</Filter>
     </ClInclude>
+    <ClInclude Include="ImageImporter.h">
+      <Filter>ゲームエンジン\リソース\アセットインポーター\Image</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
@@ -1027,6 +1036,9 @@
       <Filter>ゲームエンジン\グラフィックス\シェーダー\LineShader</Filter>
     </FxCompile>
     <FxCompile Include="Standard.hlsl">
+      <Filter>ゲームエンジン\リソース\アセット\Shader\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="PBR.hlsl">
       <Filter>ゲームエンジン\リソース\アセット\Shader\HLSL</Filter>
     </FxCompile>
   </ItemGroup>

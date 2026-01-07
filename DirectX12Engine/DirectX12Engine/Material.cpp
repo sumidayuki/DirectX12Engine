@@ -4,7 +4,7 @@
 
 Material::Material()
 {
-    SetShader(ShaderRegistry::GetShader("Standard"));
+    SetShader(ShaderRegistry::GetShader("PBR"));
     m_constantBufferData.assign(m_shader->GetMaterialBufferSize(), 0);
 }
 

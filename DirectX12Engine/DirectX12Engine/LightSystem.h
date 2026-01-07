@@ -3,7 +3,7 @@
 class LightSystem : public System
 {
 private:
-	static const int MAX_LIGHT = 32;
+	static const int MAX_LIGHT = 64;
 
 private:
 	ComPtr<GraphicsBuffer> m_lightBuffer;					// 全てのライト情報を格納する構造化バッファ
