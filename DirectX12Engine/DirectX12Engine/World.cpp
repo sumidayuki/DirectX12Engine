@@ -129,7 +129,7 @@ Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32
 	materials[0]->SetMainTexture(tex ? tex : AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png"));
 	materials[0]->SetTexture("_NormalTex", AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_N.png"));
 	materials[0]->SetBaseColor(color);
-	materials[0]->SetFloat("_Metallic", 0.1f);
+	materials[0]->SetFloat("_Metallic", 0.5f);
 	materials[0]->SetFloat("_Roughness", 0.5f);
 	materials[0]->SetFloat("_Occlusion", 1.0f);
 

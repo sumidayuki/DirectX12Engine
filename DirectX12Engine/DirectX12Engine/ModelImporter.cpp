@@ -174,7 +174,7 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
     // Metallicの読み込み
     if (aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &fval) != AI_SUCCESS)
     {
-        fval = 0.1f;
+        fval = 0.0f;
     }
     newMaterial->SetFloat("_Metallic", fval);
 
