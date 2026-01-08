@@ -3,23 +3,20 @@
 #include "IComponentData.h"
 
 /// <summary>
-/// Archetype‚Íu“¯‚¶ƒRƒ“ƒ|[ƒlƒ“ƒgW‡‚ğ‚ÂEntity1‘Ì•ª‚ÌƒŒƒCƒAƒEƒgv‚ğ•\‚·\‘¢‘Ì‚Å‚·B
-/// ŠÜ‚Ü‚ê‚éTypeInfo‚ÌƒŠƒXƒg‚ğ‚¿AChunk‚ÌƒŒƒCƒAƒEƒg‚ğŒˆ’è‚µ‚Ü‚·B
-/// ‚±‚ÌArchetype‚ÍŒ^ƒŠƒXƒg‚ÆƒIƒtƒZƒbƒgî•ñ‚ğ•Û‚·‚é‚¾‚¯‚Ìƒf[ƒ^\‘¢‚Å‚ ‚Á‚ÄA
-/// U‚é•‘‚¢‚ğ‚½‚È‚¢‚½‚ßstruct‚Å’è‹`‚µ‚Ä‚¢‚Ü‚·B
+/// Archetypeã¯ã€Œã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆé›†åˆï¼ˆEntityã®å‹ï¼‰ã€ã‚’å®šç¾©ã™ã‚‹ã‚‚ã®ã§ã™ã€‚
+/// å«ã¾ã‚Œã‚‹TypeInfoã®ãƒªã‚¹ãƒˆã‚’ä¿æŒã—ã¾ã™ã€‚
+/// SoAåŒ–ã«ä¼´ã„ã€ã‚ªãƒ•ã‚»ãƒƒãƒˆè¨ˆç®—ã¯ä¸è¦ã«ãªã‚Šã¾ã—ãŸã€‚
 /// </summary>
 struct Archetype
 {
-    std::vector<TypeInfo> types;             // ‚±‚ÌArchetype‚ÉŠÜ‚Ü‚ê‚éŒ^î•ñ
-    std::vector<size_t>   offsets;           // ŠeƒRƒ“ƒ|[ƒlƒ“ƒg‚Ìƒƒ‚ƒŠƒIƒtƒZƒbƒg
-    size_t                totalSize = 0;     // 1ƒGƒ“ƒeƒBƒeƒB•ª‚Ì‡ŒvƒTƒCƒY
+    std::vector<TypeInfo> types;             // ã“ã®Archetypeã«å«ã¾ã‚Œã‚‹å‹æƒ…å ±
 
     /// <summary>
-    /// Archetype‚ğ\’z‚µ‚Ü‚·BTypeInfo‚ğƒ\[ƒg‚µ‚ÄˆêˆÓ‰»‚µ‚Ä‚¢‚Ü‚·B
+    /// Archetypeã‚’æ§‹ç¯‰ã—ã¾ã™ã€‚TypeInfoã‚’ã‚½ãƒ¼ãƒˆã—ã¦ä¸€æ„åŒ–ã—ã¾ã™ã€‚
     /// </summary>
     Archetype(std::vector<TypeInfo> typeList)
     {
-        // ƒ\[ƒg‚µ‚Ä‡˜‚ğˆê’è‚É
+        // ã‚½ãƒ¼ãƒˆã—ã¦æ­£è¦åŒ–
         std::sort(
             typeList.begin(), 
             typeList.end(), 
@@ -29,53 +26,43 @@ struct Archetype
             }
         );
 
-        // d•¡‚ğíœ
+        // é‡è¤‡å‰Šé™¤
         typeList.erase(std::unique(typeList.begin(), typeList.end(),
             [](auto& a, auto& b) { return a.hash == b.hash; }),
             typeList.end());
 
         types = std::move(typeList);
-
-        // ƒƒ‚ƒŠƒIƒtƒZƒbƒg‚ğŒvZ
-        size_t offset = 0;
-        for (const auto& t : types)
-        {
-            offset = (offset + t.alignment - 1) / t.alignment * t.alignment; // ƒAƒ‰ƒCƒƒ“ƒg’²®
-            offsets.push_back(offset);
-            offset += t.size;
-        }
-        totalSize = offset;
     }
 
     /// <summary>
-    /// Archetype“¯m‚Ì”äŠri\¬‚ª“¯‚¶‚©j‚ğ‚µ‚Ü‚·B
+    /// æŒ‡å®šã—ãŸå‹ã®ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆãŒå«ã¾ã‚Œã¦ã„ã‚‹ã‹ç¢ºèªã—ã¾ã™ã€‚
     /// </summary>
-    bool operator==(const Archetype& other) const noexcept
+    bool HasType(const TypeInfo& info) const
     {
-        if (types.size() != other.types.size())
-            return false;
-        for (size_t i = 0; i < types.size(); ++i)
-        {
-            if (types[i].hash != other.types[i].hash)
-                return false;
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// “Á’è‚ÌƒRƒ“ƒ|[ƒlƒ“ƒgŒ^‚ğŠÜ‚Ş‚©‚Ç‚¤‚©‚ğŠm”F‚µ‚Ü‚·B
-    /// </summary>
-    template<ComponentType T>
-    bool Contains() const noexcept
-    {
-        constexpr TypeInfo info = GetTypeInfo<T>();
-        return std::any_of(
+        return std::binary_search(
             types.begin(), 
             types.end(), 
-            [&](const TypeInfo& t) 
+            info, 
+            [](const TypeInfo& t, const TypeInfo& val)
             {
-                return t.hash == info.hash;
+                return t.hash < val.hash;
             }
         );
+    }
+
+    template<typename T>
+    bool HasType() const
+    {
+        return HasType(GetTypeInfo<T>());
+    }
+
+    bool operator==(const Archetype& other) const
+    {
+        if (types.size() != other.types.size()) return false;
+        for (size_t i = 0; i < types.size(); ++i)
+        {
+            if (types[i].hash != other.types[i].hash) return false;
+        }
+        return true;
     }
 };

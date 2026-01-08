@@ -1,8 +1,8 @@
 #pragma once
 
 /// <summary>
-/// Transform‚ÌŠÇ—‚ğs‚¤ƒVƒXƒeƒ€‚Å‚·B
-/// TransformƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì•ÏX‚ğMatrix“™‚É”½‰f‚µ‚Ü‚·B
+/// Transformã®ç®¡ç†ã‚’è¡Œã†ã‚·ã‚¹ãƒ†ãƒ ã§ã™ã€‚
+/// Transformã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å¤‰æ›´ã‚’Matrixç­‰ã«åæ˜ ã—ã¾ã™ã€‚
 /// </summary>
 class TransformSystem : public System, public Singleton<TransformSystem>
 {
@@ -10,25 +10,25 @@ class TransformSystem : public System, public Singleton<TransformSystem>
 
 public:
 	/// <summary>
-	/// w’è‚³‚ê‚½ transform ‚Ée‚ğİ’è‚µ‚Ü‚·B
-	/// eqŠÖŒW‚ğİ’è‚·‚é‚ÆAe‚Ìƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚É˜A“®‚µ‚ÄˆÚ“®E‰ñ“]EƒXƒP[ƒ‹‚³‚ê‚Ü‚·B
+	/// æŒ‡å®šã•ã‚ŒãŸ transform ã«è¦ªã‚’è¨­å®šã—ã¾ã™ã€‚
+	/// è¦ªå­é–¢ä¿‚ã‚’è¨­å®šã™ã‚‹ã¨ã€è¦ªã®ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ ã«é€£å‹•ã—ã¦ç§»å‹•ãƒ»å›è»¢ãƒ»ã‚¹ã‚±ãƒ¼ãƒ«ã•ã‚Œã¾ã™ã€‚
 	/// </summary>
-	/// <param name="transform">q‚É‚·‚étransform</param>
-	/// <param name="parent">e‚É‚·‚étransform</param>
+	/// <param name="transform">å­ã«ã™ã‚‹transform</param>
+	/// <param name="parent">è¦ªã«ã™ã‚‹transform</param>
 	void SetParent(Transform& transform, Transform* parent);
 
 	/// <summary>
-	/// eqŠÖŒW‚ğ‰ğœ‚µ‚Ü‚·B
+	/// è¦ªå­é–¢ä¿‚ã‚’è§£é™¤ã—ã¾ã™ã€‚
 	/// </summary>
-	/// <param name="transform">e‚©‚çØ‚è—£‚µ‚½‚¢transform</param>
+	/// <param name="transform">è¦ªã‹ã‚‰åˆ‡ã‚Šé›¢ã—ãŸã„transform</param>
 	void UnsetParent(Transform& transform);
 
 	Transform* GetRoot(Transform& transform);
 
-	// qTransform‚ÌŒÂ”‚ğæ“¾‚µ‚Ü‚·B
+	// å­Transformã®å€‹æ•°ã‚’å–å¾—ã—ã¾ã™ã€‚
 	int GetChildCount(Transform* transform);
 
-	// index”Ô–Ú‚ÌqTransform‚ğæ“¾‚µ‚Ü‚·B
+	// indexç•ªç›®ã®å­Transformã‚’å–å¾—ã—ã¾ã™ã€‚
 	Transform* GetChild(Transform* transform, int index);
 
 	Transform* FindChild(Transform* transform, const std::string& name);
@@ -47,51 +47,54 @@ public:
 
 	const Matrix4x4& GetWorldToLocalMatrix(Transform& transform);
 
-	// ƒ[ƒJƒ‹‹óŠÔ‚©‚çƒ[ƒ‹ƒh‹óŠÔ‚Ö direction ‚ğ•ÏŠ·‚µ‚Ü‚·B
-	// ‚±‚Ì•ÏŠ·‚ÍuƒXƒP[ƒ‹vuˆÊ’uv‚Ì‰e‹¿‚ğó‚¯‚Ü‚¹‚ñB
-	// •Ô‚³‚ê‚éƒxƒNƒgƒ‹‚Í direction ‚Æ“¯‚¶’·‚³‚É‚È‚è‚Ü‚·B
+	// ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã‹ã‚‰ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã¸ direction ã‚’å¤‰æ›ã—ã¾ã™ã€‚
+	// ã“ã®å¤‰æ›ã¯ã€Œã‚¹ã‚±ãƒ¼ãƒ«ã€ã€Œä½ç½®ã€ã®å½±éŸ¿ã‚’å—ã‘ã¾ã›ã‚“ã€‚
+	// è¿”ã•ã‚Œã‚‹ãƒ™ã‚¯ãƒˆãƒ«ã¯ direction ã¨åŒã˜é•·ã•ã«ãªã‚Šã¾ã™ã€‚
 	Vector3 TransformDirection(Transform& transform, const Vector3& direction);
 	 
-	// ƒ[ƒJƒ‹‹óŠÔ‚©‚çƒ[ƒ‹ƒh‹óŠÔ‚Ö vector ‚ğ•ÏŠ·‚µ‚Ü‚·B
-	// ‚±‚Ì•ÏŠ·‚ÍuƒXƒP[ƒ‹v‚Ì‰e‹¿‚ğó‚¯‚Ü‚·‚ªuˆÊ’uv‚Ì‰e‹¿‚Íó‚¯‚Ü‚¹‚ñB
-	// •Ô‚³‚ê‚éƒxƒNƒgƒ‹‚Ì’·‚³‚ÍAvector ‚Æ‚ÍˆÙ‚È‚éê‡‚ª‚ ‚è‚Ü‚·B
+	// ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã‹ã‚‰ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã¸ vector ã‚’å¤‰æ›ã—ã¾ã™ã€‚
+	// ã“ã®å¤‰æ›ã¯ã€Œã‚¹ã‚±ãƒ¼ãƒ«ã€ã®å½±éŸ¿ã‚’å—ã‘ã¾ã™ãŒã€Œä½ç½®ã€ã®å½±éŸ¿ã¯å—ã‘ã¾ã›ã‚“ã€‚
+	// è¿”ã•ã‚Œã‚‹ãƒ™ã‚¯ãƒˆãƒ«ã®é•·ã•ã¯ã€vector ã¨ã¯ç•°ãªã‚‹å ´åˆãŒã‚ã‚Šã¾ã™ã€‚
 	Vector3 TransformVector(Transform& transform, const Vector3& vector);
 
-	// ƒ[ƒJƒ‹‹óŠÔ‚©‚çƒ[ƒ‹ƒh‹óŠÔ‚Ö position ‚ğ•ÏŠ·‚µ‚Ü‚·B
-	// ‚±‚Ì•ÏŠ·‚ÍuƒXƒP[ƒ‹vu‰ñ“]vuˆÊ’uv‚Ì‰e‹¿‚ğó‚¯‚Ü‚·B
+	// ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã‹ã‚‰ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã¸ position ã‚’å¤‰æ›ã—ã¾ã™ã€‚
+	// ã“ã®å¤‰æ›ã¯ã€Œã‚¹ã‚±ãƒ¼ãƒ«ã€ã€Œå›è»¢ã€ã€Œä½ç½®ã€ã®å½±éŸ¿ã‚’å—ã‘ã¾ã™ã€‚
 	Vector3 TransformPoint(Transform& transform, const Vector3& position);
 
-	// ƒ[ƒ‹ƒh‹óŠÔ‚©‚çƒ[ƒJƒ‹‹óŠÔ‚Ö direction ‚ğ•ÏŠ·‚µ‚Ü‚·B
-	// ‚±‚Ì•ÏŠ·‚ÍuƒXƒP[ƒ‹vuˆÊ’uv‚Ì‰e‹¿‚ğó‚¯‚Ü‚¹‚ñB
-	// •Ô‚³‚ê‚éƒxƒNƒgƒ‹‚Í direction ‚Æ“¯‚¶’·‚³‚É‚È‚è‚Ü‚·B
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã‹ã‚‰ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã¸ direction ã‚’å¤‰æ›ã—ã¾ã™ã€‚
+	// ã“ã®å¤‰æ›ã¯ã€Œã‚¹ã‚±ãƒ¼ãƒ«ã€ã€Œä½ç½®ã€ã®å½±éŸ¿ã‚’å—ã‘ã¾ã›ã‚“ã€‚
+	// è¿”ã•ã‚Œã‚‹ãƒ™ã‚¯ãƒˆãƒ«ã¯ direction ã¨åŒã˜é•·ã•ã«ãªã‚Šã¾ã™ã€‚
 	Vector3 InverseTransformDirection(Transform& transform, const Vector3& direction);
 
-	// ƒ[ƒ‹ƒh‹óŠÔ‚©‚çƒ[ƒJƒ‹‹óŠÔ‚Ö vector ‚ğ•ÏŠ·‚µ‚Ü‚·B
-	// ‚±‚Ì•ÏŠ·‚ÍuƒXƒP[ƒ‹v‚Ì‰e‹¿‚ğó‚¯‚Ü‚·‚ªuˆÊ’uv‚Ì‰e‹¿‚Íó‚¯‚Ü‚¹‚ñB
-	// •Ô‚³‚ê‚éƒxƒNƒgƒ‹‚Ì’·‚³‚ÍAvector ‚Æ‚ÍˆÙ‚È‚éê‡‚ª‚ ‚è‚Ü‚·B
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã‹ã‚‰ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã¸ vector ã‚’å¤‰æ›ã—ã¾ã™ã€‚
+	// ã“ã®å¤‰æ›ã¯ã€Œã‚¹ã‚±ãƒ¼ãƒ«ã€ã®å½±éŸ¿ã‚’å—ã‘ã¾ã™ãŒã€Œä½ç½®ã€ã®å½±éŸ¿ã¯å—ã‘ã¾ã›ã‚“ã€‚
+	// è¿”ã•ã‚Œã‚‹ãƒ™ã‚¯ãƒˆãƒ«ã®é•·ã•ã¯ã€vector ã¨ã¯ç•°ãªã‚‹å ´åˆãŒã‚ã‚Šã¾ã™ã€‚
 	Vector3 InverseTransformVector(Transform& transform, const Vector3& vector);
 
-	// ƒ[ƒ‹ƒh‹óŠÔ‚©‚çƒ[ƒJƒ‹‹óŠÔ‚Ö position ‚ğ•ÏŠ·‚µ‚Ü‚·B
-	// ‚±‚Ì•ÏŠ·‚ÍuƒXƒP[ƒ‹vu‰ñ“]vuˆÊ’uv‚Ì‰e‹¿‚ğó‚¯‚Ü‚·B
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã‹ã‚‰ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã¸ position ã‚’å¤‰æ›ã—ã¾ã™ã€‚
+	// ã“ã®å¤‰æ›ã¯ã€Œã‚¹ã‚±ãƒ¼ãƒ«ã€ã€Œå›è»¢ã€ã€Œä½ç½®ã€ã®å½±éŸ¿ã‚’å—ã‘ã¾ã™ã€‚
 	Vector3 InverseTransformPoint(Transform& transform, const Vector3& position);
 
 	/// <summary>
-	/// Œ»İ‚ÌˆÊ’u‚©‚çw’è‚µ‚½•ª‚¾‚¯ˆÚ“®‚µ‚Ü‚·B
+	/// ç¾åœ¨ã®ä½ç½®ã‹ã‚‰æŒ‡å®šã—ãŸåˆ†ã ã‘ç§»å‹•ã—ã¾ã™ã€‚
 	/// </summary>
-	/// <param name="transform">ˆÚ“®‚³‚¹‚½‚¢transform</param>
-	/// <param name="translation">ˆÚ“®—Ê</param>
+	/// <param name="transform">ç§»å‹•ã•ã›ãŸã„transform</param>
+	/// <param name="translation">ç§»å‹•é‡</param>
 	void Translate(Transform& transform, const Vector3& translation);
 
 	/// <summary>
-	/// w’è‚µ‚½‰ñ“]²‚Éw’è‚ÌŠp“x‚¾‚¯‰ñ“]‚³‚¹‚Ü‚·B
+	/// æŒ‡å®šã—ãŸå›è»¢è»¸ã«æŒ‡å®šã®è§’åº¦ã ã‘å›è»¢ã•ã›ã¾ã™ã€‚
 	/// </summary>
-	/// <param name="transform">‰ñ“]‚³‚¹‚½‚¢transform</param>
-	/// <param name="axis">‰ñ“]²</param>
-	/// <param name="angle">Šp“x</param>
+	/// <param name="transform">å›è»¢ã•ã›ãŸã„transform</param>
+	/// <param name="axis">å›è»¢è»¸</param>
+	/// <param name="angle">è§’åº¦</param>
 	void Rotate(Transform& transform, const Vector3 axis, float angle);
 
 private:
-	void RecalculateMatricesRecursive(World& world, Transform& transform);
+
+
+	void UpdateLocalMatrix(Transform& transform);
+	void UpdateAllDirtyTransforms(World& world);
 
 public:
 	void Start(World& world) override;

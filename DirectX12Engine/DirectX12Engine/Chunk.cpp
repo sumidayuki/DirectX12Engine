@@ -3,76 +3,102 @@
 Chunk::Chunk(const Archetype* archetype, size_t capacity)
 	: m_archetype(archetype)
 	, m_capacity(capacity)
+	, m_count(0)
 {
-	// �A�[�L�^�C�v���ݒ肳��Ă��Ȃ��ꍇ�̓G���[���o�܂��B
+	// アーキタイプが設定されていない場合はエラーが出ます。
 	if (!m_archetype)
 	{
 		throw std::invalid_argument("Chunk: archetype is null");
 	}
 
-	// capacity�̐��l0�͌������̒l�Ȃ̂Ńf�t�H���g�l�ɐݒ肵�܂��B
+	// capacityの数値0は無効の値なのでデフォルト値に設定します。
 	if (m_capacity == 0)
 	{
 		m_capacity = 64;
 	}
 
-	// �A���C�����g�ƃT�C�Y�v�Z�����܂��B
-	size_t maxAlign = 1;
-	for (const auto& type : m_archetype->types)
-	{
-		maxAlign = std::max(maxAlign, type.alignment);
-	}
-	m_bufferAlignment = std::max(maxAlign, static_cast<size_t>(alignof(void*)));
-
-	const size_t totalBytes = m_archetype->totalSize * m_capacity;
-
-	// �A���C�����g�t���������̊m�ۂ��s���܂��B
-	// C++�� aligned new ���g����ꍇ�͂�����g�p���܂��B
-#if defined(__cpp_aligned_new) || (_MSC_VER && _HAS_CXX17)
-	m_buffer = reinterpret_cast<uint8_t*>(::operator new (totalBytes, std::align_val_t(m_bufferAlignment)));
-#endif
-	if (!m_buffer)
-	{
-		throw std::bad_alloc();
-	}
-
-	// �G���e�B�e�B�z���capacity���m�ۂ��Ă����܂��B
-	m_entities.reserve(m_capacity);
-
-	// Archetype�̌^�z��𑖍����āAtype.hash���L�[�Ƃ��Č^�C���f�b�N�X��ۑ����܂��B
+	// SoA: 各コンポーネント型ごとに別々のメモリを確保
+	m_componentArrays.resize(m_archetype->types.size());
+	
 	for (size_t i = 0; i < m_archetype->types.size(); i++)
 	{
-		m_typeIndexMap[m_archetype->types[i].hash] = i;
+		const TypeInfo& type = m_archetype->types[i];
+		size_t arraySize = type.size * m_capacity;
+		size_t alignment = std::max(type.alignment, static_cast<size_t>(alignof(void*)));
+		
+		// アライメント付きメモリの確保
+#if defined(__cpp_aligned_new) || (_MSC_VER && _HAS_CXX17)
+		m_componentArrays[i] = reinterpret_cast<uint8_t*>(
+			::operator new(arraySize, std::align_val_t(alignment)));
+#else
+#if defined(_MSC_VER)
+		m_componentArrays[i] = reinterpret_cast<uint8_t*>(_aligned_malloc(arraySize, alignment));
+#else
+		m_componentArrays[i] = reinterpret_cast<uint8_t*>(aligned_alloc(alignment, arraySize));
+#endif
+#endif
+		if (!m_componentArrays[i])
+		{
+			// 既に確保したメモリを解放
+			FreeArrays();
+			throw std::bad_alloc();
+		}
+		
+		// 型ハッシュからインデックスへのマッピング
+		m_typeIndexMap[type.hash] = i;
 	}
+
+	// エンティティ配列をcapacity分確保しておきます。
+	m_entities.reserve(m_capacity);
+}
+
+void Chunk::FreeArrays()
+{
+	if (!m_archetype) return;
+	
+	for (size_t i = 0; i < m_componentArrays.size(); i++)
+	{
+		if (m_componentArrays[i])
+		{
+			const TypeInfo& type = m_archetype->types[i];
+			size_t alignment = std::max(type.alignment, static_cast<size_t>(alignof(void*)));
+			
+#if defined(__cpp_aligned_new) || (_MSC_VER && _HAS_CXX17)
+			::operator delete(m_componentArrays[i], std::align_val_t(alignment));
+#else
+#if defined(_MSC_VER)
+			_aligned_free(m_componentArrays[i]);
+#else
+			free(m_componentArrays[i]);
+#endif
+#endif
+			m_componentArrays[i] = nullptr;
+		}
+	}
+	m_componentArrays.clear();
 }
 
 Chunk::~Chunk()
 {
-	if (m_buffer)
+	// 全アクティブコンポーネントのデストラクタを呼び出し
+	for (size_t entityIdx = 0; entityIdx < m_count; ++entityIdx)
 	{
-		// Call destructors for all active components
-		for (size_t i = 0; i < m_count; ++i)
+		for (size_t typeIdx = 0; typeIdx < m_archetype->types.size(); ++typeIdx)
 		{
-			for (const auto& type : m_archetype->types)
-			{
-				void* componentPtr = m_buffer + m_archetype->offsets[m_typeIndexMap[type.hash]] + i * m_archetype->totalSize;
-				type.destroy(componentPtr);
-			}
+			const TypeInfo& type = m_archetype->types[typeIdx];
+			// SoA: 各コンポーネント配列内の位置を計算
+			void* componentPtr = m_componentArrays[typeIdx] + type.size * entityIdx;
+			type.destroy(componentPtr);
 		}
-
-#if defined(__cpp_aligned_new) || (_MSC_VER && _HAS_CXX17)
-		::operator delete(m_buffer, std::align_val_t(m_bufferAlignment));
-#else
-#if defined(_MSC_VER)
-		_aligned_free(m_buffer);
-#else
-		free(m_buffer);
-#endif
-#endif
 	}
+
+	FreeArrays();
 }
 
 Chunk::Chunk(Chunk&& other) noexcept
+	: m_archetype(nullptr)
+	, m_capacity(0)
+	, m_count(0)
 {
 	MoveFrom(std::move(other));
 }
@@ -81,27 +107,18 @@ Chunk& Chunk::operator=(Chunk&& other) noexcept
 {
 	if (this != &other)
 	{
-		// Destroy existing components before moving
-		if (m_buffer)
+		// 既存コンポーネントのデストラクタ呼び出し
+		for (size_t entityIdx = 0; entityIdx < m_count; ++entityIdx)
 		{
-			for (size_t i = 0; i < m_count; ++i)
+			for (size_t typeIdx = 0; typeIdx < m_archetype->types.size(); ++typeIdx)
 			{
-				for (const auto& type : m_archetype->types)
-				{
-					void* componentPtr = m_buffer + m_archetype->offsets[m_typeIndexMap[type.hash]] + i * m_archetype->totalSize;
-					type.destroy(componentPtr);
-				}
+				const TypeInfo& type = m_archetype->types[typeIdx];
+				void* componentPtr = m_componentArrays[typeIdx] + type.size * entityIdx;
+				type.destroy(componentPtr);
 			}
-#if defined(__cpp_aligned_new) || (_MSC_VER && _HAS_CXX17)
-			::operator delete(m_buffer, std::align_val_t(m_bufferAlignment));
-#else
-#if defined(_MSC_VER)
-			_aligned_free(m_buffer);
-#else
-			free(m_buffer);
-#endif
-#endif
 		}
+		
+		FreeArrays();
 		MoveFrom(std::move(other));
 	}
 
@@ -111,18 +128,15 @@ Chunk& Chunk::operator=(Chunk&& other) noexcept
 void Chunk::MoveFrom(Chunk&& other)
 {
 	m_archetype = other.m_archetype;
-	m_buffer = other.m_buffer;
+	m_componentArrays = std::move(other.m_componentArrays);
 	m_capacity = other.m_capacity;
 	m_count = other.m_count;
 	m_entities = std::move(other.m_entities);
 	m_typeIndexMap = std::move(other.m_typeIndexMap);
-	m_bufferAlignment = other.m_bufferAlignment;
 
 	other.m_archetype = nullptr;
-	other.m_buffer = nullptr;
 	other.m_capacity = 0;
 	other.m_count = 0;
-	other.m_bufferAlignment = 0;
 }
 
 size_t Chunk::FindEntityIndex(Entity e) const
@@ -155,8 +169,9 @@ void* Chunk::GetComponentPtrByHash(size_t index, uint64_t hash)
 	}
 
 	size_t typeIndex = it->second;
-	size_t offset = m_archetype->offsets[typeIndex];
-	return m_buffer + (index * m_archetype->totalSize) + offset;
+	const TypeInfo& type = m_archetype->types[typeIndex];
+	// SoA: コンポーネント配列内の位置を計算
+	return m_componentArrays[typeIndex] + type.size * index;
 }
 
 void Chunk::WriteComponentByHash(size_t index, uint64_t hash, const void* src)
@@ -178,8 +193,9 @@ const void* Chunk::ReadComponentByHash(size_t index, uint64_t hash) const
 		return nullptr;
 	}
 	size_t typeIndex = it->second;
-	size_t offset = m_archetype->offsets[typeIndex];
-	return m_buffer + (index * m_archetype->totalSize) + offset;
+	const TypeInfo& type = m_archetype->types[typeIndex];
+	// SoA: コンポーネント配列内の位置を計算
+	return m_componentArrays[typeIndex] + type.size * index;
 }
 
 Entity Chunk::RemoveEntity(Entity entity)
@@ -187,36 +203,38 @@ Entity Chunk::RemoveEntity(Entity entity)
 	size_t idx = FindEntityIndex(entity);
 	if (idx == SIZE_MAX) return INVALID_ENTITY;
 
-	// Call destructors for the component being removed
-	for (const auto& type : m_archetype->types)
-	{
-		void* componentPtr = m_buffer + m_archetype->offsets[m_typeIndexMap[type.hash]] + idx * m_archetype->totalSize;
-		type.destroy(componentPtr);
-	}
-
 	size_t last = m_count - 1;
 	Entity moved = INVALID_ENTITY;
 
+	// 削除するエンティティのコンポーネントのデストラクタを呼び出し
+	for (size_t typeIdx = 0; typeIdx < m_archetype->types.size(); ++typeIdx)
+	{
+		const TypeInfo& type = m_archetype->types[typeIdx];
+		// SoA: 各コンポーネント配列内の位置を計算
+		void* componentPtr = m_componentArrays[typeIdx] + type.size * idx;
+		type.destroy(componentPtr);
+	}
+
 	if (idx != last)
 	{
-		// Move the last entity's components to the removed entity's position
-		for (size_t i = 0; i < m_archetype->types.size(); ++i)
+		// 最後のエンティティのコンポーネントを削除位置に移動
+		for (size_t typeIdx = 0; typeIdx < m_archetype->types.size(); ++typeIdx)
 		{
-			const auto& type = m_archetype->types[i];
-			size_t offset = m_archetype->offsets[i];
+			const TypeInfo& type = m_archetype->types[typeIdx];
+			// SoA: 各コンポーネント配列内の位置を計算
+			void* dst = m_componentArrays[typeIdx] + type.size * idx;
+			void* src = m_componentArrays[typeIdx] + type.size * last;
 
-			void* dst = m_buffer + offset + idx * m_archetype->totalSize;
-			void* src = m_buffer + offset + last * m_archetype->totalSize;
-
-			// Destroy the component at destination before moving
-			type.destroy(dst);
-			// Move construct the component
+			// ムーブコンストラクト
 			type.move_construct(dst, src);
+			// ソースのデストラクタ呼び出し
+			type.destroy(src);
 		}
 
 		moved = m_entities[last];
 		m_entities[idx] = moved;
 	}
+	
 	m_entities.pop_back();
 	--m_count;
 

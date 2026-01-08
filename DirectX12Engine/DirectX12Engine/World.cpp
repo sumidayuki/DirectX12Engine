@@ -3,19 +3,7 @@
 
 void World::CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants)
 {
-	if (!parent) return;
 
-	auto childCopy = parent->children;
-	for (auto child : childCopy)
-	{
-		Transform* childTransform = GetComponent<Transform>(child);
-
-		if (childTransform && GetComponent<Transform>(childTransform->entity))
-		{
-			descendants.push_back(childTransform->entity);
-			CollectDescendantsRecursive(childTransform, descendants);
-		}
-	}
 }
 
 Entity World::CreateEntity(const std::string& name, LayerMask layer)

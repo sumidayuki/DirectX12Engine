@@ -1,26 +1,27 @@
 #pragma once
 
-/// <summary>
-/// トランスフォームを表すコンポーネントです。
-/// 親子関係や自分のローカル座標・ローカル空間座標・ワールド空間座標・ワールド空間座標の逆行列を持ちます。
-/// </summary>
 struct Transform : public IComponentData
 {
 	Entity entity;
 	Entity parent = INVALID_ENTITY;
-	std::vector<Entity> children;
-
+	// Sibling Linked List for hierarchy
+	Entity firstChild = INVALID_ENTITY;
+	Entity nextSibling = INVALID_ENTITY;
+	Entity prevSibling = INVALID_ENTITY;
+	
 	bool isActive = true;
-
+	
 	Vector3 position = Vector3(0.0f, 0.0f, 0.0f);
 	Quaternion rotation = Quaternion::identity;
 	Vector3 scale = Vector3(1.0f, 1.0f, 1.0f);
-
+	
 	Matrix4x4 localMatrix = Matrix4x4::identity;
 	Matrix4x4 localToWorldMatrix = Matrix4x4::identity;
 	Matrix4x4 worldToLocalMatrix = Matrix4x4::identity;
-
+	
 	bool dirty = true;
 	bool hasChanged = true;
 	bool inverseDirty = true;
+	
+	uint16_t hierarchyDepth = 0;
 };

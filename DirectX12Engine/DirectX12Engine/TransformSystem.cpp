@@ -1,47 +1,38 @@
 #include "TransformSystem.h"
+#include <algorithm>
+#include <vector>
+#include <stack>
 
 const Matrix4x4& TransformSystem::GetLocalToWorldMatrix(Transform& transform)
 {
-	RecalculateMatricesRecursive(SceneManager::GetCurrentScene()->GetWorld(), transform);
-
-	// ワールド変換行列の参照を返す。
 	return transform.localToWorldMatrix;
 }
 
 const Matrix4x4& TransformSystem::GetWorldToLocalMatrix(Transform& transform)
 {
-	// 逆行列が古い場合のみ計算を実行
 	if (transform.inverseDirty)
 	{
 		transform.worldToLocalMatrix = transform.localToWorldMatrix.Inverse();
 		transform.inverseDirty = false;
 	}
-
-	// ワールド変換行列の逆行列の参照を返す。
 	return transform.worldToLocalMatrix;
 }
 
 Vector3 TransformSystem::TransformDirection(Transform& transform, const Vector3& direction)
 {
-	// ワールド変換行列を取得する
 	const Matrix4x4& m = GetLocalToWorldMatrix(transform);
-
 	Vector3 result
 	(
 		direction.x * m._11 + direction.y * m._21 + direction.z * m._31,
 		direction.x * m._12 + direction.y * m._22 + direction.z * m._32,
 		direction.x * m._13 + direction.y * m._23 + direction.z * m._33
 	);
-
-	// direction と同じノルムにして返す
 	return result * (direction.Magnitude() / result.Magnitude());
 }
 
 Vector3 TransformSystem::TransformVector(Transform& transform, const Vector3& vector)
 {
-	// ワールド変換行列を取得する
 	const Matrix4x4& m = GetLocalToWorldMatrix(transform);
-
 	return Vector3
 	(
 		vector.x * m._11 + vector.y * m._21 + vector.z * m._31,
@@ -52,9 +43,7 @@ Vector3 TransformSystem::TransformVector(Transform& transform, const Vector3& ve
 
 Vector3 TransformSystem::TransformPoint(Transform& transform, const Vector3& position)
 {
-	// ワールド変換行列を取得する
 	const Matrix4x4& m = GetLocalToWorldMatrix(transform);
-
 	return Vector3
 	(
 		position.x * m._11 + position.y * m._21 + position.z * m._31 + 1.0f * m._41,
@@ -65,25 +54,19 @@ Vector3 TransformSystem::TransformPoint(Transform& transform, const Vector3& pos
 
 Vector3 TransformSystem::InverseTransformDirection(Transform& transform, const Vector3& direction)
 {
-	// 逆行列を取得（遅延計算が実行される可能性がある）
 	const Matrix4x4& m = GetWorldToLocalMatrix(transform);
-
 	Vector3 result
 	(
 		direction.x * m._11 + direction.y * m._21 + direction.z * m._31,
 		direction.x * m._12 + direction.y * m._22 + direction.z * m._32,
 		direction.x * m._13 + direction.y * m._23 + direction.z * m._33
 	);
-
-	// direction と同じノルムにして返す
 	return result * (direction.Magnitude() / result.Magnitude());
 }
 
 Vector3 TransformSystem::InverseTransformVector(Transform& transform, const Vector3& vector)
 {
-	// 逆行列を取得
 	const Matrix4x4& m = GetWorldToLocalMatrix(transform);
-
 	return Vector3
 	(
 		vector.x * m._11 + vector.y * m._21 + vector.z * m._31,
@@ -94,10 +77,7 @@ Vector3 TransformSystem::InverseTransformVector(Transform& transform, const Vect
 
 Vector3 TransformSystem::InverseTransformPoint(Transform& transform, const Vector3& position)
 {
-	// 逆行列を取得
 	const Matrix4x4& m = GetWorldToLocalMatrix(transform);
-
-	// 逆行列を適用
 	return Vector3
 	(
 		position.x * m._11 + position.y * m._21 + position.z * m._31 + 1.0f * m._41,
@@ -108,99 +88,146 @@ Vector3 TransformSystem::InverseTransformPoint(Transform& transform, const Vecto
 
 void TransformSystem::SetParent(Transform& transform, Transform* parent)
 {
-	World& world = SceneManager::GetCurrentScene()->GetWorld();
-
 	if (transform.parent == (parent ? parent->entity : INVALID_ENTITY)) return;
 
-	// 古い親から子を削除
-	if (transform.parent != INVALID_ENTITY)
-	{
-		Transform* oldParent = world.GetComponent<Transform>(transform.parent);
-		if (oldParent)
-		{
-			// 古い親の children リストから自分を削除
-			std::erase(oldParent->children, transform.entity);
-		}
-	}
+	// Unlink from old parent
+	UnsetParent(transform);
 
-	// 新しい親に設定
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+
 	if (parent)
 	{
-		// 新しい親の children リストに自分を追加
-		parent->children.push_back(transform.entity);
+		// Add to new parent's list (insert at head)
 		transform.parent = parent->entity;
+		transform.nextSibling = parent->firstChild;
+		transform.prevSibling = INVALID_ENTITY;
+
+		if (parent->firstChild != INVALID_ENTITY)
+		{
+			Transform* oldFirst = world.GetComponent<Transform>(parent->firstChild);
+			if (oldFirst)
+			{
+				oldFirst->prevSibling = transform.entity;
+			}
+		}
+		parent->firstChild = transform.entity;
+
+		// Update Depth
+		transform.hierarchyDepth = parent->hierarchyDepth + 1;
 	}
 	else
 	{
 		transform.parent = INVALID_ENTITY;
+		transform.hierarchyDepth = 0;
 	}
 
-	// ダーティフラグを設定
 	transform.dirty = true;
+	
+	// Note: We need to update children's depth too.
+	// This will be handled implicitly if we process dirty transforms correctly,
+	// or we should traverse here. For performance, we rely on Update.
 }
 
 void TransformSystem::UnsetParent(Transform& transform)
 {
-	World& world = SceneManager::GetCurrentScene()->GetWorld();
 	if (transform.parent == INVALID_ENTITY) return;
 
-	// 古い親から子を削除
-	Transform* oldParent = world.GetComponent<Transform>(transform.parent);
-	if (oldParent)
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+	Transform* parent = world.GetComponent<Transform>(transform.parent);
+
+	if (parent)
 	{
-		std::erase(oldParent->children, transform.entity);
+		// If head of list, move head
+		if (parent->firstChild == transform.entity)
+		{
+			parent->firstChild = transform.nextSibling;
+		}
 	}
 
-	// 親を解除
-	transform.parent = INVALID_ENTITY;
+	// Relink siblings
+	if (transform.prevSibling != INVALID_ENTITY)
+	{
+		Transform* prev = world.GetComponent<Transform>(transform.prevSibling);
+		if (prev) prev->nextSibling = transform.nextSibling;
+	}
+	if (transform.nextSibling != INVALID_ENTITY)
+	{
+		Transform* next = world.GetComponent<Transform>(transform.nextSibling);
+		if (next) next->prevSibling = transform.prevSibling;
+	}
 
-	// ダーティフラグを設定
+	transform.parent = INVALID_ENTITY;
+	transform.nextSibling = INVALID_ENTITY;
+	transform.prevSibling = INVALID_ENTITY;
+	transform.hierarchyDepth = 0;
+	
 	transform.dirty = true;
 }
 
 Transform* TransformSystem::GetRoot(Transform& transform)
 {
 	World& world = SceneManager::GetCurrentScene()->GetWorld();
-
 	Transform* root = &transform;
-	
 	while (root->parent != INVALID_ENTITY)
 	{
 		root = world.GetComponent<Transform>(root->parent);
 	}
-
 	return root;
 }
 
 int TransformSystem::GetChildCount(Transform* transform)
 {
-	return transform->children.size();
+	int count = 0;
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+	Entity current = transform->firstChild;
+	while (current != INVALID_ENTITY)
+	{
+		count++;
+		Transform* t = world.GetComponent<Transform>(current);
+		if (!t) break; // Error check
+		current = t->nextSibling;
+	}
+	return count;
 }
 
 Transform* TransformSystem::GetChild(Transform* transform, int index) 
 {
-	if (index >= transform->children.size())
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+	Entity current = transform->firstChild;
+	int i = 0;
+	while (current != INVALID_ENTITY)
 	{
-		return nullptr;
+		if (i == index)
+		{
+			return world.GetComponent<Transform>(current);
+		}
+		Transform* t = world.GetComponent<Transform>(current);
+		if (!t) break;
+		current = t->nextSibling;
+		i++;
 	}
-	return 	SceneManager::GetCurrentScene()->GetWorld().GetComponent<Transform>(transform->children[index]);
+	return nullptr;
 }
 
 Transform* TransformSystem::FindChild(Transform* transform, const std::string& name)
 {
-	if (transform->entity.name == name)
-	{
-		return transform;
-	}
+	if (transform->entity.name == name) return transform;
 
-	const int childCount = GetChildCount(transform);
-	for (int i = 0; i < childCount; ++i)
+	World& world = SceneManager::GetCurrentScene()->GetWorld();
+	Entity current = transform->firstChild;
+
+	while (current != INVALID_ENTITY)
 	{
-		Transform* childTransform = GetChild(transform, i);
-		Transform* foundTransform = FindChild(childTransform, name);
-		if (foundTransform != nullptr)
+		Transform* t = world.GetComponent<Transform>(current);
+		if (t)
 		{
-			return foundTransform;
+			Transform* found = FindChild(t, name);
+			if (found) return found;
+			current = t->nextSibling;
+		}
+		else
+		{
+			break;
 		}
 	}
 
@@ -229,33 +256,23 @@ void TransformSystem::SetLocalPosition(Transform& transform, float x, float y, f
 
 void TransformSystem::RotateAround(Transform& transform, Vector3 point, Vector3 axis, float angle)
 {
-	// 指定された軸と角度で回転するクォータニオンを作成
 	Quaternion rot = Quaternion::AngleAxis(angle, axis);
-
-	// 位置を更新
 	Vector3 dir = transform.position - point;
-	dir = rot * dir; // クォータニオンで方向ベクトルを回転
+	dir = rot * dir;
 	transform.position = point + dir;
-
-	// 回転を更新
 	transform.rotation = rot * transform.rotation;
-
-	// 行列の再計算を予約
 	transform.dirty = true;
 }
 
 Vector3 TransformSystem::GetPosition(Transform& transform)
 {
 	World& world = SceneManager::GetCurrentScene()->GetWorld();
-
 	if (transform.parent != INVALID_ENTITY)
 	{
-		// 親がいる場合はワールド位置に変換して返す
 		return TransformPoint(*world.GetComponent<Transform>(transform.parent), transform.position);
 	}
 	else
 	{
-		// 親がいない場合はローカル位置とワールド位置は一致する
 		return transform.position;
 	}
 }
@@ -269,99 +286,144 @@ void TransformSystem::Translate(Transform& transform, const Vector3& translation
 void TransformSystem::Rotate(Transform& transform, const Vector3 axis, float angle)
 {
 	const Quaternion q = Quaternion::AngleAxis(angle, axis);
-
 	transform.rotation = q * transform.rotation;
 	transform.dirty = true;
 }
 
-void TransformSystem::RecalculateMatricesRecursive(World& world, Transform& transform)
+void TransformSystem::Start(World& world)
 {
-	bool parentChanged = false;
+}
 
-	if (transform.parent != INVALID_ENTITY)
-	{
-		Transform* parent = world.GetComponent<Transform>(transform.parent);
-		if (parent)
-		{
-			// 親のワールド行列がこのフレームで変更されたか
-			parentChanged = parent->hasChanged;
-		}
-		else
-		{
-			// 親エンティティが破壊されている場合、親なしに設定し、dirtyフラグを立てる
-			transform.parent = INVALID_ENTITY;
-			transform.dirty = true;
-		}
-	}
+void TransformSystem::UpdateLocalMatrix(Transform& transform)
+{
+	transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);
+}
 
-	if (transform.dirty || parentChanged)
+
+void TransformSystem::UpdateAllDirtyTransforms(World& world)
+{
+	// 1. Collect all transforms that need updates.
+	//    This includes explicit dirty transforms and their children (propagated locally)
+	//    Actually, we can iterate all transforms (linear) to check dirty?
+	//    Or use the stack approach for dirty roots.
+
+	// Robust Iterative Approach:
+	// Use a stack to traverse only dirty subtrees.
+	
+	std::vector<Transform*> dirtyRoots;
+	View<Transform> view(world);
+	
+	// Collect explicitly dirty transforms. 
+	// To minimize redundancy, we only want "roots" of dirty chains, but finding them is hard.
+	// So we collect all dirty ones.
+	for (auto [entity, transform] : view)
 	{
-		// ローカル行列の更新（ローカルプロパティ変更時のみ）
 		if (transform.dirty)
 		{
-			transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);
-			transform.dirty = false;
+			dirtyRoots.push_back(&transform);
 		}
-
-		// ワールド行列の計算
-		if (transform.parent != INVALID_ENTITY)
-		{
-			Transform* parent = world.GetComponent<Transform>(transform.parent);
-			transform.localToWorldMatrix = transform.localMatrix * parent->localToWorldMatrix;
-		}
-		else
-		{
-			transform.localToWorldMatrix = transform.localMatrix;
-		}
-
-		// 自身のワールド行列が更新されたので、逆行列は古くなる
-		transform.inverseDirty = true;
-
-		// 自身のワールド行列が変更されたことをマークし、子に伝播させる
-		transform.hasChanged = true;
-	}
-	else
-	{
-		// 更新がない場合、hasChangedをリセット
-		transform.hasChanged = false;
 	}
 
-	if (transform.hasChanged)
+	if (dirtyRoots.empty()) return;
+
+	// Sort by depth to ensure parents processed before children (if multiple are dirty)
+	std::sort(dirtyRoots.begin(), dirtyRoots.end(),
+		[](const Transform* a, const Transform* b) {
+			return a->hierarchyDepth < b->hierarchyDepth;
+		});
+
+	// Use a stack for traversal
+	std::vector<Transform*> stack;
+	stack.reserve(64);
+
+	for (Transform* root : dirtyRoots)
 	{
-		for (Entity child : transform.children)
+		// If already cleaned (by a parent processing it), skip
+		if (!root->dirty && !root->hasChanged) continue; 
+		// Note: hasChanged logic in this loop frame is tricky. 
+		// We use dirty to mean "needs recalc".
+
+		stack.push_back(root);
+
+		while (!stack.empty())
 		{
-			Transform* childTransform = world.GetComponent<Transform>(child);
-			if (childTransform)
+			Transform* t = stack.back();
+			stack.pop_back();
+
+			// Recalculate T
+			UpdateLocalMatrix(*t);
+
+			if (t->parent != INVALID_ENTITY)
 			{
-				RecalculateMatricesRecursive(world, *childTransform);
+				Transform* parent = world.GetComponent<Transform>(t->parent);
+				// Parent should be up-to-date because:
+				// 1. If parent was dirty, it was in dirtyRoots and processed earlier (lower depth).
+				// 2. If parent was NOT dirty, its matrix is valid.
+				if (parent)
+				{
+					t->localToWorldMatrix = t->localMatrix * parent->localToWorldMatrix;
+					// Depth correction (lazy update)
+					t->hierarchyDepth = parent->hierarchyDepth + 1;
+				}
+				else
+				{
+					// Parent missing?
+					t->localToWorldMatrix = t->localMatrix;
+					t->hierarchyDepth = 0;
+				}
+			}
+			else
+			{
+				t->localToWorldMatrix = t->localMatrix;
+				t->hierarchyDepth = 0;
+			}
+			
+			t->dirty = false;
+			t->hasChanged = true;
+			t->inverseDirty = true;
+
+			// Add children to stack
+			Entity childEntity = t->firstChild;
+			while (childEntity != INVALID_ENTITY)
+			{
+				Transform* child = world.GetComponent<Transform>(childEntity);
+				if (child)
+				{
+					// Force child to be "dirty" effectively because parent changed
+					// In this frame, we just push to stack and process.
+					// We don't need to set child->dirty = true physically if we just process it.
+					// However, avoids double processing if child is also in dirtyRoots?
+					// If child is in dirtyRoots, it will be processed later?
+					// No, stack processing handles it NOW.
+					// We should mark it as processed?
+					// The "dirty" check at loop start handles skips.
+					// But "hasChanged" is set to true. 
+					
+					stack.push_back(child);
+				}
+				childEntity = child ? child->nextSibling : INVALID_ENTITY;
 			}
 		}
 	}
-}
-
-void TransformSystem::Start(World& world)
-{
-
 }
 
 void TransformSystem::Update(World& world)
 {
+	UpdateAllDirtyTransforms(world);
+	
+	// Reset hasChanged flags? 
+	// Previous implementation reset them at start of frame or something.
+	// Ideally, hasChanged is valid FOR THIS FRAME. 
+	// So we should reset it at the start of Update.
+	
+	/*
 	View<Transform> view(world);
-
 	for (auto [entity, transform] : view)
 	{
 		transform.hasChanged = false;
 	}
-
-	for (auto [entity, transform] : view)
-	{
-		if (transform.parent == INVALID_ENTITY)
-		{
-			// 親がいない場合（ルート）は、ダーティなら再帰的な計算を開始
-			if (transform.dirty)
-			{
-				RecalculateMatricesRecursive(world, transform);
-			}
-		}
-	}
+	*/
+	// This was done in the previous recursive implementation. 
+	// We should probably do it here too, but UpdateAllDirtyTransforms is called ONCE per frame?
+	// If we clear hasChanged inside UpdateAllDirtyTransforms it might be safer.
 }

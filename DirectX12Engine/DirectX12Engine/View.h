@@ -35,28 +35,20 @@ public:
         }
 
     public:
-        // begin—p
         Iterator(std::vector<Chunk*>::iterator begin, std::vector<Chunk*>::iterator end)
             : m_chunkIt(begin), m_chunkEnd(end), m_entityIndex(0)
         {
             SkipToNextValid();
         }
 
-        // end—p
         Iterator(std::vector<Chunk*>::iterator end)
             : m_chunkIt(end), m_chunkEnd(end), m_entityIndex(0)
         {
         }
 
-        std::tuple<Entity, Components&...> operator*()
+        bool operator!=(const Iterator& other) const
         {
-            Chunk* currentChunk = *m_chunkIt;
-            Entity entity = currentChunk->GetEntity(m_entityIndex);
-
-            return std::tuple<Entity, Components&...>(
-                entity,
-                *currentChunk->GetComponent<Components>(entity)...
-            );
+            return m_chunkIt != other.m_chunkIt || m_entityIndex != other.m_entityIndex;
         }
 
         Iterator& operator++()
@@ -66,20 +58,70 @@ public:
             return *this;
         }
 
-        bool operator!=(const Iterator& other) const
+        std::tuple<Entity, Components&...> operator*()
         {
-            return m_chunkIt != other.m_chunkIt || m_entityIndex != other.m_entityIndex;
+            Chunk* chunk = *m_chunkIt;
+            return std::tuple<Entity, Components&...>(
+                chunk->GetEntity(m_entityIndex),
+                *chunk->template GetComponentByIndex<Components>(m_entityIndex)...
+            );
         }
     };
 
-public:
-    Iterator begin()
+    Iterator begin() { return Iterator(m_chunks.begin(), m_chunks.end()); }
+    Iterator end()   { return Iterator(m_chunks.end()); }
+
+    template<typename Func>
+    void Each(Func&& func)
     {
-        return Iterator(m_chunks.begin(), m_chunks.end());
+        for (Chunk* chunk : m_chunks)
+        {
+            const size_t count = chunk->GetCount();
+            if (count == 0) continue;
+
+            auto arrays = std::make_tuple(chunk->template GetComponentArray<Components>()...);
+            
+            for (size_t i = 0; i < count; ++i)
+            {
+                Entity entity = chunk->GetEntity(i);
+                func(entity, std::get<decltype(chunk->template GetComponentArray<Components>())>(arrays)[i]...);
+            }
+        }
     }
 
-    Iterator end()
+    template<typename Func>
+    void EachComponent(Func&& func)
     {
-        return Iterator(m_chunks.end());
+        for (Chunk* chunk : m_chunks)
+        {
+            const size_t count = chunk->GetCount();
+            if (count == 0) continue;
+
+            auto arrays = std::make_tuple(chunk->template GetComponentArray<Components>()...);
+            
+            for (size_t i = 0; i < count; ++i)
+            {
+                func(std::get<decltype(chunk->template GetComponentArray<Components>())>(arrays)[i]...);
+            }
+        }
+    }
+
+    size_t Count() const
+    {
+        size_t total = 0;
+        for (const Chunk* chunk : m_chunks)
+        {
+            total += chunk->GetCount();
+        }
+        return total;
+    }
+
+    bool Empty() const
+    {
+        for (const Chunk* chunk : m_chunks)
+        {
+            if (chunk->GetCount() > 0) return false;
+        }
+        return true;
     }
 };
