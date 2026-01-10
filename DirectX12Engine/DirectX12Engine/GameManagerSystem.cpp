@@ -13,6 +13,17 @@ bool GameManagerSystem::Load(World& world)
 	HP playerHP;
 	playerHP.maxHP = 100;
 	world.AddComponent<HP>(player, playerHP);
+	world.AddComponent<Rigidbody>(player, Rigidbody{});
+	Collider bColl;
+	bColl.type = ColliderType::AABB;
+	bColl.size = Vector3(40, 180, 40);
+	bColl.offset = Vector3(0, 90, 0);
+	world.AddComponent<Collider>(player, bColl);
+	AIAgent playerAI;
+	playerAI.rotationSpeed = 720.0f;
+	playerAI.updatePosition = false;
+	playerAI.updateRotation = false;
+	world.AddComponent<AIAgent>(player, playerAI);
 	
 	// プレイヤーカメラの設定
 	float fov = 60.0f;
@@ -33,6 +44,8 @@ bool GameManagerSystem::Load(World& world)
 	//TransformSystem::GetInstance()->SetParent(*skyboxT, parentT);
 
 	world.AddComponent<PlayerCamera>(parent, PlayerCamera{ .player = player, .offset = Vector3(0, 150, -300), .sensitivity = 0.5f });
+
+	m_player = player;
 	
 	// 敵を生成
 	Entity warrok = world.CreateWithModel(L"Assets/Warrok-00.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0));
@@ -45,14 +58,17 @@ bool GameManagerSystem::Load(World& world)
 	agent.speed = 100.0f;
 	agent.acceleration = 10.0f;
 	world.AddComponent<AIAgent>(warrok, agent);	
-	AABBCollider coll;
-	coll.bounds = Bounds(Vector3(0, 0, 0), Vector3(90, 240, 90));
+	Collider coll;
+	coll.type = ColliderType::AABB;
+	coll.size = Vector3(90, 240, 90);
 	coll.offset = Vector3(0, 120, 0);
-	world.AddComponent<AABBCollider>(warrok, coll);
+	world.AddComponent<Collider>(warrok, coll);
 	HP warrokHP;
-	warrokHP.maxHP = 50;
+	warrokHP.maxHP = 500;
 	world.AddComponent<HP>(warrok, warrokHP);
 	world.AddComponent<Damageable>(warrok, Damageable{});
+
+	m_enemy = warrok;
 
 	return true;
 }

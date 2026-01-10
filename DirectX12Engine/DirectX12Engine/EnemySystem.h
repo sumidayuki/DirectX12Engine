@@ -5,8 +5,8 @@ class EnemySystem : public System
 {
 private:
 	Transform* m_hitBox;
-	SphereCollider* m_leftHandColl;
-	SphereCollider* m_rightHandColl;
+	Collider* m_leftHandColl;
+	Collider* m_rightHandColl;
 
 private:
 	float GetTargetDistance(const Vector3 enemyPos, const Vector3 targetpos) const;

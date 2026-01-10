@@ -121,70 +121,70 @@ void MainScene::Start()
 	}
 
 	{
-		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall0)->position = Vector3(250, 250, 1000);
 	}
 	{
-		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall0)->position = Vector3(750, 250, 1000);
 	}
 	{
-		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall0)->position = Vector3(-250, 250, 1000);
 	}
 	{
-		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall0)->position = Vector3(-750, 250, 1000);
 	}
 
 	{
-		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall1)->position = Vector3(250, 250, -1000);
 	}
 	{
-		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall1)->position = Vector3(750, 250, -1000);
 	}
 	{
-		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall1)->position = Vector3(-250, 250, -1000);
 	}
 	{
-		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 1.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall1)->position = Vector3(-750, 250, -1000);
 	}
 
 	{
-		Entity wall2 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall2 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall2)->position = Vector3(1000, 250, 250);
 	}
 	{
-		Entity wall2 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall2 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall2)->position = Vector3(1000, 250, 750);
 	}
 	{
-		Entity wall2 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall2 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall2)->position = Vector3(1000, 250, -250);
 	}
 	{
-		Entity wall2 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall2 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall2)->position = Vector3(1000, 250, -750);
 	}
 
 	{
-		Entity wall3 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall3 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall3)->position = Vector3(-1000, 250, 250);
 	}
 	{
-		Entity wall3 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall3 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall3)->position = Vector3(-1000, 250, 750);
 	}
 	{
-		Entity wall3 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall3 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall3)->position = Vector3(-1000, 250, -250);
 	}
 	{
-		Entity wall3 = m_world.CreateCube(1.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
+		Entity wall3 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png"));
 		m_world.GetComponent<Transform>(wall3)->position = Vector3(-1000, 250, -750);
 	}
 }

@@ -108,24 +108,28 @@ void EnemySystem::Update(World& world)
 		{
 			// 左手のコライダーを設定
 			Entity left = world.CreateEntity();
-			SphereCollider leftColl;
+			Collider leftColl;
+			leftColl.type = ColliderType::Sphere;
 			leftColl.radius = 30.0f;
+			leftColl.isTrigger = true;
 			BoneSocket socket;
 			socket.targetEntity = entity;
 			socket.targetBoneName = "mixamorig:LeftHand";
 			world.AddComponent<BoneSocket>(left, socket);
-			m_leftHandColl = world.AddComponent<SphereCollider>(left, leftColl);
+			m_leftHandColl = world.AddComponent<Collider>(left, leftColl);
 			m_leftHandColl->isEnable = false;
 
 			// 右手のコライダーを設定
 			Entity right = world.CreateEntity();
-			SphereCollider rightColl;
+			Collider rightColl;
+			rightColl.type = ColliderType::Sphere;
 			rightColl.radius = 30.0f;
+			rightColl.isTrigger = true;
 			BoneSocket socket2;
 			socket2.targetEntity = entity;
 			socket2.targetBoneName = "mixamorig:RightHand";
 			world.AddComponent<BoneSocket>(right, socket2);
-			m_rightHandColl = world.AddComponent<SphereCollider>(right, rightColl);
+			m_rightHandColl = world.AddComponent<Collider>(right, rightColl);
 			m_rightHandColl->isEnable = false;
 		}
 

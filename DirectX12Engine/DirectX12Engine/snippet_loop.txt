@@ -1,0 +1,20 @@
+	for (Entity e : fullDelectionList)
+	{
+		if (m_em.IsAlive(e))
+		{
+			Transform* t = GetComponent<Transform>(e);
+
+			m_transformSystem->SetParent(*t, nullptr);
+
+			m_entityNames.erase(e.name);
+			m_am.DestroyEntity(e);
+			m_em.DestroyEntity(e);
+			m_allEntities.remove(e);
+		}
+	}
+}
+
+void World::AddSystem(std::unique_ptr<System> sys)
+{
+	m_systems.push_back(std::move(sys));
+}

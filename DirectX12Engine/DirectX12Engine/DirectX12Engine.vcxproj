@@ -197,6 +197,7 @@
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Path.cpp" />
     <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="PhysicsSystem.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlayerCameraSystem.cpp" />
     <ClCompile Include="PlayerSystem.cpp" />
@@ -266,7 +267,7 @@
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="Circle.h" />
     <ClInclude Include="CircleCollider2D.h" />
-    <ClInclude Include="CollisionInfo.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="CommandBuffer.h" />
@@ -319,6 +320,7 @@
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="Physics.h" />
+    <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlayerTag.h" />
     <ClInclude Include="PlayerCamera.h" />

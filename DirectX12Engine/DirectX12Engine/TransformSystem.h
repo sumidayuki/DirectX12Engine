@@ -1,5 +1,7 @@
 #pragma once
 
+class World;
+
 /// <summary>
 /// Transformの管理を行うシステムです。
 /// Transformコンポーネントの変更をMatrix等に反映します。
@@ -16,6 +18,11 @@ public:
 	/// <param name="transform">子にするtransform</param>
 	/// <param name="parent">親にするtransform</param>
 	void SetParent(Transform& transform, Transform* parent);
+
+	/// <summary>
+	/// エンティティが削除される際に呼び出され、親子関係の解除と子の再帰削除を行います。
+	/// </summary>
+	void OnEntityDestroyed(World& world, Entity entity);
 
 	/// <summary>
 	/// 親子関係を解除します。

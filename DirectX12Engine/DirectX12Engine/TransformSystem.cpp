@@ -1,7 +1,10 @@
 #include "TransformSystem.h"
 #include <algorithm>
 #include <vector>
+#include <vector>
 #include <stack>
+#include "World.h"
+#include "SceneManager.h"
 
 const Matrix4x4& TransformSystem::GetLocalToWorldMatrix(Transform& transform)
 {
@@ -162,6 +165,34 @@ void TransformSystem::UnsetParent(Transform& transform)
 	transform.hierarchyDepth = 0;
 	
 	transform.dirty = true;
+}
+
+void TransformSystem::OnEntityDestroyed(World& world, Entity entity)
+{
+	Transform* transform = world.GetComponent<Transform>(entity);
+	if (!transform) return;
+
+	// 1. 子要素を収集（再帰削除のため）
+	// 直接リストを辿りながら削除すると構造が変化するため、先にIDを確保する
+	std::vector<Entity> children;
+	Entity current = transform->firstChild;
+	while (current != INVALID_ENTITY)
+	{
+		children.push_back(current);
+		Transform* childT = world.GetComponent<Transform>(current);
+		if (childT) current = childT->nextSibling;
+		else break;
+	}
+
+	// 2. 子要素を再帰的に削除
+	for (Entity child : children)
+	{
+		// World::DestroyEntityを呼ぶことで、再帰的にこの関数が呼ばれる
+		world.DestroyEntity(child);
+	}
+
+	// 3. 親子関係を解除（親から自分を取り除く）
+	UnsetParent(*transform);
 }
 
 Transform* TransformSystem::GetRoot(Transform& transform)

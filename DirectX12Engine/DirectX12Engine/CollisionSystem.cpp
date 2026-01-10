@@ -1,198 +1,211 @@
+#include "Precompiled.h"
 #include "CollisionSystem.h"
-#include "SpatialHashGrid.h"
-#include "SpatialHashGrid2D.h"
+#include "Collider.h"
+#include "Rigidbody.h"
+#include "Transform.h"
+#include "Entity.h"
+#include "World.h"
+#include "Mathf.h"
+#include "Bounds.h"
 #include "DebugManager.h"
-
-void CollisionSystem::UpdateComponentState(CollisionInfo& info, Entity targetEntity, bool isHitNow)
-{
-	if (isHitNow)
-	{
-		// 新規衝突、または継続衝突
-		if (info.state == CollisionState::None || info.state == CollisionState::Exit)
-		{
-			info.state = CollisionState::Enter;
-			info.other = targetEntity;
-		}
-		else if (info.state == CollisionState::Enter || info.state == CollisionState::Stay)
-		{
-			info.state = CollisionState::Stay;
-			// 必要であればここで相手が変わった場合の処理（今回は割愛）
-		}
-	}
-	else
-	{
-		// 今当たっていないが、前回ターゲットとして記録されていた場合（Exit処理）
-		if (info.other == targetEntity)
-		{
-			if (info.state == CollisionState::Enter || info.state == CollisionState::Stay)
-			{
-				info.state = CollisionState::Exit;
-			}
-			else if (info.state == CollisionState::Exit)
-			{
-				info.state = CollisionState::None;
-				info.other = INVALID_ENTITY;
-			}
-		}
-	}
-}
-
-bool CollisionSystem::CheckPair(Entity entityA, Entity entityB, World& world)
-{
-	auto* transA = world.GetComponent<Transform>(entityA);
-	auto* transB = world.GetComponent<Transform>(entityB);
-	if (!transA || !transB) return false;
-
-	Vector3 posA = TransformSystem::GetInstance()->GetPosition(*transA);
-	Vector3 posB = TransformSystem::GetInstance()->GetPosition(*transB);
-
-	// Aが Sphere の場合
-	if (world.HasComponent<SphereCollider>(entityA))
-	{
-		auto& colA = *world.GetComponent<SphereCollider>(entityA);
-		Vector3 worldPosA = posA + colA.offset;
-
-		if (world.HasComponent<SphereCollider>(entityB)) // Sphere vs Sphere
-		{
-			auto& colB = *world.GetComponent<SphereCollider>(entityB);
-			return IsColliding(colA, worldPosA, colB, posB + colB.offset);
-		}
-		else if (world.HasComponent<AABBCollider>(entityB)) // Sphere vs AABB
-		{
-			auto& colB = *world.GetComponent<AABBCollider>(entityB);
-			return IsColliding(colA, worldPosA, colB, posB + colB.offset);
-		}
-	}
-	// Aが AABB の場合
-	else if (world.HasComponent<AABBCollider>(entityA))
-	{
-		auto& colA = *world.GetComponent<AABBCollider>(entityA);
-		Vector3 worldPosA = posA + colA.offset;
-
-		if (world.HasComponent<SphereCollider>(entityB)) // AABB vs Sphere
-		{
-			auto& colB = *world.GetComponent<SphereCollider>(entityB);
-			// 引数の順序を入れ替えて再利用
-			return IsColliding(colB, posB + colB.offset, colA, worldPosA);
-		}
-		else if (world.HasComponent<AABBCollider>(entityB)) // AABB vs AABB
-		{
-			auto& colB = *world.GetComponent<AABBCollider>(entityB);
-			return IsColliding(colA, worldPosA, colB, posB + colB.offset);
-		}
-	}
-
-	return false;
-}
-
-bool CollisionSystem::IsColliding(const SphereCollider& a, const Vector3& posA, const SphereCollider& b, const Vector3& posB)
-{
-	return GeometryUtility::SphereVSSphere(posA, a.radius, posB, b.radius);
-}
-
-bool CollisionSystem::IsColliding(const AABBCollider& a, const Vector3& posA, const AABBCollider& b, const Vector3& posB)
-{
-	Vector3 halfA = a.bounds.GetSize() * 0.5f;
-	Vector3 halfB = b.bounds.GetSize() * 0.5f;
-
-	// Min/Max の計算
-	Vector3 minA = posA - halfA;
-	Vector3 maxA = posA + halfA;
-	Vector3 minB = posB - halfB;
-	Vector3 maxB = posB + halfB;
-
-	return GeometryUtility::AABBVSAABB(minA, maxA, minB, maxB);
-}
-
-bool CollisionSystem::IsColliding(const SphereCollider& sphere, const Vector3& spherePos, const AABBCollider& aabb, const Vector3& aabbPos)
-{
-	// AABBとSphereの判定ロジック（簡易実装：AABB上の最近接点を探す）
-	Vector3 halfBox = aabb.bounds.GetSize() * 0.5f;
-	Vector3 minBox = aabbPos - halfBox;
-	Vector3 maxBox = aabbPos + halfBox;
-
-	// クランプ処理で最近接点を求める
-	float closestX = std::max(minBox.x, std::min(spherePos.x, maxBox.x));
-	float closestY = std::max(minBox.y, std::min(spherePos.y, maxBox.y));
-	float closestZ = std::max(minBox.z, std::min(spherePos.z, maxBox.z));
-
-	Vector3 closestPoint(closestX, closestY, closestZ);
-	float distanceSq = (closestPoint - spherePos).SqrMagnitude();
-
-	return distanceSq <= (sphere.radius * sphere.radius);
-}
+#include <vector>
+#include <cmath>
 
 void CollisionSystem::Update(World& world)
 {
-	static SpatialHashGrid grid(1000.0f);
-	grid.Clear();
+    View<Collider, Transform> colliderView(world);
+    
+    std::vector<Entity> activeEntities;
+    std::vector<Entity> passiveEntities;
 
-	View<SphereCollider, Transform> sphereView(world);
-	View<AABBCollider, Transform> aabbView(world);
+    for (auto [entity, col, transform] : colliderView)
+    {
+        if (!col.isEnable) continue;
+        
+        if (col.info.state == CollisionState::Enter || col.info.state == CollisionState::Stay)
+            col.info.state = CollisionState::Exit;
+        else if (col.info.state == CollisionState::Exit)
+            col.info.state = CollisionState::None;
+        
+        Rigidbody* rb = world.GetComponent<Rigidbody>(entity);
+        if (rb || col.isTrigger)
+        {
+            activeEntities.push_back(entity);
+        }
+        passiveEntities.push_back(entity);
+    }
 
-	// Sphereの登録とデバッグ描画
-	for (auto [entity, collider, transform] : sphereView)
-	{
-		Vector3 center = TransformSystem::GetInstance()->GetPosition(transform) + collider.offset;
-		if (collider.isEnable)
-		{
-			grid.AddEntity(entity, center);
-		}
-		Color c = (collider.info.state == CollisionState::Enter || collider.info.state == CollisionState::Stay) ? Color::red : Color::green;
-		DebugManager::GetInstance()->DrawSphere(center, collider.radius, c);
-	}
+    for (Entity activeEntity : activeEntities)
+    {
+        Collider* myCol = world.GetComponent<Collider>(activeEntity);
+        Transform* myTrans = world.GetComponent<Transform>(activeEntity);
+        Rigidbody* myRb = world.GetComponent<Rigidbody>(activeEntity);
+        
+        if (!myCol || !myTrans) continue;
 
-	// AABBの登録とデバッグ描画
-	for (auto [entity, collider, transform] : aabbView)
-	{
-		Vector3 center = TransformSystem::GetInstance()->GetPosition(transform) + collider.offset;
-		if (collider.isEnable)
-		{
-			grid.AddEntity(entity, center);
-		}
-		Vector3 half = collider.bounds.GetSize() * 0.5f;
-		Color c = (collider.info.state == CollisionState::Enter || collider.info.state == CollisionState::Stay) ? Color::red : Color::green;
-		DebugManager::GetInstance()->DrawAABB(center - half, center + half, c);
-	}
+        Vector3 myPos = myTrans->position + myCol->offset;
+        
+        Bounds myBounds;
+        if (myCol->type == ColliderType::Box || myCol->type == ColliderType::AABB)
+        {
+            myBounds = Bounds(myPos, myCol->size * myTrans->scale);
+        }
 
-	auto processCollisions = [&](Entity entityA, CollisionInfo& infoA, Transform& transformA)
-		{
-			auto nearEntities = grid.GetNearbyEntities(transformA.position);
+        for (Entity passiveEntity : passiveEntities)
+        {
+            if (activeEntity == passiveEntity) continue;
 
-			Entity previousOther = infoA.other;
-			bool isHitThisFrame = false;
-			Entity hitTarget = INVALID_ENTITY;
+            Collider* otherCol = world.GetComponent<Collider>(passiveEntity);
+            Transform* otherTrans = world.GetComponent<Transform>(passiveEntity);
+            
+            if (!otherCol || !otherTrans) continue;
 
-			for (Entity entityB : nearEntities)
-			{
-				if (entityA.id == entityB.id || !world.IsAlive(entityB)) continue;
+            Vector3 otherPos = otherTrans->position + otherCol->offset;
+            bool isColliding = false;
+            Vector3 penetration = Vector3::zero;
 
-				// CheckPairを使うことで、相手がSphereでもAABBでも分岐なしで判定可能
-				if (CheckPair(entityA, entityB, world))
-				{
-					isHitThisFrame = true;
-					hitTarget = entityB;
+            if (myCol->type == ColliderType::Sphere && otherCol->type == ColliderType::Sphere)
+            {
+                // Sphere vs Sphere
+                float distSq = (myPos - otherPos).SqrMagnitude();
+                float r1 = myCol->radius * myTrans->scale.x;
+                float r2 = otherCol->radius * otherTrans->scale.x;
+                float radSum = r1 + r2;
+                
+                if (distSq < radSum * radSum)
+                {
+                    isColliding = true;
+                    float dist = sqrt(distSq);
+                    if (dist < 0.0001f) penetration = Vector3::up * 0.01f;
+                    else penetration = ((myPos - otherPos) / dist) * (radSum - dist);
+                }
+            }
+            else if ((myCol->type == ColliderType::Box || myCol->type == ColliderType::AABB) && 
+                     (otherCol->type == ColliderType::Box || otherCol->type == ColliderType::AABB))
+            {
+                // Box vs Box (AABB)
+                Bounds otherBounds(otherPos, otherCol->size * otherTrans->scale);
+                
+                if (myBounds.Intersects(otherBounds))
+                {
+                    isColliding = true;
+                    Vector3 minA = myBounds.GetMin();    Vector3 maxA = myBounds.GetMax();
+                    Vector3 minB = otherBounds.GetMin(); Vector3 maxB = otherBounds.GetMax();
 
-					// 必要なら相手側のStateもここで更新できますが、
-					// 基本的には「自分から見て当たったか」を全員分回せば整合性は取れます
-					break; // 単一衝突判定の場合はbreak。複数衝突対応ならリスト化が必要
-				}
-			}
+                    float overlapX = std::min(maxA.x, maxB.x) - std::max(minA.x, minB.x);
+                    float overlapY = std::min(maxA.y, maxB.y) - std::max(minA.y, minB.y);
+                    float overlapZ = std::min(maxA.z, maxB.z) - std::max(minA.z, minB.z);
 
-			// 判定結果に基づいて状態更新を一括で行う
-			Entity targetToUpdate = isHitThisFrame ? hitTarget : previousOther;
-			UpdateComponentState(infoA, targetToUpdate, isHitThisFrame);
-		};
+                    Vector3 centerA = myBounds.GetCenter();
+                    Vector3 centerB = otherBounds.GetCenter();
 
-	// Sphereについて回す
-	for (auto [entity, collider, transform] : sphereView) 
-	{
-		if (collider.isEnable) processCollisions(entity, collider.info, transform);
-	}
+                    if (overlapX < overlapY && overlapX < overlapZ)
+                        penetration.x = (centerA.x > centerB.x) ? overlapX : -overlapX;
+                    else if (overlapY < overlapZ)
+                        penetration.y = (centerA.y > centerB.y) ? overlapY : -overlapY;
+                    else
+                        penetration.z = (centerA.z > centerB.z) ? overlapZ : -overlapZ;
+                }
+            }
+            else
+            {
+                // Sphere vs Box
+                Vector3 sCenter;
+                float sRadius;
+                Bounds bBounds;
+                bool swap = false;
 
-	// AABBについて回す
-	for (auto [entity, collider, transform] : aabbView) 
-	{
-		if (collider.isEnable) processCollisions(entity, collider.info, transform);
-	}
+                if (myCol->type == ColliderType::Sphere)
+                {
+                    sCenter = myPos;
+                    sRadius = myCol->radius * myTrans->scale.x;
+                    bBounds = Bounds(otherPos, otherCol->size * otherTrans->scale);
+                }
+                else
+                {
+                    sCenter = otherPos;
+                    sRadius = otherCol->radius * otherTrans->scale.x;
+                    bBounds = myBounds;
+                    swap = true;
+                }
+
+                if (bBounds.SqrDistance(sCenter) < sRadius * sRadius)
+                {
+                    isColliding = true;
+                    Vector3 closest = bBounds.ClosestPoint(sCenter);
+                    Vector3 dir = sCenter - closest;
+                    float dist = dir.Magnitude();
+
+                    Vector3 pen;
+                    if (dist < 0.0001f)
+                    {
+                         // Sphere center inside box
+                         if (bBounds.SqrDistance(sCenter) < 0.00001f) pen = Vector3::up * sRadius;
+                         else pen = dir.Normalized() * sRadius; 
+                    }
+                    else
+                    {
+                        pen = (dir / dist) * (sRadius - dist);
+                    }
+                    
+                    if (swap) penetration = -pen;
+                    else penetration = pen;
+                }
+            }
+
+            if (isColliding)
+            {
+                auto UpdateState = [](CollisionInfo& info) 
+                {
+                     if (info.state == CollisionState::None) info.state = CollisionState::Enter;
+                     else info.state = CollisionState::Stay;
+                };
+                
+                UpdateState(myCol->info);
+                myCol->info.other = passiveEntity;
+
+                UpdateState(otherCol->info); 
+                otherCol->info.other = activeEntity;
+
+                if (myRb && !myCol->isTrigger && !otherCol->isTrigger)
+                {
+                    if (std::isfinite(penetration.x) && std::isfinite(penetration.y) && std::isfinite(penetration.z))
+                    {
+                        myTrans->position += penetration;
+                        myTrans->dirty = true;
+                        
+                        Vector3 normal = penetration.Normalized();
+                         if (std::isfinite(normal.x) && std::isfinite(normal.y) && std::isfinite(normal.z))
+                         {
+                             float vel = Vector3::Dot(myRb->velocity, normal);
+                             if (vel < 0)
+                             {
+                                 myRb->velocity -= normal * (vel * (1.0f + 0.5f)); // Bounce
+                             }
+                         }
+                    }
+                }
+            }
+        }
+    }
+
+    for (auto [entity, col, transform] : colliderView)
+    {
+        Vector3 center = transform.position + col.offset;
+        Color color = Color::yellow;
+        if (col.isEnable)
+        {
+            color = (col.info.state == CollisionState::Enter || col.info.state == CollisionState::Stay) ? Color::red : Color::green;
+        }
+
+        if (col.type == ColliderType::Sphere)
+        {
+            DebugManager::GetInstance()->DrawSphere(center, col.radius * transform.scale.x, color);
+        }
+        else
+        {
+             // Box/AABB
+             DebugManager::GetInstance()->DrawAABB(center - (col.size * 0.5f), center + (col.size * 0.5f), color);
+        }
+    }
 }

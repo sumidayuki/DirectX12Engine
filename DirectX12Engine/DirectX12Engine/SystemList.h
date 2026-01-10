@@ -1,9 +1,7 @@
 #pragma once
 
-// ƒV[ƒ“‚²‚Æ‚ÉƒVƒXƒeƒ€‚ÌƒCƒ“ƒNƒ‹[ƒh‚ð‘‚­‚Ì‚ª‚ÆAƒCƒ“ƒNƒ‹[ƒh‚ª‘å—Ê‚É‚È‚Á‚Ä“Ç‚Ý‚É‚­‚­‚È‚é‚Ì‚ÅA
-// ‚±‚±‚É System ‚ÌƒCƒ“ƒNƒ‹[ƒh‚ð‚Ü‚Æ‚ß‚Ä‚¢‚Ü‚·B
-// ‚±‚±‚É’Ç‰Á‚µ‚È‚¢‚ÆƒV[ƒ“‚Å System ‚ð’Ç‰Á‚Å‚«‚È‚©‚Á‚½‚è‚·‚é‚Ì‚ÅASystem ‚ð’Ç‰Á‚µ‚½Žž‚ÍA–Y‚ê‚¸‚É
-// ‚±‚±‚ÉƒCƒ“ƒNƒ‹[ƒh‚ð‘‚­•K—v‚ª‚ ‚éB
+// ã‚·ãƒ¼ãƒ³ã”ã¨ã«ã‚·ã‚¹ãƒ†ãƒ ã®ç™»éŒ²ã‚’è¡Œã†ã®ãŒé¢å€’ãªã®ã§ã€
+// ã“ã“ã«å…¨ã¦ã®ã‚·ã‚¹ãƒ†ãƒ ã‚’ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ã—ã¦ãŠã
 
 #include "CameraSystem.h"
 #include "SpriteRendererSystem.h"
@@ -22,3 +20,4 @@
 #include "ProjectileSystem.h"
 #include "EnemySystem.h"
 #include "HPSystem.h"
+#include "PhysicsSystem.h" // Added

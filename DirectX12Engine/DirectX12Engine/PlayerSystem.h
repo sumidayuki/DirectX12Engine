@@ -23,8 +23,8 @@ private:
 	float m_stateTimer;
 
 	float m_currentSpeed;
-	static constexpr float WalkSpeed = 75.0f;
-	static constexpr float RunSpeed = 200.0f;
+	static constexpr float WalkSpeed = 100.0f;
+	static constexpr float RunSpeed = 250.0f;
 	static constexpr float MiddleSpeed = 100.0f;
 
 private:

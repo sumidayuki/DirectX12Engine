@@ -1,4 +1,5 @@
 #include "World.h"
+#include "TransformSystem.h"
 #include "ShaderRegistry.h"
 
 void World::CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants)
@@ -8,18 +9,18 @@ void World::CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& 
 
 Entity World::CreateEntity(const std::string& name, LayerMask layer)
 {
-	// Entity ‚ğ entityManager ‚ğg—p‚µ‚ÄƒGƒ“ƒeƒBƒeƒB‚ğ¶¬‚µ‚Ü‚·B
+	// Entity ã‚’ entityManager ã‚’ä½¿ç”¨ã—ã¦ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’ç”Ÿæˆã—ã¾ã™ã€‚
 	Entity entity = m_em.CreateEntity();
 
 	std::string finalName = name;
 	int index = 1;
-	// m_entityNames ‚É“¯‚¶–¼‘O‚ª‘¶İ‚·‚éŒÀ‚èAƒTƒtƒBƒbƒNƒX‚Ì”š‚ğ‘‚â‚µ‚ÄV‚µ‚¢–¼‘O‚ğ‚·
+	// m_entityNames ã«åŒã˜åå‰ãŒå­˜åœ¨ã™ã‚‹é™ã‚Šã€ã‚µãƒ•ã‚£ãƒƒã‚¯ã‚¹ã®æ•°å­—ã‚’å¢—ã‚„ã—ã¦æ–°ã—ã„åå‰ã‚’è©¦ã™
 	//while (m_entityNames.count(finalName))
 	//{
 	//	finalName = name + "_" + std::to_string(index++);
 	//}
 	
-	// ƒ†ƒj[ƒN‚È–¼‘O‚ğƒGƒ“ƒeƒBƒeƒB‚Éİ’è‚µAƒZƒbƒg‚É’Ç‰Á
+	// ãƒ¦ãƒ‹ãƒ¼ã‚¯ãªåå‰ã‚’ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã«è¨­å®šã—ã€ã‚»ãƒƒãƒˆã«è¿½åŠ 
 	entity.name = finalName;
 	m_entityNames.insert(finalName);
 
@@ -29,10 +30,10 @@ Entity World::CreateEntity(const std::string& name, LayerMask layer)
 	Transform transform;
 	transform.entity = entity;
 
-	// Entity ‚É Transform ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ•t—^‚µ‚Ä‚¨‚«‚Ü‚·B
+	// Entity ã« Transform ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä»˜ä¸ã—ã¦ãŠãã¾ã™ã€‚
 	AddComponent<Transform>(entity, transform);
 
-	// Entity ‚É Layer ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ•t—^‚µ‚Ä‚¨‚«‚Ü‚·B
+	// Entity ã« Layer ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ä»˜ä¸ã—ã¦ãŠãã¾ã™ã€‚
 	Layer layerComp;
 	layerComp.layer = layer;
 	AddComponent<Layer>(entity, layerComp);
@@ -52,7 +53,7 @@ Entity World::CreateWithLight(const LightType& type, const Color& color, const f
 	light.range = range;
 	AddComponent<Light>(entity, light);
 
-	// ƒ‰ƒCƒg‚ÌŒü‚«‚ğTransform‚Ì‰ñ“]‚Å§Œä‚·‚é
+	// ãƒ©ã‚¤ãƒˆã®å‘ãã‚’Transformã®å›è»¢ã§åˆ¶å¾¡ã™ã‚‹
 	Transform* lightTransform = GetComponent<Transform>(entity);
 	TransformSystem::GetInstance()->SetParent(*lightTransform, parent);
 	lightTransform->position = pos;
@@ -65,7 +66,7 @@ Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32
 {
 	Entity entity = CreateEntity("Generated Mesh", layer);
 
-	// 1. UV‚ª‹ó‚Ìê‡‚ÌƒtƒH[ƒ‹ƒoƒbƒN (XZ“Š‰e)
+	// 1. UVãŒç©ºã®å ´åˆã®ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ (XZæŠ•å½±)
 	if (uvs.empty()) {
 		uvs.resize(vertices.size());
 		for (size_t i = 0; i < vertices.size(); i++) {
@@ -73,7 +74,7 @@ Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32
 		}
 	}
 
-	// 2. Normal ‚Æ Tangent ‚ÌŒvZ—pƒoƒbƒtƒ@
+	// 2. Normal ã¨ Tangent ã®è¨ˆç®—ç”¨ãƒãƒƒãƒ•ã‚¡
 	std::vector<Vector3> calculatedNormals(vertices.size(), Vector3::zero);
 	std::vector<Vector3> calculatedTangents(vertices.size(), Vector3::zero);
 
@@ -83,13 +84,13 @@ Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32
 		Vector3 edge1 = vertices[i1] - vertices[i0];
 		Vector3 edge2 = vertices[i2] - vertices[i0];
 
-		// --- Normal ‚ÌŒvZ ---
+		// --- Normal ã®è¨ˆç®— ---
 		Vector3 faceNormal = Vector3::Cross(edge1, edge2);
 		calculatedNormals[i0] += faceNormal;
 		calculatedNormals[i1] += faceNormal;
 		calculatedNormals[i2] += faceNormal;
 
-		// --- Tangent ‚ÌŒvZ ---
+		// --- Tangent ã®è¨ˆç®— ---
 		Vector2 duv1 = uvs[i1] - uvs[i0];
 		Vector2 duv2 = uvs[i2] - uvs[i0];
 		float f = (duv1.x * duv2.y - duv2.x * duv1.y);
@@ -121,7 +122,7 @@ Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32
 	mesh->SetIndices(std::move(indices), 0);
 	mesh->SetupMesh();
 
-	// ˆÈ~ARenderer‚ÆMaterial‚Ìİ’èiŠù‘¶’Ê‚èj
+	// ä»¥é™ã€Rendererã¨Materialã®è¨­å®šï¼ˆæ—¢å­˜é€šã‚Šï¼‰
 	MeshFilter* meshFilter = AddComponent<MeshFilter>(entity, {});
 	meshFilter->mesh = mesh;
 
@@ -139,6 +140,11 @@ Entity World::CreateWithMesh(std::vector<Vector3>&& vertices, std::vector<uint32
 	else {
 		MeshRenderer mr; mr.materials = materials; AddComponent<MeshRenderer>(entity, mr);
 	}
+	
+	Collider coll;
+	coll.type = ColliderType::AABB;
+	coll.size = mesh->GetBounds().GetSize();
+	AddComponent<Collider>(entity, coll);
 
 	return entity;
 }
@@ -163,7 +169,7 @@ Entity World::CreateCube(float xLength, float yLength, float zLength, LayerMask 
 	};
 
 	std::vector<Vector2> uvs;
-	// ‘S‚Ä‚Ì–Ê‚É 0~1 ‚ÌUV‚ğŠ„‚è“–‚Ä
+	// å…¨ã¦ã®é¢ã« 0~1 ã®UVã‚’å‰²ã‚Šå½“ã¦
 	for (int i = 0; i < 6; ++i) {
 		uvs.push_back({ 0, 1 }); uvs.push_back({ 0, 0 }); uvs.push_back({ 1, 1 }); uvs.push_back({ 1, 0 });
 	}
@@ -196,7 +202,7 @@ Entity World::CreateSphere(float radius, uint16_t slices, uint16_t stacks, Layer
 			float z = r * sinf(theta);
 
 			vertices.emplace_back(x, y, z);
-			// ƒeƒNƒXƒ`ƒƒ‚ª— •Ô‚éê‡‚ÍA(1.0f - (float)i / slices) ‚Ì‚æ‚¤‚É”½“]‚³‚¹‚Ü‚·
+			// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãŒè£è¿”ã‚‹å ´åˆã¯ã€(1.0f - (float)i / slices) ã®ã‚ˆã†ã«åè»¢ã•ã›ã¾ã™
 			uvs.emplace_back(1.0f - (float)i / slices, (float)j / stacks);
 		}
 	}
@@ -209,8 +215,8 @@ Entity World::CreateSphere(float radius, uint16_t slices, uint16_t stacks, Layer
 			uint32_t first = (j * (slices + 1)) + i;
 			uint32_t second = first + slices + 1;
 
-			// ƒCƒ“ƒfƒbƒNƒX‚Ì‡˜‚ğ [first, second, first + 1] ‚©‚ç“ü‚ê‘Ö‚¦‚Ä
-			// –Ê‚ªŠO‘¤‚ğŒü‚­‚æ‚¤‚É’²®‚µ‚Ü‚·
+			// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®é †åºã‚’ [first, second, first + 1] ã‹ã‚‰å…¥ã‚Œæ›¿ãˆã¦
+			// é¢ãŒå¤–å´ã‚’å‘ãã‚ˆã†ã«èª¿æ•´ã—ã¾ã™
 			indices.push_back(first);
 			indices.push_back(first + 1);
 			indices.push_back(second);
@@ -228,7 +234,7 @@ Entity World::CreateWithSprite(const wchar_t* path, const Rect& rect, const Vect
 {
 	TextureImporter importer;
 
-	// ƒeƒNƒXƒ`ƒƒ‚Ìƒ[ƒh
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ãƒ­ãƒ¼ãƒ‰
 	ComPtr<Texture2D> texture;
 	texture.Attach(importer.Import(path));
 
@@ -237,7 +243,7 @@ Entity World::CreateWithSprite(const wchar_t* path, const Rect& rect, const Vect
 
 Entity World::CreateWithSprite(Texture2D* texture, const Rect& rect, const Vector2 pivot, float pixelsPerUnit, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation)
 {
-	// ƒXƒvƒ‰ƒCƒg‚Ìì¬
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ä½œæˆ
 	ComPtr<Sprite> sprite;
 	sprite.Attach(Sprite::Create(texture, rect, pivot, pixelsPerUnit, pixelsPerUnit));
 
@@ -262,7 +268,7 @@ Entity World::CreateWithSprite(Sprite* sprite, Transform* parent, const Vector3&
 
 Entity World::CreateCamera2D(float viewWidth, float viewHeight, const Vector3& localPosition, const Quaternion& localRotation)
 {
-	// 2DŒü‚¯ƒJƒƒ‰‚Ìì¬
+	// 2Då‘ã‘ã‚«ãƒ¡ãƒ©ã®ä½œæˆ
 	Entity entity = CreateEntity();
 	AddComponent<Camera>(entity, Camera{});
 	Camera* camera = GetComponent<Camera>(entity);
@@ -292,18 +298,18 @@ Entity World::CreateWithModel(const std::wstring& path, Transform* parent, const
 
 Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition, const Quaternion& localRotation)
 {
-	// 3DŒü‚¯ƒJƒƒ‰‚Ìì¬
+	// 3Då‘ã‘ã‚«ãƒ¡ãƒ©ã®ä½œæˆ
 	Entity entity = CreateEntity();
 	AddComponent<Camera>(entity, Camera{});
 	Camera* camera = GetComponent<Camera>(entity);
 
-	camera->orthographic = false;							// 3D‚È‚Ì‚Å orthographic ‚Í false ‚É‚·‚é
-	camera->fieldOfView = fieldOfView;						// ‹–ìŠp
-	camera->aspect = aspect;								// ƒAƒXƒyƒNƒg”ä
-	camera->nearClipPlane = nearClipPlane;					// ‹ß•½–Ê
-	camera->farClipPlane = farClipPlane;					// ‰“•½–Ê
-	camera->clearFlags = CameraClearFlags::SolidColor;		// ”wŒi‚ÌƒNƒŠƒA•û–@
-	camera->backgroundColor = Color::cornflowerBlue;		// ”wŒiF
+	camera->orthographic = false;							// 3Dãªã®ã§ orthographic ã¯ false ã«ã™ã‚‹
+	camera->fieldOfView = fieldOfView;						// è¦–é‡è§’
+	camera->aspect = aspect;								// ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
+	camera->nearClipPlane = nearClipPlane;					// è¿‘å¹³é¢
+	camera->farClipPlane = farClipPlane;					// é å¹³é¢
+	camera->clearFlags = CameraClearFlags::SolidColor;		// èƒŒæ™¯ã®ã‚¯ãƒªã‚¢æ–¹æ³•
+	camera->backgroundColor = Color::cornflowerBlue;		// èƒŒæ™¯è‰²
 	camera->viewportRect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
 
 	TransformSystem* transformSystem = GetSystem<TransformSystem>();
@@ -321,27 +327,16 @@ void World::DestroyEntity(Entity entity)
 {
 	if (entity == INVALID_ENTITY || !m_em.IsAlive(entity)) return;
 
-	if (!IsAlive(entity)) return;
-
-	std::vector<Entity> fullDelectionList;
-	Transform* rootTransform = GetComponent<Transform>(entity);
-	CollectDescendantsRecursive(rootTransform, fullDelectionList);
-	fullDelectionList.push_back(entity);
-
-	for (Entity e : fullDelectionList)
+	// TransformSystemã«é€šçŸ¥ã—ã¦éšå±¤é–¢ä¿‚ã‚’ã‚¯ãƒªãƒ¼ãƒ³ã‚¢ãƒƒãƒ—ï¼ˆå­ã®å†å¸°å‰Šé™¤ã‚‚ã“ã“ã§è¡Œã‚ã‚Œã‚‹ï¼‰
+	if (m_transformSystem)
 	{
-		if (m_em.IsAlive(e))
-		{
-			Transform* t = GetComponent<Transform>(e);
-
-			m_transformSystem->SetParent(*t, nullptr);
-
-			m_entityNames.erase(e.name);
-			m_am.DestroyEntity(e);
-			m_em.DestroyEntity(e);
-			m_allEntities.remove(e);
-		}
+		m_transformSystem->OnEntityDestroyed(*this, entity);
 	}
+
+	m_entityNames.erase(entity.name);
+	m_am.DestroyEntity(entity);
+	m_em.DestroyEntity(entity);
+	m_allEntities.remove(entity);
 }
 
 void World::AddSystem(std::unique_ptr<System> sys)
@@ -365,6 +360,7 @@ bool World::Load(World& world)
 	world.AddSystem(std::make_unique<AIAgentSystem>());
 	world.AddSystem(std::make_unique<HPSystem>());
 	world.AddSystem(std::make_unique<AIAgentSystem>());
+	world.AddSystem(std::make_unique<PhysicsSystem>());
 
 	TransformSystem::CreateSingleton();
 	AIAgentSystem::CreateSingleton();

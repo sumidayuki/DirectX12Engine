@@ -3,7 +3,7 @@
 
 void ArrowSystem::Update(World& world)
 {
-	View<Arrow, SphereCollider, Attackable> view(world);
+	View<Arrow, Collider, Attackable> view(world);
 
 	for (auto [entity, arrow, coll, attackable] : view)
 	{

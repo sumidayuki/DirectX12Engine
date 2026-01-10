@@ -260,7 +260,7 @@ class Keyboard;
 #include "SpriteRenderer.h"
 #include "MeshRenderer.h"
 #include "WFMeshRenderer.h"
-#include "CollisionInfo.h"
+#include "Collider.h"
 #include "SphereCollider.h"
 #include "BoxCollider.h"
 #include "AABBCollider.h"
@@ -276,6 +276,7 @@ class Keyboard;
 #include "HP.h"
 #include "Attackable.h"
 #include "Damageable.h"
+#include "Rigidbody.h"
 
 #include "Physics.h"
 #include "GeometryUtility.h"

@@ -67,14 +67,16 @@ void PlayerSystem::Attack(Transform& transform, World& world)
 
 	Projectile projectile;
 	projectile.lifeTime = 1.0f;
-	projectile.speed = 1000.0f;
+	projectile.speed = 1500.0f;
 	world.AddComponent<Projectile>(a, projectile);
 
 	world.AddComponent<Attackable>(a, Attackable{});
 
-	SphereCollider collider;
+	Collider collider;
+	collider.type = ColliderType::Sphere;
 	collider.radius = 10.0f;
-	world.AddComponent<SphereCollider>(a, collider);
+	collider.isTrigger = true;
+	world.AddComponent<Collider>(a, collider);
 
 	world.AddComponent<Arrow>(a, Arrow{});
 }
@@ -92,24 +94,14 @@ void PlayerSystem::Start(World& world)
 
 void PlayerSystem::Update(World& world)
 {
-	View<PlayerTag, Transform, Input, Animator> view(world);
+	View<PlayerTag, Transform, Input, Animator, AIAgent> view(world);
 
-	for (auto [entity, playerTag, transform, input, animator] : view)
+	for (auto [entity, playerTag, transform, input, animator, ai] : view)
 	{
 		if (!m_bowTransform)
 		{
-			m_bowTransform = TransformSystem::GetInstance()->FindChild(&transform, "mixamorig:LeftHandPinky4");
-
-			Entity coll = world.CreateEntity("PlayerCollider");
-			AABBCollider bColl;
-			bColl.bounds = Bounds(Vector3(0, 0, 0), Vector3(40, 180, 40));
-			world.AddComponent<AABBCollider>(coll, bColl);
-
-			m_coll = world.GetComponent<Transform>(coll);
-
+			m_bowTransform = TransformSystem::GetInstance()->FindChild(&transform, "mixamorig:RightHandPinky4");
 		}
-
-		m_coll->position = transform.position + Vector3::up * 90;
 
 		switch (m_currentState)
 		{
@@ -121,7 +113,8 @@ void PlayerSystem::Update(World& world)
 			if (input.attack)
 			{
 				AnimationSystem::Play(animator, "Attack_00");
-				Attack(transform, world);
+				AIAgentSystem::GetInstance()->SetDestination(ai, world.GetComponent<Transform>(world.GetSystem<GameManagerSystem>()->GetEnemy())->position);
+				ai.updateRotation = true;
 				m_currentState = PlayerState::Attack;
 				animator.isLoop = false;
 				m_stateTimer = 0;
@@ -130,10 +123,16 @@ void PlayerSystem::Update(World& world)
 
 		case PlayerState::Attack:
 
+			if (m_stateTimer == 0)
+			{
+				Attack(transform, world);
+			}
+
 			m_stateTimer += Time::GetDeltaTime();
 
 			if (!animator.isPlaying)
 			{
+				ai.updateRotation = false;
 				m_currentState = PlayerState::Move;
 				animator.isLoop = true;
 				m_stateTimer = 0;

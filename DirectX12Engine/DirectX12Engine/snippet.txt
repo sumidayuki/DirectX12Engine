@@ -1,0 +1,15 @@
+void World::DestroyEntity(Entity entity)
+{
+	if (entity == INVALID_ENTITY || !m_em.IsAlive(entity)) return;
+
+	if (!IsAlive(entity)) return;
+
+	std::vector<Entity> fullDelectionList;
+	Transform* rootTransform = GetComponent<Transform>(entity);
+	CollectDescendantsRecursive(rootTransform, fullDelectionList);
+	fullDelectionList.push_back(entity);
+
+	for (Entity e : fullDelectionList)
+	{
+		if (m_em.IsAlive(e))
+		{
