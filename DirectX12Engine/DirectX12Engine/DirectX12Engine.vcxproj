@@ -167,6 +167,7 @@
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="ComboSystem.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="DebugLineRenderer.cpp" />
     <ClCompile Include="DebugManager.cpp" />
@@ -270,6 +271,10 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="ComboInput.h" />
+    <ClInclude Include="ComboMove.h" />
+    <ClInclude Include="ComboState.h" />
+    <ClInclude Include="ComboSystem.h" />
     <ClInclude Include="CommandBuffer.h" />
     <ClInclude Include="Damageable.h" />
     <ClInclude Include="DebugLineRenderer.h" />

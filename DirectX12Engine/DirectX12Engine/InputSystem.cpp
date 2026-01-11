@@ -1,10 +1,11 @@
 #include "InputSystem.h"
+#include "ComboInput.h"
 
 void InputSystem::Update(World& world)
 {
-    View<Input> view(world);
+    View<Input, ComboInput> view(world);
 
-    for (auto [entity, input] : view)
+    for (auto [entity, input, combo] : view)
     {
         // キーの状態を更新
         input.moveDown = Keyboard::GetKeyState(KeyCode::S).IsPressed();
@@ -41,5 +42,18 @@ void InputSystem::Update(World& world)
         // その他の入力は元のまま
         input.vartical = vertical;
         input.horizontal = horizontal;
+
+        if (input.attack)
+        {
+            combo.attackInputType = AttackInputType::Attack1;
+            combo.timer = 0.0f;
+        }
+
+        combo.timer += Time::GetDeltaTime();
+
+        if (combo.timer > 0.2f)
+        {
+            combo.attackInputType = AttackInputType::Idle;
+        }
     }
 }

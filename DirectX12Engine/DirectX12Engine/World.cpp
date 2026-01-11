@@ -359,7 +359,6 @@ bool World::Load(World& world)
 	world.AddSystem(std::make_unique<ProjectileSystem>());
 	world.AddSystem(std::make_unique<AIAgentSystem>());
 	world.AddSystem(std::make_unique<HPSystem>());
-	world.AddSystem(std::make_unique<AIAgentSystem>());
 	world.AddSystem(std::make_unique<PhysicsSystem>());
 
 	TransformSystem::CreateSingleton();

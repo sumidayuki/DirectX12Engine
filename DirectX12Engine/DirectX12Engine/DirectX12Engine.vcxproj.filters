@@ -343,6 +343,12 @@
     <Filter Include="ゲームエンジン\ECS\System\PhysicsSystem">
       <UniqueIdentifier>{6df9d531-78a8-4a49-9860-b906f2ed1869}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ゲーム\Character\Combo">
+      <UniqueIdentifier>{1bb1fbf1-1a84-4e75-bc94-b0b4b6668b12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ゲーム\Character\Combo\System">
+      <UniqueIdentifier>{c15daba3-a8a5-49aa-a376-ea447cbcbe4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -590,6 +596,9 @@
     </ClCompile>
     <ClCompile Include="PhysicsSystem.cpp">
       <Filter>ゲームエンジン\ECS\System\PhysicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ComboSystem.cpp">
+      <Filter>ゲーム\Character\Combo\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1015,6 +1024,18 @@
     </ClInclude>
     <ClInclude Include="Collider.h">
       <Filter>ゲームエンジン\ECS\コンポーネント\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="ComboMove.h">
+      <Filter>ゲーム\Character\Combo</Filter>
+    </ClInclude>
+    <ClInclude Include="ComboState.h">
+      <Filter>ゲーム\Character\Combo</Filter>
+    </ClInclude>
+    <ClInclude Include="ComboInput.h">
+      <Filter>ゲーム\Character\Combo</Filter>
+    </ClInclude>
+    <ClInclude Include="ComboSystem.h">
+      <Filter>ゲーム\Character\Combo\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

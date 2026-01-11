@@ -1,3 +1,0 @@
-320:void World::DestroyEntity(Entity entity)
-340:			m_am.DestroyEntity(e);
-341:			m_em.DestroyEntity(e);
