@@ -127,6 +127,7 @@ void EnemySystem::Update(World& world)
             attackable.entities.clear();
 
 			aiAgent.updatePosition = true;
+			aiAgent.updateRotation = false;
 
 			Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
 			Vector3 targetPos = targetTrans->position;
@@ -139,6 +140,7 @@ void EnemySystem::Update(World& world)
 				Quaternion targetRot = Quaternion::LookRotation(dir);
 				// 補間（Slerp）を使って滑らかに向かせる
 				transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 10.0f);
+				transform.dirty = true;
 			}
 
 			// AIAgentの速度に基づいてアニメーションを切り替える
@@ -167,35 +169,41 @@ void EnemySystem::Update(World& world)
 
         // 2. 判定の有効化 (ComboSystemが計算した state.canHit を使う)
         // 提示コードの「if (enemy.stateTimer >= animTime * 0.1f...)」に相当
-        if (state.canHit)
+        if (state.canHit && !state.hitConfirm)
         {
             // MoveID 1なら左、2なら右を出す
             if (state.currentMoveId == 1) m_leftHandColl->isEnable = true;
             else if (state.currentMoveId == 2) m_rightHandColl->isEnable = true;
 
-            attackable.isAttacking = true;
-
-
-
             // 3. ダメージ処理 (提示コードの重複ヒット防止ロジックを流用)
-            // ※本来はCollisionSystemで行うのが理想的ですが、提示コードに合わせる場合：
             Collider* currentColl = (state.currentMoveId == 1) ? m_leftHandColl : m_rightHandColl;
             if (currentColl->info.state == CollisionState::Enter || currentColl->info.state == CollisionState::Stay)
             {
-                Entity target = currentColl->info.other;
-                if (world.HasComponent<PlayerTag>(target))
-                {
-                    auto it = std::find(attackable.entities.begin(), attackable.entities.end(), target);
-                    if (it == attackable.entities.end())
-                    {
-                        if (auto* dmgable = world.GetComponent<Damageable>(target))
-                        {
-                            Damage dmg; dmg.damage = 10;
-                            dmgable->damageQueue.push(dmg);
-                            attackable.entities.push_back(target);
-                        }
-                    }
-                }
+				if (world.GetComponent<PlayerTag>(currentColl->info.other))
+				{
+					attackable.isAttacking = true;
+					for (int i = 0; i < attackable.entities.size(); i++)
+					{
+						if (attackable.entities[i] == currentColl->info.other)
+						{
+							continue;
+						}
+					}
+
+					const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+
+					Damageable* damageable = world.GetComponent<Damageable>(currentColl->info.other);
+					if (damageable != nullptr)
+					{
+						Damage dmg;
+						dmg.damage = move.damage;
+						dmg.type = DamageType::Normal;
+						damageable->damageQueue.push(dmg);
+						attackable.entities.push_back(currentColl->info.other);
+					}
+
+					state.hitConfirm = true;
+				}
             }
         }
         else
@@ -203,6 +211,7 @@ void EnemySystem::Update(World& world)
             // 判定時間外ならリセット
             m_leftHandColl->isEnable = false;
             m_rightHandColl->isEnable = false;
+			attackable.isAttacking = false;
             attackable.entities.clear(); // 次の技のためにリストを空にする
         }
 
@@ -214,4 +223,4 @@ void EnemySystem::Update(World& world)
         }
 
 	}
-}
+};

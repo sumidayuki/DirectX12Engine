@@ -20,7 +20,7 @@ void EnemyAISystem::Update(World& world)
         float dist = sqrtf(distSq);
 
         // 各種距離の設定
-        const float attackRange = 170.0f;
+        const float attackRange = 160.0f;
         const float tooCloseRange = 110.0f; // これより近いと下がる
 
         // 1. 攻撃中（コンボ中）の処理

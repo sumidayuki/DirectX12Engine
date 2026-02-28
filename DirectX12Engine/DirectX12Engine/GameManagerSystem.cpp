@@ -16,14 +16,18 @@ bool GameManagerSystem::Load(World& world)
 	
 	// ìGÇê∂ê¨
 	Entity warrok = world.CreateWithModel(L"Assets/Warrok-00.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0));
+	Transform* warrokT = world.GetComponent<Transform>(warrok);
+	warrokT->scale = warrokT->scale * 1.5f;
+
 	Enemy enemy;
 	enemy.target = player;
 	world.AddComponent<Enemy>(warrok, enemy);
 	AIAgent agent;
-	agent.speed = 200.0f;
+	agent.speed = 175.0f;
 	agent.acceleration = 10.0f;
 	world.AddComponent<AIAgent>(warrok, agent);	
 	CharacterImporter::GetInstance()->CharcterInitialize("Warrok", warrok, world);
+	world.GetComponent<Collider>(warrok)->offset = Vector3(0, 180.0f, 0);
 
 	m_enemy = warrok;
 
