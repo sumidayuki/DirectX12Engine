@@ -8,22 +8,22 @@
 
 void Application::Run()
 {
-	// ゲーム用のウィンドウを作成
-	m_gameWindow = new Windows::NativeWindow();  // "DirectX12プログラミング"
-	m_gameWindow->SetClientSize({ Screen::GetWidth(), Screen::GetHeight() });
-	m_gameWindow->Centering();
-	::ShowWindow(m_gameWindow->GetHandle(), SW_HIDE);
+    // ゲーム用のウィンドウを作成
+    m_gameWindow = new Windows::NativeWindow();  // "DirectX12プログラミング"
+    m_gameWindow->SetClientSize({ Screen::GetWidth(), Screen::GetHeight() });
+    m_gameWindow->Centering();
+    ::ShowWindow(m_gameWindow->GetHandle(), SW_HIDE);
 
-	// ワーカースレッドを作成
-	m_isRunning = true;
-	std::thread workerThread(WorkerThreadEntryPoint);
+    // ワーカースレッドを作成
+    m_isRunning = true;
+    std::thread workerThread(WorkerThreadEntryPoint);
 
-	// メッセージループ
-	PumpMessage();
+    // メッセージループ
+    PumpMessage();
 
-	// ワーカースレッドを終了させて合流
-	m_isRunning = false;
-	workerThread.join();
+    // ワーカースレッドを終了させて合流
+    m_isRunning = false;
+    workerThread.join();
 
     Shutdown();
 }
@@ -36,26 +36,26 @@ void Application::Shutdown()
 
 void Application::PumpMessage()
 {
-	// メッセージ1個分を格納する変数
-	MSG msg;
+    // メッセージ1個分を格納する変数
+    MSG msg;
 
-	while (::GetMessage(&msg, nullptr, 0, 0))
-	{
-		// 仮想キーメッセージを文字メッセージに変換します。
-		::TranslateMessage(&msg);
+    while (::GetMessage(&msg, nullptr, 0, 0))
+    {
+        // 仮想キーメッセージを文字メッセージに変換します。
+        ::TranslateMessage(&msg);
 
-		// メッセージをウィンドウプロシージャに配送します。
-		::DispatchMessage(&msg);
-	}
+        // メッセージをウィンドウプロシージャに配送します。
+        ::DispatchMessage(&msg);
+    }
 }
 
 void Application::AddScenesAndStartupScene()
 {
-	// シーンの追加
-	m_sceneManager = new SceneManager();
-	m_sceneManager->AddScene("Title", std::make_unique<TitleScene>());
-	m_sceneManager->AddScene("Main", std::make_unique<MainScene>());
-	m_sceneManager->ChangeScene("Main");
+    // シーンの追加
+    m_sceneManager = new SceneManager();
+    m_sceneManager->AddScene("Title", std::make_unique<TitleScene>());
+    m_sceneManager->AddScene("Main", std::make_unique<MainScene>());
+    m_sceneManager->ChangeScene("Title");
 }
 
 void Application::WorkerThreadEntryPoint()
@@ -85,7 +85,7 @@ void Application::WorkerThreadEntryPoint()
     ShaderRegistry::AllShadersCompile();
 
     DebugManager::CreateSingleton();
-	DebugManager::GetInstance()->Initialize();
+    DebugManager::GetInstance()->Initialize();
 
     // 入力システムの初期化
     InputManager::StaticConstructor(hWnd);
@@ -139,6 +139,7 @@ void Application::WorkerThreadEntryPoint()
             Time::m_unscaledDeltaTime = std::chrono::duration<float, std::ratio<1, 1>>(elapsedTime).count();
             Time::m_unscaledTime += Time::m_unscaledDeltaTime;
             Time::m_deltaTime = Time::m_unscaledDeltaTime * Time::m_timeScale;
+            if (Time::m_deltaTime > Time::m_maximumDeltaTime) Time::m_deltaTime = Time::m_maximumDeltaTime;
             Time::m_time += Time::m_deltaTime;
             Time::m_frameCount++;
 

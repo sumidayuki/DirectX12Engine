@@ -34,6 +34,9 @@ private:
 	// 遅延上限
 	static inline float m_maximumDeltaTime;
 
+	// シーン遷移フラグ
+	static inline bool m_sceneLoadPending;
+
 private:
 	// 時間を初期化します。
 	static void StaticConstructor();
@@ -42,4 +45,7 @@ public:
 	static float GetDeltaTime();
 
 	static float GetTime();
+
+	// シーン遷移後にdeltaTimeをリセットし、次のフレームの経過時間を0にします。
+	static void ResetDeltaTimeOnSceneLoad();
 };

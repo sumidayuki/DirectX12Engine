@@ -1,9 +1,9 @@
 #include "AnimationSystem.h"
 
-void AnimationSystem::Play(Animator& animator, const std::string& clipName)
+void AnimationSystem::Play(Animator& animator, const std::string& clipName, bool absolutePlay)
 {
 	// 現在再生中のクリップと同じ名前で、既に再生中なら何もしない
-	if (animator.currentClip && animator.currentClip->GetName() == clipName && animator.isPlaying)
+	if (animator.currentClip && animator.currentClip->GetName() == clipName && animator.isPlaying && !absolutePlay)
 	{
 		return;
 	}

@@ -1,11 +1,5 @@
 #pragma once
 
-enum DamageType
-{
-	Normal,
-	Stan
-};
-
 struct Damage
 {
 	DamageType type;

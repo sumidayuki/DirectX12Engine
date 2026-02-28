@@ -125,7 +125,7 @@ void TransformSystem::SetParent(Transform& transform, Transform* parent)
 	}
 
 	transform.dirty = true;
-	
+
 	// Note: We need to update children's depth too.
 	// This will be handled implicitly if we process dirty transforms correctly,
 	// or we should traverse here. For performance, we rely on Update.
@@ -163,7 +163,7 @@ void TransformSystem::UnsetParent(Transform& transform)
 	transform.nextSibling = INVALID_ENTITY;
 	transform.prevSibling = INVALID_ENTITY;
 	transform.hierarchyDepth = 0;
-	
+
 	transform.dirty = true;
 }
 
@@ -221,7 +221,7 @@ int TransformSystem::GetChildCount(Transform* transform)
 	return count;
 }
 
-Transform* TransformSystem::GetChild(Transform* transform, int index) 
+Transform* TransformSystem::GetChild(Transform* transform, int index)
 {
 	World& world = SceneManager::GetCurrentScene()->GetWorld();
 	Entity current = transform->firstChild;
@@ -340,10 +340,10 @@ void TransformSystem::UpdateAllDirtyTransforms(World& world)
 
 	// Robust Iterative Approach:
 	// Use a stack to traverse only dirty subtrees.
-	
+
 	std::vector<Transform*> dirtyRoots;
 	View<Transform> view(world);
-	
+
 	// Collect explicitly dirty transforms. 
 	// To minimize redundancy, we only want "roots" of dirty chains, but finding them is hard.
 	// So we collect all dirty ones.
@@ -370,7 +370,7 @@ void TransformSystem::UpdateAllDirtyTransforms(World& world)
 	for (Transform* root : dirtyRoots)
 	{
 		// If already cleaned (by a parent processing it), skip
-		if (!root->dirty && !root->hasChanged) continue; 
+		if (!root->dirty && !root->hasChanged) continue;
 		// Note: hasChanged logic in this loop frame is tricky. 
 		// We use dirty to mean "needs recalc".
 
@@ -408,7 +408,7 @@ void TransformSystem::UpdateAllDirtyTransforms(World& world)
 				t->localToWorldMatrix = t->localMatrix;
 				t->hierarchyDepth = 0;
 			}
-			
+
 			t->dirty = false;
 			t->hasChanged = true;
 			t->inverseDirty = true;
@@ -429,7 +429,7 @@ void TransformSystem::UpdateAllDirtyTransforms(World& world)
 					// We should mark it as processed?
 					// The "dirty" check at loop start handles skips.
 					// But "hasChanged" is set to true. 
-					
+
 					stack.push_back(child);
 				}
 				childEntity = child ? child->nextSibling : INVALID_ENTITY;
@@ -441,12 +441,12 @@ void TransformSystem::UpdateAllDirtyTransforms(World& world)
 void TransformSystem::Update(World& world)
 {
 	UpdateAllDirtyTransforms(world);
-	
+
 	// Reset hasChanged flags? 
 	// Previous implementation reset them at start of frame or something.
 	// Ideally, hasChanged is valid FOR THIS FRAME. 
 	// So we should reset it at the start of Update.
-	
+
 	/*
 	View<Transform> view(world);
 	for (auto [entity, transform] : view)

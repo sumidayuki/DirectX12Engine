@@ -3,7 +3,10 @@
 struct ComboState : IComponentData
 {
 	std::string name = "";
-	int currentMoveID = 0;
+	int currentMoveId = 0;
 	int comboIndex = 0;
+	bool canHit = false;
+	bool hitConfirm = false;
+	bool isAnimed = false;
 	float timer = 0.0f;
 };

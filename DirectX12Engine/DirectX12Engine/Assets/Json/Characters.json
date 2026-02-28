@@ -1,0 +1,126 @@
+{
+    "Archer": {
+        "status": {
+            "maxHealth": 150.0,
+            "walkSpeed": 120.0,
+            "runSpeed": 150.0,
+            "hitBoxX": 40.0,
+            "hitBoxY": 180.0,
+            "hitBoxZ": 40.0,
+            "shieldMaxHealth": 100.0
+        },
+        "moves": [
+            {
+                "moveId": 1,
+                "attackType": 1,
+                "isStarter": true,
+                "requiredInput": 1,
+                "animationName": "Attack_00",
+                "nextPossibleMoves": [ 4 ],
+                "damage": 10,
+                "duration": 0.6,
+                "inputStart": 0.7,
+                "inputEnd": 1,
+                "hitStartTime": 0.2,
+                "hitEndTime": 0.3
+            },
+            {
+                "moveId": 2,
+                "attackType": 2,
+                "isStarter": true,
+                "requiredInput": 3,
+                "animationName": "Attack_03",
+                "nextPossibleMoves": [ 1 ],
+                "damage": 20,
+                "duration": 1.5,
+                "inputStart": 0.5,
+                "inputEnd": 1,
+                "hitStartTime": 0.3,
+                "hitEndTime": 0.4
+            },
+            {
+                "moveId": 4,
+                "attackType": 1,
+                "isStarter": false,
+                "requiredInput": 1,
+                "animationName": "Attack_00",
+                "nextPossibleMoves": [ 5 ],
+                "damage": 10,
+                "duration": 0.6,
+                "inputStart": 0.7,
+                "inputEnd": 1,
+                "hitStartTime": 0.2,
+                "hitEndTime": 0.3
+            },
+            {
+                "moveId": 5,
+                "attackType": 1,
+                "isStarter": false,
+                "requiredInput": 1,
+                "animationName": "Attack_01",
+                "nextPossibleMoves": [],
+                "damage": 20,
+                "duration": 1.8,
+                "inputStart": 0.85,
+                "inputEnd": 1,
+                "hitStartTime": 0.7,
+                "hitEndTime": 0.8
+            },
+            {
+                "moveId": 10,
+                "attackType": 1,
+                "isStarter": false,
+                "requiredInput": 1,
+                "animationName": "Attack_02",
+                "nextPossibleMoves": [],
+                "damage": 30,
+                "duration": 2.4,
+                "inputStart": 0.0,
+                "inputEnd": 0.0,
+                "hitStartTime": 0.8,
+                "hitEndTime": 0.9
+            }
+        ]
+    },
+    "Warrok": {
+        "status": {
+            "maxHealth": 500.0,
+            "walkSpeed": 150.0,
+            "runSpeed": 200.0,
+            "hitBoxX": 90.0,
+            "hitBoxY": 240.0,
+            "hitBoxZ": 90.0,
+            "shieldMaxHealth": 100.0
+        },
+        "moves": [
+            {
+                "moveId": 1,
+                "attackType": 1,
+                "isStarter": true,
+                "requiredInput": 1,
+                "animationName": "Attack1_Left",
+                "nextPossibleMoves": [ 2 ],
+                "damage": 10,
+                "duration": 0.6,
+                "inputStart": 0.7,
+                "inputEnd": 1,
+                "hitStartTime": 0.2,
+                "hitEndTime": 0.3
+            },
+            {
+                "moveId": 2,
+                "attackType": 1,
+                "isStarter": false,
+                "requiredInput": 1,
+                "animationName": "Attack1_Right",
+                "nextPossibleMoves": [ ],
+                "damage": 15,
+                "duration": 1.5,
+                "inputStart": 0.5,
+                "inputEnd": 1,
+                "hitStartTime": 0.3,
+                "hitEndTime": 0.4
+            }
+        ]
+    }
+}

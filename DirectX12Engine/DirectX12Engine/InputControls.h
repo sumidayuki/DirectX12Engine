@@ -20,7 +20,7 @@ public:
 //「2軸」を表すコントロール
 class Vector2Control
 {
-private:
+protected:
     AxisControl m_x;
     AxisControl m_y;
 
@@ -32,7 +32,7 @@ public:
     const AxisControl& X() const { return m_x; }
 
     // Y軸コントロールを返します。
-    const AxisControl& Y() const { return m_x; }
+    const AxisControl& Y() const { return m_y; }
 };
 
 

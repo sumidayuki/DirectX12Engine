@@ -73,6 +73,24 @@ Quaternion Quaternion::Slerp(const Quaternion& a, const Quaternion& b, float t)
     return XMQuaternionSlerp(a.ToXMVECTOR(), b.ToXMVECTOR(), Mathf::Clamp(t, 0.0f, 1.0f));
 }
 
+Quaternion Quaternion::LookAt(const Vector3& a, const Vector3& b)
+{
+    // A. 前方ベクトル (Forward): 注視点 - カメラ位置
+    Vector3 forward = (b - a).Normalized();
+
+    // B. 上方向の仮ベクトル (Up)
+    Vector3 tempUp = Vector3(0, 1, 0);
+
+    // C. 右方向ベクトル (Right): Up と Forward の外積
+    // 外積により、2つのベクトルに垂直な新しいベクトルが得られる
+    Vector3 right = Vector3::Cross(tempUp, forward).Normalized();
+
+    // D. 正確な上方向ベクトル (True Up): Forward と Right の外積
+    Vector3 up = Vector3::Cross(forward, right);
+
+	return LookRotation(forward, up);
+}
+
 Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs) noexcept
 {
 #if 1

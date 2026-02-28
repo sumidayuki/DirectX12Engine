@@ -244,15 +244,15 @@ class Keyboard;
 #include "ArchetypeManager.h"
 #include "Chunk.h"
 
+// Enum
+#include "DamageType.h"
+
 // Component
 #include "IComponentData.h"
 #include "Layer.h"
 #include "Input.h"
 #include "Sprite.h"
 #include "Velocity.h"
-#include "Circle.h"
-#include "Triangle.h"
-#include "Box.h"
 #include "Target.h"
 #include "Transform.h"
 #include "Camera.h"
@@ -262,9 +262,10 @@ class Keyboard;
 #include "WFMeshRenderer.h"
 #include "Collider.h"
 #include "SphereCollider.h"
-#include "ComboMove.h"
 #include "ComboState.h"
+#include "CharacterStatus.h"
 #include "ComboInput.h"
+#include "ComboMove.h"
 #include "BoxCollider.h"
 #include "AABBCollider.h"
 #include "CircleCollider2D.h"

@@ -81,6 +81,8 @@ public:
 	// パラメーター t は[0,1]の範囲にクランプされます。
 	[[nodiscard]] static Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t);
 
+	[[nodiscard]] static Quaternion LookAt(const Vector3& a, const Vector3& b);
+
 };
 
 [[nodiscard]] Quaternion operator *(const Quaternion& lhs, const Quaternion& rhs) noexcept;

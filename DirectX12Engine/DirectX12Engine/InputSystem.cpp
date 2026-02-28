@@ -7,14 +7,41 @@ void InputSystem::Update(World& world)
 
     for (auto [entity, input, combo] : view)
     {
+        const Gamepad* gamepad = InputManager::GetGamepad(0);
+
         // キーの状態を更新
-        input.moveDown = Keyboard::GetKeyState(KeyCode::S).IsPressed();
-        input.moveUp = Keyboard::GetKeyState(KeyCode::W).IsPressed();
-        input.moveLeft = Keyboard::GetKeyState(KeyCode::A).IsPressed();
-        input.moveRight = Keyboard::GetKeyState(KeyCode::D).IsPressed();
-        input.shot = Keyboard::GetKeyState(KeyCode::Space).IsPressed();
-        input.dash = Keyboard::GetKeyState(KeyCode::LeftShift).IsPressed();
-        input.attack = Mouse::GetButtonState(MouseButton::Left).WasPressedThisFrame();
+        input.moveDown = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::S).IsPressed() : gamepad->LeftStick().Down().IsPressed();
+        input.moveUp = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::W).IsPressed() : gamepad->LeftStick().Up().IsPressed();
+        input.moveLeft = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::A).IsPressed() : gamepad->LeftStick().Left().IsPressed();
+        input.moveRight = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::D).IsPressed() : gamepad->LeftStick().Right().IsPressed();
+
+        if (combo.attackInputType != AttackInputType::Attack3)
+        {
+            input.guard1 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::Space).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasPressedThisFrame();
+        }
+        else
+        {
+            input.guard1 = false;
+        }
+
+        if (input.isGuard)
+        {
+            input.guard2 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::Space).WasReleasedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasReleasedThisFrame();
+            input.isGuard = !input.guard2;
+        }
+        else
+        {
+            input.guard2 = false;
+        }
+
+        input.dash = true;
+        input.attack1 = !gamepad->IsConnected() ? Mouse::GetButtonState(MouseButton::Left).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::RightShoulder).WasPressedThisFrame();
+        input.attack2 = Mouse::GetButtonState(MouseButton::Right).WasPressedThisFrame();
+
+        if (input.guard1)
+        {
+            input.isGuard = true;
+        }
 
         // 垂直方向の入力を計算
         // Wキーが押されている場合は1.0f、Sキーが押されている場合は-1.0f、両方またはどちらも押されていない場合は0.0f
@@ -43,9 +70,16 @@ void InputSystem::Update(World& world)
         input.vartical = vertical;
         input.horizontal = horizontal;
 
-        if (input.attack)
+        if (input.attack1)
         {
             combo.attackInputType = AttackInputType::Attack1;
+            combo.timer = 0.0f;
+        }
+
+        if (input.isGuard && input.attack1)
+        {
+            input.isGuard = false;
+            combo.attackInputType = AttackInputType::Attack3;
             combo.timer = 0.0f;
         }
 

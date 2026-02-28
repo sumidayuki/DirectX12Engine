@@ -7,26 +7,29 @@ void ArrowSystem::Update(World& world)
 
 	for (auto [entity, arrow, coll, attackable] : view)
 	{
-		if (coll.info.state == CollisionState::Enter || coll.info.state == CollisionState::Stay)
+		if ((coll.info.state == CollisionState::Enter || coll.info.state == CollisionState::Stay))
 		{
-			attackable.isAttacking = true;
-			for (int i = 0; i < attackable.entities.size(); i++)
+			if (world.GetComponent<Enemy>(coll.info.other))
 			{
-				if (attackable.entities[i] == coll.info.other)
+				attackable.isAttacking = true;
+				for (int i = 0; i < attackable.entities.size(); i++)
 				{
-					return;
+					if (attackable.entities[i] == coll.info.other)
+					{
+						return;
+					}
 				}
-			}
 
-			Damageable* damageable = world.GetComponent<Damageable>(coll.info.other);
-			if (damageable)
-			{
-				Damage damage;
-				damage.type = DamageType::Normal;
-				damage.damage = 10;
-				damageable->damageQueue.push(damage);
-				attackable.entities.push_back(coll.info.other);
-				world.DestroyEntity(entity);
+				Damageable* damageable = world.GetComponent<Damageable>(coll.info.other);
+				if (damageable)
+				{
+					Damage damage;
+					damage.type = attackable.damageType;
+					damage.damage = attackable.damage;
+					damageable->damageQueue.push(damage);
+					attackable.entities.push_back(coll.info.other);
+					world.DestroyEntity(entity);
+				}
 			}
 		}
 	}

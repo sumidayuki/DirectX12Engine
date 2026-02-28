@@ -17,6 +17,7 @@ private:
 	Transform* m_coll;
 
 	SphereCollider* m_attackRangeColl;
+	Collider* m_legAttackColl;
 
 	float m_attackRange;
 
@@ -25,15 +26,14 @@ private:
 	float m_currentSpeed;
 	static constexpr float WalkSpeed = 100.0f;
 	static constexpr float RunSpeed = 250.0f;
-	static constexpr float MiddleSpeed = 100.0f;
 
 private:
 	void Move(Transform& transform, Input& input, Animator& anim);
-
-	void Attack(Transform& transform, World& world);
+	void DrawArrow(Transform& transform, float damage, Animator& anim, World& world);
+	void LegAttack(Transform& transform, ComboState& state, Animator& anim, Attackable& attackable, World& world);
 
 private:
 	void Start(World& world) override;
-	
+
 	void Update(World& world) override;
 };

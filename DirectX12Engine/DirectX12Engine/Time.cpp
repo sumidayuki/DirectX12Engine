@@ -30,6 +30,7 @@ void Time::StaticConstructor()
 
     // íxâÑè„å¿
     m_maximumDeltaTime = 1.0f / 10;
+    m_sceneLoadPending = false;
 }
 
 float Time::GetDeltaTime()
@@ -40,4 +41,9 @@ float Time::GetDeltaTime()
 float Time::GetTime()
 {
     return m_inFixedTimeStep ? m_fixedTime : m_time;
+}
+
+void Time::ResetDeltaTimeOnSceneLoad()
+{
+    m_sceneLoadPending = true;
 }

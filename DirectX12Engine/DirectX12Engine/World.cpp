@@ -7,6 +7,27 @@ void World::CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& 
 
 }
 
+void World::Clear()
+{
+	auto entityCopy = m_allEntities;
+	for (Entity e : entityCopy)
+	{
+		if (m_em.IsAlive(e))
+		{
+			m_am.DestroyEntity(e);
+			m_em.DestroyEntity(e);
+		}
+	}
+	m_allEntities.clear();
+	m_allRootEntities.clear();
+	m_allCameraEntities.clear();
+	m_allCameras.clear();
+	m_entityNames.clear();
+	m_systems.clear();
+	m_transformSystem = nullptr;
+	m_cameraSystem = nullptr;
+}
+
 Entity World::CreateEntity(const std::string& name, LayerMask layer)
 {
 	// Entity を entityManager を使用してエンティティを生成します。

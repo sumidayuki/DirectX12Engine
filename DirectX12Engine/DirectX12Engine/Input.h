@@ -11,7 +11,11 @@ struct Input : IComponentData
 	bool moveRight;		// 右方向
 	bool shot;			// ショット
 	bool dash;
-	bool attack;
+	bool attack1;
+	bool attack2;
+	bool guard1;
+	bool guard2;
+	bool isGuard;
 
 	float horizontal;
 	float vartical;

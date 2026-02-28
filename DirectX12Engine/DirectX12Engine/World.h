@@ -29,6 +29,11 @@ private:
 public:
 	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(50000, Graphics::BackBafferCount, DescriptorHeapType::CBV_SRV_UAV); }
 
+	/// <summary>
+	/// ワールドの全エンティティ・システム・リソースをクリアします。
+	/// </summary>
+	void Clear();
+
 	DescriptorAllocator* GetSrvAllocator() { return m_srvAllocator.get(); }
 
 	TransformSystem* GetTransformSystem() { return m_transformSystem; }

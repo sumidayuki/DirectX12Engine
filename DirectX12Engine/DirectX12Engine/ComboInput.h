@@ -6,12 +6,10 @@ enum class AttackInputType
 	Attack1,
 	Attack2,
 	Attack3,
-	Jump,
-	Rolling
 };
 
 struct ComboInput : IComponentData
 {
-	AttackInputType attackInputType;
-	float timer;
+	AttackInputType attackInputType = AttackInputType::Idle;
+	float timer = 0.0f;
 };

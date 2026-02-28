@@ -59,7 +59,7 @@ public:
     // キーボード/マウス/ジョイスティックのキー状態を取得します。
     static const ButtonControl& GetKey(KeyCode key);
 
-
+    static const Gamepad* GetGamepad(int index) { return m_gamepads[index]; }
 };
 
 

@@ -58,7 +58,7 @@ public:
 	// この変換は「スケール」「位置」の影響を受けません。
 	// 返されるベクトルは direction と同じ長さになります。
 	Vector3 TransformDirection(Transform& transform, const Vector3& direction);
-	 
+
 	// ローカル空間からワールド空間へ vector を変換します。
 	// この変換は「スケール」の影響を受けますが「位置」の影響は受けません。
 	// 返されるベクトルの長さは、vector とは異なる場合があります。

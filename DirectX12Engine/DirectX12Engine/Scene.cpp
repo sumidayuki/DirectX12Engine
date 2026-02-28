@@ -15,6 +15,12 @@ bool Scene::OnLoad()
 	return m_world.Load(m_world);
 }
 
+void Scene::OnUnload()
+{
+	Unload();
+	m_world.Clear();
+}
+
 void Scene::OnStart()
 {
 	Start();

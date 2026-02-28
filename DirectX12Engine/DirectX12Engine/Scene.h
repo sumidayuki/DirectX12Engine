@@ -15,9 +15,10 @@ protected:
 	World m_world;
 
 	virtual bool Load() = 0;
-	virtual void Start() = 0;	// シーンが始まった時
-	virtual void Update() = 0;	// シーンの更新処理
-	virtual void Draw() = 0;	// シーンの描画処理
+	virtual void Unload() {}// シーンが終了するときの後片付け
+	virtual void Start() = 0;// シーンが始まった時
+	virtual void Update() = 0;// シーンの更新処理
+	virtual void Draw() = 0;// シーンの描画処理
 
 public:
 	Scene();
@@ -28,6 +29,8 @@ public:
 	World& GetWorld() { return m_world; }
 
 	bool OnLoad();
+
+	void OnUnload();
 
 	void OnStart();
 

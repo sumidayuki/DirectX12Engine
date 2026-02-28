@@ -1,6 +1,6 @@
 #pragma once
 
-struct Tag
+struct Tag : IComponentData
 {
-	const char* tag;
+
 };

@@ -19,25 +19,5 @@ void HPSystem::Update(World& world)
 		{
 			hp.isDeath = true;
 		}
-
-		if (damageable.damageQueue.empty())
-		{
-			continue;
-		}
-
-		for (int i = 0; i < damageable.damageQueue.size(); i++)
-		{
-			Damage damage = damageable.damageQueue.front();
-			switch (damage.type)
-			{
-			case DamageType::Normal:
-				hp.currentHP -= damage.damage;
-				damageable.damageQueue.pop();
-				break;
-
-			default:
-				break;
-			}
-		}
 	}
 }
