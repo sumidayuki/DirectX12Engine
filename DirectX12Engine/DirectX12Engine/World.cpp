@@ -276,7 +276,7 @@ Entity World::CreateWithSprite(Sprite* sprite, Transform* parent, const Vector3&
 	Entity entity = CreateEntity();
 
 	SpriteRenderer* renderer = new SpriteRenderer();
-	GetSystem<SpriteRendererSystem>()->SetSprite(renderer, sprite);
+	SpriteAPI::SetSprite(renderer, sprite);
 	AddComponent<SpriteRenderer>(entity, *renderer);
 
 	TransformSystem* transformSystem = GetSystem<TransformSystem>();
@@ -317,7 +317,7 @@ Entity World::CreateWithModel(const std::wstring& path, Transform* parent, const
 	return AssetManager::GetInstance()->Instantiate(path, parent, localPosition, localRotation, layer);
 }
 
-Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition, const Quaternion& localRotation)
+Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Color& color, const Vector3& localPosition, const Quaternion& localRotation)
 {
 	// 3D向けカメラの作成
 	Entity entity = CreateEntity();
@@ -330,7 +330,7 @@ Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlan
 	camera->nearClipPlane = nearClipPlane;					// 近平面
 	camera->farClipPlane = farClipPlane;					// 遠平面
 	camera->clearFlags = CameraClearFlags::SolidColor;		// 背景のクリア方法
-	camera->backgroundColor = Color::cornflowerBlue;		// 背景色
+	camera->backgroundColor = color;		// 背景色
 	camera->viewportRect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
 
 	TransformSystem* transformSystem = GetSystem<TransformSystem>();

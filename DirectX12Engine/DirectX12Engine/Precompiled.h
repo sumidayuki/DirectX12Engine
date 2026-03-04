@@ -150,6 +150,7 @@ class InputSystem;
 class MovementSystem;
 class SpriteRendererSystem;
 class ShapeRendererSystem;
+class UICanvasSystem;
 //-------------------------------------------
 
 // WorldŠÖ˜A
@@ -281,6 +282,7 @@ class Keyboard;
 #include "Attackable.h"
 #include "Damageable.h"
 #include "Rigidbody.h"
+#include "UIImage.h"
 
 #include "Physics.h"
 #include "GeometryUtility.h"
@@ -293,6 +295,10 @@ class Keyboard;
 #include "SpriteRendererSystem.h"
 #include "ShapeRendererSystem.h"
 */
+
+// API
+#include "UIAPI.h"
+#include "SpriteAPI.h"
 
 // World
 #include "World.h"

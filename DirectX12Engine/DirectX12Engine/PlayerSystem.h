@@ -9,6 +9,8 @@ enum class PlayerState
 class PlayerSystem : public System
 {
 private:
+	GameManagerSystem* m_gameManager;
+
 	PlayerState m_currentState;
 
 	Transform* m_cameraTransform;
@@ -16,7 +18,6 @@ private:
 
 	Transform* m_coll;
 
-	SphereCollider* m_attackRangeColl;
 	Collider* m_legAttackColl;
 
 	float m_attackRange;

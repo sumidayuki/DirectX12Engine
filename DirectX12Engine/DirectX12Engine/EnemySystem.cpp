@@ -2,53 +2,135 @@
 #include "PlayerTag.h"
 #include "CharacterImporter.h"
 
-float EnemySystem::GetTargetDistance(const Vector3 enemyPos, const Vector3 targetpos) const
+void EnemySystem::Move(Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, World& world)
 {
-	return (targetpos - enemyPos).SqrMagnitude();
+	aiAgent.updatePosition = true;
+	aiAgent.updateRotation = false;
+
+	Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
+	Vector3 targetPos = targetTrans->position;
+
+	Vector3 dir = (targetPos - transform.position).Normalized();
+	dir.y = 0; // Y軸（上下）の回転は無視
+
+	if (dir.SqrMagnitude() > 0.001f)
+	{
+		Quaternion targetRot = Quaternion::LookRotation(dir);
+		// 補間（Slerp）を使って滑らかに向かせる
+		transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 10.0f);
+		transform.dirty = true;
+	}
+
+	// AIAgentの速度に基づいてアニメーションを切り替える
+	float speed = aiAgent.velocity.Magnitude();
+
+	if (speed > 10.0f) // 移動中
+	{
+		if (animator.currentClipName != "Walk") 
+		{
+			AnimationSystem::Play(animator, "Walk");
+			animator.isLoop = true;
+		}
+	}
+	else // 待機中（ここが Idle 状態）
+	{
+		if (animator.currentClipName != "Idle") 
+		{
+			AnimationSystem::Play(animator, "Idle");
+			animator.isLoop = true;
+		}
+	}
 }
 
-void EnemySystem::Idle(Entity& entity, Enemy& enemy, Transform& transform, Animator& animator)
+void EnemySystem::JampAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world)
 {
-	if (animator.currentClipName != "Idle")
+	// 設定値（アニメーションに合わせる）
+	const float startTime = 0.51f; // 移動開始秒数
+	const float endTime = 1.60f; // ぴったり着く秒数
+	const float duration = endTime - startTime;
+
+	// 1. 攻撃開始の最初のフレーム
+	if (!state.isAnimed)
 	{
-		AnimationSystem::Play(animator, "Idle");
+		aiAgent.updatePosition = false;
+
+		// ターゲットの現在地を「最終目的地」としてロック
+		Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
+		if (targetTrans) 
+		{
+			enemy.lastTargetPos = targetTrans->position;
+		}
+
+		enemy.startJumpPos = transform.position;
+
+		const auto& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+		AnimationSystem::Play(animator, move.animationName);
+		state.isAnimed = true;
 	}
 
-	if (enemy.stateTimer >= 3.0f)
+	float currentTime = state.timer;
+
+	// 2. 移動中
+	if (currentTime >= startTime && currentTime <= endTime)
 	{
-		enemy.state = EnemyState::Chase;
-		enemy.stateTimer = 0.0f;
+		float t = (currentTime - startTime) / duration;
+
+		transform.position = Vector3::Lerp(enemy.startJumpPos, enemy.lastTargetPos, t);
+		transform.dirty = true;
+	}
+	// 3. 移動時間を過ぎた場合（完全に目的地に固定）
+	else if (currentTime > endTime)
+	{
+		transform.position = enemy.lastTargetPos;
+		transform.dirty = true;
 	}
 }
 
-void EnemySystem::Chase(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, World& world)
+bool EnemySystem::ProcessCollision(World& world, Collider* coll, ComboState& state, Attackable& attackable)
 {
-	if (animator.currentClipName != "Walk")
+	if (coll->info.state == CollisionState::Enter || coll->info.state == CollisionState::Stay)
 	{
-		animator.isLoop = true;
-		aiAgent.updatePosition = true;
-		AnimationSystem::Play(animator, "Walk");
-	}
+		if (world.GetComponent<PlayerTag>(coll->info.other))
+		{
+			// 重複ヒットチェック
+			for (auto targetEntity : attackable.entities) 
+			{
+				if (targetEntity == coll->info.other)
+				{
+					return false;
+				}
+			}
 
-	AIAgentSystem::GetInstance()->SetDestination(aiAgent, world.GetComponent<Transform>(enemy.target)->position);
+			const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+			Damageable* damageable = world.GetComponent<Damageable>(coll->info.other);
 
-	if (GetTargetDistance(transform.position, world.GetComponent<Transform>(enemy.target)->position) < 175.0f * 175.0f)
-	{
-		AIAgentSystem::GetInstance()->ResetAI(aiAgent);
-		enemy.state = EnemyState::Attack;
-		enemy.stateTimer = 0.0f;
+			if (damageable) 
+			{
+				Damage dmg;
+				dmg.damage = move.damage;
+				dmg.type = DamageType::Normal;
+				damageable->damageQueue.push(dmg);
+				attackable.entities.push_back(coll->info.other);
+				return true;
+			}
+		}
 	}
+	return false;
 }
 
 void EnemySystem::Start(World& world)
 {
+	m_hitBox = nullptr;
+	m_leftHandColl = nullptr;
+	m_rightHandColl = nullptr;
+	m_jumpAttackColl = nullptr;
 }
 
 void EnemySystem::Update(World& world)
 {
-	View<Enemy, AIAgent, Transform, Animator, HP, ComboState, Damageable, Attackable> view(world);
+	View<Enemy, AIAgent, Transform, Collider, Animator, HP, ComboState, Damageable, Attackable> view(world);
 
-	for (auto [entity, enemy, aiAgent, transform, animator, hp, state, damageable, attackable] : view)
+	for (auto [entity, enemy, aiAgent, transform, collider, animator, hp, state, damageable, attackable] : view)
 	{
 		// コライダーが設定されていないなら
 		if (!m_leftHandColl && !m_rightHandColl)
@@ -80,6 +162,19 @@ void EnemySystem::Update(World& world)
 			world.AddComponent<Attackable>(right, Attackable{});
 			m_rightHandColl = world.AddComponent<Collider>(right, rightColl);
 			m_rightHandColl->isEnable = false;
+
+			Entity jump = world.CreateEntity();
+			Collider jumpColl;
+			jumpColl.type = ColliderType::Sphere;
+			jumpColl.radius = 80.0f;
+			jumpColl.isTrigger = true;
+			BoneSocket socket3;
+			socket3.targetEntity = entity;
+			socket3.targetBoneName = "mixamorig:Hips";
+			world.AddComponent<BoneSocket>(jump, socket3);
+			world.AddComponent<Attackable>(jump, Attackable{});
+			m_jumpAttackColl = world.AddComponent<Collider>(jump, jumpColl);
+			m_jumpAttackColl->isEnable = false;
 		}
 
 		// 死亡・被弾処理は最優先（PlayerSystemのガード等の割り込みに近い考え方）
@@ -94,7 +189,7 @@ void EnemySystem::Update(World& world)
 			
 			if (!animator.isPlaying)
 			{
-				world.DestroyEntity(entity);
+				SceneManager::ChangeScene("Title");
 			}
 			continue;
 		}
@@ -102,125 +197,104 @@ void EnemySystem::Update(World& world)
 		// 被弾による硬直とコンボ強制終了
 		if (!damageable.damageQueue.empty()) 
 		{
-			state.currentMoveId = 0; // コンボ中断
-
-
 			while (!damageable.damageQueue.empty())
 			{
-				animator.isLoop = false;
-				AnimationSystem::Play(animator, "Hit_00", true);
-				hp.currentHP -= damageable.damageQueue.front().damage;
+
+				if (state.currentMoveId != 3)
+				{
+					state.currentMoveId = 0; // コンボ中断
+					animator.isLoop = false;
+					AnimationSystem::Play(animator, "Hit_00", true);
+					hp.currentHP -= damageable.damageQueue.front().damage;
+				}
 				damageable.damageQueue.pop();
 			}
 		}
+
 		if (animator.currentClipName == "Hit_00" && animator.isPlaying) 
 		{
 			aiAgent.updatePosition = false;
 			continue;
 		}
 
-        // 1. 攻撃中でなければ何もしない（またはコライダーを消す）
-        if (state.currentMoveId == 0) 
+		switch (state.currentMoveId)
 		{
-            m_leftHandColl->isEnable = false;
-            m_rightHandColl->isEnable = false;
-            attackable.entities.clear();
+		case 0:
+			Move(enemy, aiAgent, transform, animator, world);
+			break;
+		case 3:
+			JampAttack(entity, enemy, aiAgent, transform, state, animator, world);
+			break;
 
-			aiAgent.updatePosition = true;
-			aiAgent.updateRotation = false;
+		default:
+			aiAgent.updatePosition = false;
+			break;
+		}
 
-			Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
-			Vector3 targetPos = targetTrans->position;
-
-			Vector3 dir = (targetPos - transform.position).Normalized();
-			dir.y = 0; // Y軸（上下）の回転は無視
-
-			if (dir.SqrMagnitude() > 0.001f)
+		if (state.currentMoveId != 0)
+		{
+			// アニメーション再生（一度だけ）
+			if (!state.isAnimed) 
 			{
-				Quaternion targetRot = Quaternion::LookRotation(dir);
-				// 補間（Slerp）を使って滑らかに向かせる
-				transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 10.0f);
-				transform.dirty = true;
+				const auto& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+				AnimationSystem::Play(animator, move.animationName);
+				state.isAnimed = true;
+				aiAgent.updatePosition = false; // 攻撃中は移動停止
 			}
 
-			// AIAgentの速度に基づいてアニメーションを切り替える
-			float speed = aiAgent.velocity.Magnitude();
-
-			if (speed > 10.0f) // 移動中
+			// ヒット判定期間（canHit）の処理
+			if (state.canHit && !state.hitConfirm)
 			{
-				if (animator.currentClipName != "Walk") {
-					AnimationSystem::Play(animator, "Walk");
-					animator.isLoop = true;
-				}
-			}
-			else // 待機中（ここが Idle 状態）
-			{
-				if (animator.currentClipName != "Idle") {
-					AnimationSystem::Play(animator, "Idle");
-					animator.isLoop = true;
-					// 次の攻撃に備えて情報をリセット
-					attackable.entities.clear();
-					attackable.isAttacking = false;
-				}
-			}
-
-            continue;
-        }
-
-        // 2. 判定の有効化 (ComboSystemが計算した state.canHit を使う)
-        // 提示コードの「if (enemy.stateTimer >= animTime * 0.1f...)」に相当
-        if (state.canHit && !state.hitConfirm)
-        {
-            // MoveID 1なら左、2なら右を出す
-            if (state.currentMoveId == 1) m_leftHandColl->isEnable = true;
-            else if (state.currentMoveId == 2) m_rightHandColl->isEnable = true;
-
-            // 3. ダメージ処理 (提示コードの重複ヒット防止ロジックを流用)
-            Collider* currentColl = (state.currentMoveId == 1) ? m_leftHandColl : m_rightHandColl;
-            if (currentColl->info.state == CollisionState::Enter || currentColl->info.state == CollisionState::Stay)
-            {
-				if (world.GetComponent<PlayerTag>(currentColl->info.other))
+				if (state.currentMoveId == 1 || state.currentMoveId == 3)
 				{
-					attackable.isAttacking = true;
-					for (int i = 0; i < attackable.entities.size(); i++)
-					{
-						if (attackable.entities[i] == currentColl->info.other)
-						{
-							continue;
-						}
-					}
+					m_leftHandColl->isEnable = true;
+				}
+				if (state.currentMoveId == 2 || state.currentMoveId == 3)
+				{
+					m_rightHandColl->isEnable = true;
+				}
+				if (state.currentMoveId == 3)
+				{
+					m_jumpAttackColl->isEnable = true;
+				}
 
-					const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+				// 衝突検知
+				bool hitSomething = false;
+				if (m_leftHandColl->isEnable && ProcessCollision(world, m_leftHandColl, state, attackable))
+				{
+					hitSomething = true;
+				}
+				if (m_rightHandColl->isEnable && ProcessCollision(world, m_rightHandColl, state, attackable))
+				{
+					hitSomething = true;
+				}
+				if (m_jumpAttackColl->isEnable && ProcessCollision(world, m_jumpAttackColl, state, attackable))
+				{
+					hitSomething = true;
+				}
 
-					Damageable* damageable = world.GetComponent<Damageable>(currentColl->info.other);
-					if (damageable != nullptr)
-					{
-						Damage dmg;
-						dmg.damage = move.damage;
-						dmg.type = DamageType::Normal;
-						damageable->damageQueue.push(dmg);
-						attackable.entities.push_back(currentColl->info.other);
-					}
-
+				if (hitSomething)
+				{
 					state.hitConfirm = true;
 				}
-            }
-        }
-        else
-        {
-            // 判定時間外ならリセット
-            m_leftHandColl->isEnable = false;
-            m_rightHandColl->isEnable = false;
+			}
+			else
+			{
+				m_leftHandColl->isEnable = false;
+				m_rightHandColl->isEnable = false;
+				m_jumpAttackColl->isEnable = false;
+				attackable.entities.clear();
+				attackable.isAttacking = false;
+			}
+		}
+		else
+		{
+			// MoveId == 0 (Idle/Move中) は確実にコライダーを消す
+			m_leftHandColl->isEnable = false;
+			m_rightHandColl->isEnable = false;
+			m_jumpAttackColl->isEnable = false;
+			attackable.entities.clear();
 			attackable.isAttacking = false;
-            attackable.entities.clear(); // 次の技のためにリストを空にする
-        }
-
-        // 4. アニメーション再生 (一度だけ実行)
-        if (!state.isAnimed) {
-            const auto& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
-            AnimationSystem::Play(animator, move.animationName);
-            state.isAnimed = true;
-        }
-
+		}
 	}
 };

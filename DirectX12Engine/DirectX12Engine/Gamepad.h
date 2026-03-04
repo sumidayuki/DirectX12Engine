@@ -49,6 +49,8 @@ enum class GamepadButton
     Start,                  // スタートボタン
 
     NumberOfButtons,        // 総ボタン数
+    
+    Max,
 };
 
 

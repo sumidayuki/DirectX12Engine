@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "SpriteRendererSystem.h"
 #include "MeshRendererSystem.h"
+#include "UICanvasSystem.h"
 #include "DebugManager.h"
 #include "TitleScene.h"
 #include "MainScene.h"
@@ -8,20 +9,20 @@
 
 void Application::Run()
 {
-    // ƒQ[ƒ€—p‚ÌƒEƒBƒ“ƒhƒE‚ğì¬
-    m_gameWindow = new Windows::NativeWindow();  // "DirectX12ƒvƒƒOƒ‰ƒ~ƒ“ƒO"
+    // ã‚²ãƒ¼ãƒ ç”¨ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä½œæˆ
+    m_gameWindow = new Windows::NativeWindow();  // "DirectX12ãƒ—ãƒ­ã‚°ãƒ©ãƒŸãƒ³ã‚°"
     m_gameWindow->SetClientSize({ Screen::GetWidth(), Screen::GetHeight() });
     m_gameWindow->Centering();
     ::ShowWindow(m_gameWindow->GetHandle(), SW_HIDE);
 
-    // ƒ[ƒJ[ƒXƒŒƒbƒh‚ğì¬
+    // ãƒ¯ãƒ¼ã‚«ãƒ¼ã‚¹ãƒ¬ãƒƒãƒ‰ã‚’ä½œæˆ
     m_isRunning = true;
     std::thread workerThread(WorkerThreadEntryPoint);
 
-    // ƒƒbƒZ[ƒWƒ‹[ƒv
+    // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ«ãƒ¼ãƒ—
     PumpMessage();
 
-    // ƒ[ƒJ[ƒXƒŒƒbƒh‚ğI—¹‚³‚¹‚Ä‡—¬
+    // ãƒ¯ãƒ¼ã‚«ãƒ¼ã‚¹ãƒ¬ãƒƒãƒ‰ã‚’çµ‚äº†ã•ã›ã¦åˆæµ
     m_isRunning = false;
     workerThread.join();
 
@@ -36,22 +37,22 @@ void Application::Shutdown()
 
 void Application::PumpMessage()
 {
-    // ƒƒbƒZ[ƒW1ŒÂ•ª‚ğŠi”[‚·‚é•Ï”
+    // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸1å€‹åˆ†ã‚’æ ¼ç´ã™ã‚‹å¤‰æ•°
     MSG msg;
 
     while (::GetMessage(&msg, nullptr, 0, 0))
     {
-        // ‰¼‘zƒL[ƒƒbƒZ[ƒW‚ğ•¶šƒƒbƒZ[ƒW‚É•ÏŠ·‚µ‚Ü‚·B
+        // ä»®æƒ³ã‚­ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’æ–‡å­—ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã«å¤‰æ›ã—ã¾ã™ã€‚
         ::TranslateMessage(&msg);
 
-        // ƒƒbƒZ[ƒW‚ğƒEƒBƒ“ƒhƒEƒvƒƒV[ƒWƒƒ‚É”z‘—‚µ‚Ü‚·B
+        // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£ã«é…é€ã—ã¾ã™ã€‚
         ::DispatchMessage(&msg);
     }
 }
 
 void Application::AddScenesAndStartupScene()
 {
-    // ƒV[ƒ“‚Ì’Ç‰Á
+    // ã‚·ãƒ¼ãƒ³ã®è¿½åŠ 
     m_sceneManager = new SceneManager();
     m_sceneManager->AddScene("Title", std::make_unique<TitleScene>());
     m_sceneManager->AddScene("Main", std::make_unique<MainScene>());
@@ -60,23 +61,24 @@ void Application::AddScenesAndStartupScene()
 
 void Application::WorkerThreadEntryPoint()
 {
-    // ƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
+    // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
     HWND hWnd = m_gameWindow->GetHandle();
 
-    // ƒOƒ‰ƒtƒBƒbƒNƒVƒXƒeƒ€‚Ì‰Šú‰»
+    // ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚·ã‚¹ãƒ†ãƒ ã®åˆæœŸåŒ–
     Resolution resolution;
     resolution.width = Screen::GetWidth();
     resolution.height = Screen::GetHeight();
     resolution.refreshRate = 60;
+    Screen::SetResolution(resolution.width, resolution.height, true);
     Graphics::StaticConstructor(hWnd, resolution);
-    //m_gameWindow->SetFullscreen(Screen::IsFullScreen());
+    m_gameWindow->SetFullscreen(Screen::IsFullScreen());
 
     AssetManager::CreateSingleton();
 
-    // ƒXƒvƒ‰ƒCƒgƒŒƒ“ƒ_ƒ‰[‚Ì‰Šú‰»
+    // ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã®åˆæœŸåŒ–
     SpriteRendererSystem::StaticConstructor();
 
-    // ƒƒbƒVƒ…ƒŒƒ“ƒ_ƒ‰[ƒVƒXƒeƒ€‚Ì‰Šú‰»
+    // ãƒ¡ãƒƒã‚·ãƒ¥ãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã‚·ã‚¹ãƒ†ãƒ ã®åˆæœŸåŒ–
     MeshRendererSystem::StaticConstructor();
 
     SkinnedMeshRendererSystem::StaticConstructor();
@@ -87,16 +89,16 @@ void Application::WorkerThreadEntryPoint()
     DebugManager::CreateSingleton();
     DebugManager::GetInstance()->Initialize();
 
-    // “ü—ÍƒVƒXƒeƒ€‚Ì‰Šú‰»
+    // å…¥åŠ›ã‚·ã‚¹ãƒ†ãƒ ã®åˆæœŸåŒ–
     InputManager::StaticConstructor(hWnd);
 
-    // ŠÔ‚Ì‰Šú‰»
+    // æ™‚é–“ã®åˆæœŸåŒ–
     Time::StaticConstructor();
 
-    // ‚ ‚ç‚©‚¶‚ßƒrƒ‹ƒhİ’è‚É‘S‚Ä‚ÌƒV[ƒ“‚ğ“o˜^‚µ‚Ä‚¨‚­
+    // ã‚ã‚‰ã‹ã˜ã‚ãƒ“ãƒ«ãƒ‰è¨­å®šã«å…¨ã¦ã®ã‚·ãƒ¼ãƒ³ã‚’ç™»éŒ²ã—ã¦ãŠã
     AddScenesAndStartupScene();
 
-    // ƒEƒBƒ“ƒhƒE‚ğ•\¦‚µ‚ÄƒRƒ“ƒgƒ[ƒ‹‚ğXV‚·‚é
+    // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’è¡¨ç¤ºã—ã¦ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚’æ›´æ–°ã™ã‚‹
     ::ShowWindowAsync(hWnd, SW_SHOW);
     ::SetForegroundWindow(hWnd);
 
@@ -109,33 +111,33 @@ void Application::WorkerThreadEntryPoint()
 
     int frameCounter = 0;
 
-    // ƒQ[ƒ€ƒ‹[ƒv
+    // ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—
     while (m_isRunning)
     {
-        // Œ»İ‚ÌŠÔ
+        // ç¾åœ¨ã®æ™‚é–“
         const auto currentTime = std::chrono::high_resolution_clock::now();
 
-        // ‘O‰ñ‚ÌƒtƒŒ[ƒ€‚©‚ç‚ÌŒo‰ßŠÔ
+        // å‰å›ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰ã®çµŒéæ™‚é–“
         const auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTimeForVariable);
 
-        // 1ƒtƒŒ[ƒ€‚ ‚½‚è‚ÌŠÔ
+        // 1ãƒ•ãƒ¬ãƒ¼ãƒ ã‚ãŸã‚Šã®æ™‚é–“
         const std::chrono::microseconds microsecondsPerFrame = std::chrono::microseconds((Time::m_captureFramerate > 0) ? (1000000 / Time::m_captureFramerate) : 16666);
 
-        // Œo‰ßŠÔ >= 1ƒtƒŒ[ƒ€‚ ‚½‚è‚ÌŠÔ
+        // çµŒéæ™‚é–“ >= 1ãƒ•ãƒ¬ãƒ¼ãƒ ã‚ãŸã‚Šã®æ™‚é–“
         if (elapsedTime >= microsecondsPerFrame)
         {
-            // “ü—ÍƒVƒXƒeƒ€‚ÌXVˆ—
+            // å…¥åŠ›ã‚·ã‚¹ãƒ†ãƒ ã®æ›´æ–°å‡¦ç†
             InputManager::Update();
 
-            // ƒQ[ƒ€‚ÌXV (ƒQ[ƒ€“à‚ÌŠÔ‚ğ­‚µ‚¾‚¯i‚ß‚é)
-            // ƒQ[ƒ€‰æ–Ê‚ğƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO
+            // ã‚²ãƒ¼ãƒ ã®æ›´æ–° (ã‚²ãƒ¼ãƒ å†…ã®æ™‚é–“ã‚’å°‘ã—ã ã‘é€²ã‚ã‚‹)
+            // ã‚²ãƒ¼ãƒ ç”»é¢ã‚’ãƒ•ãƒ¬ãƒ¼ãƒ ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°
             FrameResource* currentFrameResource = Graphics::GetCurrentFrameResource();
 
             currentFrameResource->BeginFrame();
             currentFrameResource->Update();
             currentFrameResource->Render();
 
-            // Ÿ‚ÌƒtƒŒ[ƒ€‚Ìˆ×‚Éã‘‚«‚µ‚Ä‚¨‚­
+            // æ¬¡ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç‚ºã«ä¸Šæ›¸ãã—ã¦ãŠã
             Time::m_unscaledDeltaTime = std::chrono::duration<float, std::ratio<1, 1>>(elapsedTime).count();
             Time::m_unscaledTime += Time::m_unscaledDeltaTime;
             Time::m_deltaTime = Time::m_unscaledDeltaTime * Time::m_timeScale;
@@ -150,23 +152,19 @@ void Application::WorkerThreadEntryPoint()
                 Time::m_framesPerSecond = frameCounter / fpsElapsed;
                 frameCounter = 0;
                 previousTimeForFpsCounter = currentTime;
-
-                // ƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹XV
-                std::string title = "My Game - FPS: " + std::to_string((int)Time::m_framesPerSecond);
-                SetWindowTextA(hWnd, title.c_str());
             }
 
             previousTimeForVariable = currentTime;
         }
     }
 
-    // ‘S‚Ä‚ÌƒtƒŒ[ƒ€ƒŠƒ\[ƒX‚É‚¨‚¢‚ÄPresent()‚ÌŠ®—¹‚ğ‘Ò‚ÂB
+    // å…¨ã¦ã®ãƒ•ãƒ¬ãƒ¼ãƒ ãƒªã‚½ãƒ¼ã‚¹ã«ãŠã„ã¦Present()ã®å®Œäº†ã‚’å¾…ã¤ã€‚
     Graphics::WaitForCompletionOfPresent();
 
-    // ƒV[ƒ“ƒ}ƒl[ƒWƒƒ[‚ÌI—¹ˆ—
+    // ã‚·ãƒ¼ãƒ³ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã®çµ‚äº†å‡¦ç†
     SceneManager::StaticDestructor();
 
-    // ƒCƒ“ƒvƒbƒgƒ}ƒl[ƒWƒƒ[‚ÌI—¹ˆ—
+    // ã‚¤ãƒ³ãƒ—ãƒƒãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã®çµ‚äº†å‡¦ç†
     InputManager::StaticDestructor();
 
     AssetManager::DestroySingleton();
@@ -174,16 +172,16 @@ void Application::WorkerThreadEntryPoint()
     DebugManager::GetInstance()->Shutdown();
     DebugManager::GetInstance()->DestroySingleton();
 
-    // ƒƒbƒVƒ…ƒŒƒ“ƒ_ƒ‰[ƒVƒXƒeƒ€‚ÌI—¹ˆ—
+    // ãƒ¡ãƒƒã‚·ãƒ¥ãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã‚·ã‚¹ãƒ†ãƒ ã®çµ‚äº†å‡¦ç†
     MeshRendererSystem::StaticDestructor();
 
     SkinnedMeshRendererSystem::StaticDestructor();
 
     ShaderRegistry::StaticDestructor();
 
-    // ƒXƒvƒ‰ƒCƒgƒŒƒ“ƒ_ƒ‰[ƒVƒXƒeƒ€‚ÌI—¹ˆ—
+    // ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã‚·ã‚¹ãƒ†ãƒ ã®çµ‚äº†å‡¦ç†
     SpriteRendererSystem::StaticDestructor();
 
-    // ƒOƒ‰ƒtƒBƒbƒNƒVƒXƒeƒ€‚ÌI—¹ˆ—
+    // ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚·ã‚¹ãƒ†ãƒ ã®çµ‚äº†å‡¦ç†
     Graphics::StaticDestructor();
 }

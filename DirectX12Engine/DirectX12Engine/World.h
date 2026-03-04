@@ -131,7 +131,7 @@ public:
 		LayerMask layer = Layers::Default
 	);
 
-	Entity CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
+	Entity CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Color& color = Color::cornflowerBlue, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
 
 	/// <summary>

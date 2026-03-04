@@ -34,6 +34,9 @@ namespace Windows
 
         }
 
+        // カーソル非表示
+		::ShowCursor(FALSE);
+
         const DWORD dwStyle = WS_OVERLAPPEDWINDOW;      // ウィンドウスタイル
         const DWORD dwExStyle = WS_EX_APPWINDOW;        // 拡張ウィンドウスタイル
         const HMENU hMenu = nullptr;                    // メニューバーの作成

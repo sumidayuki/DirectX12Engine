@@ -352,6 +352,12 @@
     <Filter Include="Game\Character\Guard">
       <UniqueIdentifier>{abfa5b9c-665a-4737-a1cd-47f030f57f3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\ECS\Component\UI">
+      <UniqueIdentifier>{1416a0a0-d8b3-470f-98bf-a04d11a1f77e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\UICanvasSystem">
+      <UniqueIdentifier>{e8bb9bb8-b4ed-4b96-b0fd-756b34f6c597}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -617,6 +623,12 @@
     </ClCompile>
     <ClCompile Include="EnemyAISystem.cpp">
       <Filter>Game\Character\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="UICanvasSystem.cpp">
+      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="UIAPI.cpp">
+      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1094,6 +1106,15 @@
     <ClInclude Include="EnemyAISystem.h">
       <Filter>Game\Character\Enemy</Filter>
     </ClInclude>
+    <ClInclude Include="UIImage.h">
+      <Filter>Engine\ECS\Component\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UICanvasSystem.h">
+      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="UIAPI.h">
+      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
@@ -1116,6 +1137,9 @@
     </None>
     <None Include="Standard.hlsli">
       <Filter>Engine\リソース\アセット\Shader\HLSL</Filter>
+    </None>
+    <None Include="UICanvas.hlsl">
+      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -47,13 +47,13 @@ private:
     /// <param name="maxPoint"></param>
     static void CalcBoundingRect(const Vector2 vertices[], int vertexCount, Vector2& minPoint, Vector2& maxPoint);
 
+public:
     // 頂点バッファを取得します。
     GraphicsBuffer* GetVertexBuffer() const { return m_vertexBuffer.Get(); }
 
     // インデックスバッファを取得します。
     GraphicsBuffer* GetIndexBuffer() const { return m_indexBuffer.Get(); }
 
-public:
     /// <summary>
     /// スプライトを1つ生成します。
     /// </summary>
@@ -73,6 +73,12 @@ public:
 
     // ピボットを取得します。
     const Vector2& GetPivot() const { return m_pivot; }
+
+	// Tight指定時に補正されたテクスチャ矩形を取得します。
+	const Vector2& GetMinUV() const { return m_minUV; }
+
+	// Tight指定時に補正されたテクスチャ矩形を取得します。
+	const Vector2& GetMaxUV() const { return m_maxUV; }
 
     // 1単位あたりのピクセル数を取得します。
     float GetPixelsPerUnitX() const { return m_pixelsPerUnitX; }

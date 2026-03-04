@@ -26,3 +26,4 @@
 #include "HPSystem.h"
 #include "PhysicsSystem.h"
 #include "ComboSystem.h"
+#include "UICanvasSystem.h"

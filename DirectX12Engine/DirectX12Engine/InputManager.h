@@ -60,6 +60,9 @@ public:
     static const ButtonControl& GetKey(KeyCode key);
 
     static const Gamepad* GetGamepad(int index) { return m_gamepads[index]; }
+
+	// 何か一つでもキーが押されているかを確認します。
+	static bool IsAnyKeyPressed();
 };
 
 

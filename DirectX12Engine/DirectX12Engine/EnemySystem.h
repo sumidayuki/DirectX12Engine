@@ -7,14 +7,13 @@ private:
 	Transform* m_hitBox;
 	Collider* m_leftHandColl;
 	Collider* m_rightHandColl;
+	Collider* m_jumpAttackColl;
 
 private:
-	float GetTargetDistance(const Vector3 enemyPos, const Vector3 targetpos) const;
+	void Move(Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, World& world);
+	void JampAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world);
+	bool ProcessCollision(World& world, Collider* coll, ComboState& state, Attackable& attackable);
 
-	void Idle(Entity& entity, Enemy& enemy, Transform& transform, Animator& animator);
-	void Chase(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, World& world);
-	void AttackLeft(Entity& entity, Enemy& enemy, Transform& transform, Animator& animator, Attackable& attackable, World& world);
-	void AttackRight(Entity& entity, Enemy& enemy, Transform& transform, Animator& animator, Attackable& attackable, World& world);
 private:
 	void Start(World& world) override;
 	void Update(World& world) override;

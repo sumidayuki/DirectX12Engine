@@ -4,6 +4,7 @@ class TitleScene : public Scene
 {
 private:
 	float m_time;
+	SpriteRenderer* m_titleText;
 
 public:
 	bool Load() override;

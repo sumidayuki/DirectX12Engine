@@ -9,74 +9,89 @@ void EnemyAISystem::Update(World& world)
     {
         if (!world.IsAlive(enemy.target)) continue;
 
-        if (animator.currentClipName == "Hit_00" && animator.isPlaying)
-        {
-            continue;
-        }
+        // 被弾中は思考停止
+        if (animator.currentClipName == "Hit_00" && animator.isPlaying) continue;
 
         Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
         Vector3 toTarget = targetTrans->position - transform.position;
-        float distSq = toTarget.SqrMagnitude();
-        float dist = sqrtf(distSq);
+        float dist = toTarget.Magnitude();
 
-        // 各種距離の設定
-        const float attackRange = 160.0f;
-        const float tooCloseRange = 110.0f; // これより近いと下がる
+        // 距離設定
+        const float jumpAttackMinRange = 500.0f; // ジャンプ攻撃が届く最小距離
+		const float jumpAttackMaxRange = 800.0f;    // ジャンプ攻撃が届く最大距離
+        const float attackRange = 160.0f;     // 通常攻撃の距離
+        const float tooCloseRange = 100.0f;
 
-        // 1. 攻撃中（コンボ中）の処理
+        // 攻撃中（コンボ中）の処理
         if (comboState.currentMoveId != 0)
         {
             animator.isLoop = false;
-            AIAgentSystem::GetInstance()->ResetAI(aiAgent); // 攻撃中は足を止める
+            AIAgentSystem::GetInstance()->ResetAI(aiAgent);
 
             const auto& move = CharacterImporter::GetInstance()->GetMoveById(comboState.name, comboState.currentMoveId);
             float progress = comboState.timer / move.duration;
 
-            // 追撃の判断
+            // 追撃判定 (Input受付時間内かつ、まだ次を入力していない場合)
             if (progress >= move.inputStart && progress <= move.inputEnd && comboInput.attackInputType == AttackInputType::Idle)
             {
-                // まだ射程内にいればAttack1を予約
-                if (dist < attackRange + 30.0f) {
-                    comboInput.attackInputType = AttackInputType::Attack1;
-                }
+                if (tooCloseRange > dist)
+				{
+					// 近すぎる場合は一度距離を取る
+					Vector3 awayPos = transform.position - toTarget.Normalized() * (tooCloseRange - dist);
+					AIAgentSystem::GetInstance()->SetDestination(aiAgent, awayPos);
+				}
+				else if (dist >= tooCloseRange && dist < attackRange)
+				{
+					// 通常攻撃の範囲内なら、次の攻撃（Attack2）を繰り出す
+					comboInput.attackInputType = AttackInputType::Attack1;
+				}
             }
         }
-        // 2. 非攻撃中（待機・移動・間合い管理）の処理
+        // 非攻撃中の処理
         else
         {
             comboInput.attackInputType = AttackInputType::Idle;
 
-            // --- A. 攻撃後の離脱挙動 (クールダウン中) ---
+            // クールダウン中の離脱挙動
             if (enemy.attackCoolDown > 0.0f)
             {
                 enemy.attackCoolDown -= Time::GetDeltaTime();
-
-                // ターゲットから離れる方向に目標地点を設定（ヒット＆アウェイ）
                 Vector3 retreatDir = -toTarget.Normalized();
                 Vector3 retreatPos = transform.position + retreatDir * 150.0f;
                 AIAgentSystem::GetInstance()->SetDestination(aiAgent, retreatPos);
             }
-            // --- B. 通常時の間合い管理 ---
             else
             {
-                if (dist < tooCloseRange)
-                {
-                    // 近すぎる：少し後ろに下がる
-                    Vector3 awayPos = transform.position - toTarget.Normalized() * 80.0f;
-                    AIAgentSystem::GetInstance()->SetDestination(aiAgent, awayPos);
-                }
-                else if (dist < attackRange)
-                {
-                    // 射程内：攻撃開始
-                    comboInput.attackInputType = AttackInputType::Attack1;
+                // 攻撃選択ロジック
 
-                    // 攻撃開始と同時にクールダウンをセット（これが攻撃後の離脱時間になる）
-                    enemy.attackCoolDown = 2.0f;
+				// ジャンプ攻撃の射程外
+                if (dist > jumpAttackMinRange && dist < jumpAttackMaxRange)
+                {
+                    // ジャンプ攻撃（Attack3）を繰り出す
+                    comboInput.attackInputType = AttackInputType::Attack3;
+                    enemy.attackCoolDown = 3.5f; // ジャンプ後は隙が大きいので長めのクールダウン
                     AIAgentSystem::GetInstance()->ResetAI(aiAgent);
                 }
+                // 通常攻撃の射程内
+                else if (dist < attackRange)
+                {
+                    if (dist < tooCloseRange) 
+                    {
+                        // 近すぎる場合は仕切り直し
+                        Vector3 awayPos = transform.position - toTarget.Normalized() * 80.0f;
+                        AIAgentSystem::GetInstance()->SetDestination(aiAgent, awayPos);
+                    }
+                    else 
+                    {
+                        // 通常攻撃開始
+                        comboInput.attackInputType = AttackInputType::Attack1;
+                        enemy.attackCoolDown = 2.0f;
+                        AIAgentSystem::GetInstance()->ResetAI(aiAgent);
+                    }
+                }
+                // 索敵・追跡
                 else
                 {
-                    // 遠い：どこまでも追いかける（距離制限を撤廃）
                     AIAgentSystem::GetInstance()->SetDestination(aiAgent, targetTrans->position);
                 }
             }

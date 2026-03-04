@@ -131,6 +131,8 @@ void PlayerSystem::Start(World& world)
 	m_currentSpeed = WalkSpeed;
 	m_stateTimer = 0.0f;
 	m_currentState = PlayerState::Move;
+	m_bowTransform = nullptr;
+	m_legAttackColl = nullptr;
 }
 
 void PlayerSystem::Update(World& world)
@@ -145,6 +147,11 @@ void PlayerSystem::Update(World& world)
 			{
 				animator.isLoop = false;
 				AnimationSystem::Play(animator, "Death");
+			}
+
+			if (!animator.isPlaying)
+			{
+				SceneManager::ChangeScene("Title");
 			}
 			continue;
 		}
@@ -224,10 +231,9 @@ void PlayerSystem::Update(World& world)
 		const ComboMove& currentMove = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
 
 		// “G‚Ìî•ñ‚ğæ“¾
-		static GameManagerSystem* gameManager;
-		if (!gameManager)
-			gameManager = world.GetSystem<GameManagerSystem>();
-		Entity enemy = gameManager->GetEnemy();
+		if (!m_gameManager)
+			m_gameManager = world.GetSystem<GameManagerSystem>();
+		Entity enemy = m_gameManager->GetEnemy();
 		Transform* enemyTransform = world.GetComponent<Transform>(enemy);
 
 		if (enemyTransform)

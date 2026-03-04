@@ -113,13 +113,27 @@
                 "isStarter": false,
                 "requiredInput": 1,
                 "animationName": "Attack1_Right",
-                "nextPossibleMoves": [ ],
+                "nextPossibleMoves": [],
                 "damage": 15,
                 "duration": 1.0,
                 "inputStart": 0.8,
                 "inputEnd": 1,
                 "hitStartTime": 0.25,
                 "hitEndTime": 0.5
+            },
+            {
+                "moveId": 3,
+                "attackType": 2,
+                "isStarter": true,
+                "requiredInput": 3,
+                "animationName": "Attack_02",
+                "nextPossibleMoves": [1],
+                "damage": 30,
+                "duration": 3,
+                "inputStart": 0.8,
+                "inputEnd": 1,
+                "hitStartTime": 0.5,
+                "hitEndTime": 0.6
             }
         ]
     }

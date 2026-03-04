@@ -106,6 +106,33 @@ void InputManager::Update()
     }
 }
 
+bool InputManager::IsAnyKeyPressed()
+{
+	for (int i = 0; i < 256; i++)
+	{
+		if (m_keysLast[i])
+		{
+			return true;
+		}
+	}
+
+	for (int i = 0; i < MaxGamepadCount; i++)
+	{
+		if (m_gamepads[i]->IsConnected())
+		{
+			for (int j = 0; j < (int)GamepadButton::Max; j++)
+			{
+				if (m_gamepads[i]->GetButton((GamepadButton)j).IsPressed())
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 
 
 LRESULT CALLBACK InputManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
