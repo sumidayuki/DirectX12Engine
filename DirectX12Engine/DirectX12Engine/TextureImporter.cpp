@@ -233,6 +233,9 @@ Texture2D* TextureImporter::Import()
 		}
 	);
 
+	// BindlessHeap‚É“o˜^
+	BindlessHeap::GetInstance()->Register(texture2D);
+
 	return texture2D;
 }
 
@@ -416,6 +419,9 @@ Texture2D* TextureImporter::Import(const void* data, size_t size)
 			texture2D->m_uploadBuffer = nullptr;
 		}
 	);
+
+	// BindlessHeap‚É“o˜^
+	BindlessHeap::GetInstance()->Register(texture2D);
 
 	return texture2D;
 }

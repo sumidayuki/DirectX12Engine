@@ -10,11 +10,6 @@ private:
 	static inline BYTE* m_mappedObjectConstants = nullptr;
 	static inline UINT m_currentObjectBufferIndex = 0;
 
-	std::unordered_map<Texture2D*, D3D12_GPU_DESCRIPTOR_HANDLE> m_srvCache;
-
-private:
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRV(Texture2D* tex, DescriptorAllocator* allocator);
-
 private:
 	static void StaticConstructor();
 	static void StaticDestructor();

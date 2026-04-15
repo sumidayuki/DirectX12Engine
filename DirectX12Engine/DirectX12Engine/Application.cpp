@@ -75,6 +75,8 @@ void Application::WorkerThreadEntryPoint()
 
     AssetManager::CreateSingleton();
 
+    BindlessHeap::CreateSingleton();
+
     // スプライトレンダラーの初期化
     SpriteRendererSystem::StaticConstructor();
 
@@ -168,6 +170,8 @@ void Application::WorkerThreadEntryPoint()
     InputManager::StaticDestructor();
 
     AssetManager::DestroySingleton();
+
+	BindlessHeap::DestroySingleton();
 
     DebugManager::GetInstance()->Shutdown();
     DebugManager::GetInstance()->DestroySingleton();

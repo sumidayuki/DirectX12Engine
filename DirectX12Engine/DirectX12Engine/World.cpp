@@ -413,7 +413,6 @@ void World::Start(World& world)
 
 void World::BeginFrame(UINT frameIndex)
 {
-	m_srvAllocator->BeginFrame(frameIndex);
 }
 
 void World::Update(World& world)

@@ -210,6 +210,7 @@ class Keyboard;
 
 // グラフィックス関連
 #include "DescriptorHeap.h"
+#include "BindlessHeap.h"
 #include "DescriptorAllocator.h"
 #include "GraphicsBuffer.h"
 #include "FrameResource.h"
@@ -282,7 +283,10 @@ class Keyboard;
 #include "Attackable.h"
 #include "Damageable.h"
 #include "Rigidbody.h"
+#include "UICanvas.h"
+#include "UIObject.h"
 #include "UIImage.h"
+#include "BehaviourTree.h";
 
 #include "Physics.h"
 #include "GeometryUtility.h"

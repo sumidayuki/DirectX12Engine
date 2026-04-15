@@ -19,24 +19,6 @@ void MeshRendererSystem::StaticDestructor()
     m_objectConstantBufferRing.Reset();
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE MeshRendererSystem::GetSRV(Texture2D* tex, DescriptorAllocator* allocator)
-{
-    if (auto it = m_srvCache.find(tex); it != m_srvCache.end())
-    {
-        return it->second;
-    }
-
-    D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
-    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    desc.Format = tex->GetNativeResource()->GetDesc().Format;
-    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    desc.Texture2D.MipLevels = tex->GetNativeResource()->GetDesc().MipLevels;
-
-    auto handle = allocator->CreateSRV(tex->GetNativeResource(), desc);
-    m_srvCache[tex] = handle;
-    return handle;
-}
-
 void MeshRendererSystem::Start(World& world)
 {
     // 定数バッファの作成 (256バイトアライメント)
@@ -54,14 +36,12 @@ void MeshRendererSystem::Start(World& world)
 
 void MeshRendererSystem::Draw(World& world)
 {
-    m_srvCache.clear();
-
     ID3D12GraphicsCommandList* commandList = Graphics::GetCurrentFrameResource()->GetCommandList();
-    DescriptorAllocator* srvAllocator = world.GetSrvAllocator();
 
     commandList->SetGraphicsRootSignature(ShaderRegistry::GetRootSignature());
 
-    ID3D12DescriptorHeap* heaps[] = { srvAllocator->GetHeap()->GetNativeHeapPointer() };
+    // BindlessHeapを設定（フレームに1回）
+    ID3D12DescriptorHeap* heaps[] = { BindlessHeap::GetInstance()->GetHeap()->GetNativeHeapPointer() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
     CameraSystem* cameraSystem = world.GetSystem<CameraSystem>();
@@ -78,11 +58,18 @@ void MeshRendererSystem::Draw(World& world)
     // Slot 2: LightConstants (b2)
     commandList->SetGraphicsRoot32BitConstant(2, lightSystem->GetActiveLightCount(), 0);
 
-    // Slot 4: Lights (t0)
+    // Slot 4: Lights (t0 space0)
     if (lightSystem->GetActiveLightCount() > 0)
     {
-        commandList->SetGraphicsRootDescriptorTable(4, lightSystem->GetLightBufferGpuHandle());
+        commandList->SetGraphicsRootDescriptorTable(4,
+            BindlessHeap::GetInstance()->GetHeap()->GetGPUDescriptorHandle(lightSystem->GetLightSrvIndex())
+        );
     }
+
+    // Slot 5: Bindless Textures (t0[] space1)
+    commandList->SetGraphicsRootDescriptorTable(5,
+        BindlessHeap::GetInstance()->GetHeap()->GetGPUDescriptorHandle(0)
+    );
 
     m_currentObjectBufferIndex = 0;
     const UINT frameIndex = Graphics::GetCurrentFrameResource()->GetFrameIndex();
@@ -129,7 +116,7 @@ void MeshRendererSystem::Draw(World& world)
             Material* material = renderer.materials[submesh.materialIndex];
             if (!material) continue;
 
-            // --- 1. Object Constants (Slot 1 / b1) ---
+            // Object Constants (Slot 1 / b1)
             ObjectLayout constants;
             constants.world = worldMatrix.Transpose();
 
@@ -140,7 +127,7 @@ void MeshRendererSystem::Draw(World& world)
             commandList->SetGraphicsRootConstantBufferView(1, objGpuAddr);
             m_currentObjectBufferIndex++;
 
-            // --- 2. Material Constants (Slot 3 / b3) ---
+            // Material Constants (Slot 3 / b3)
             BYTE* destMat = m_mappedObjectConstants + (bufferOffsetForFrame + m_currentObjectBufferIndex) * alignedObjectConstantsSize;
             if (material->GetConstantBufferSize() > 0 && material->GetConstantBufferSize() <= alignedObjectConstantsSize)
             {
@@ -151,26 +138,6 @@ void MeshRendererSystem::Draw(World& world)
             commandList->SetGraphicsRootConstantBufferView(3, matGpuAddr);
             m_currentObjectBufferIndex++;
 
-            // --- 3. Textures (Slot 4 + n / t1...) ---
-            const auto& resourceTable = material->GetShader()->GetResourceTable();
-            for (auto const& [id, info] : resourceTable)
-            {
-                if (info.bindPoint == 0) continue; // t0はライト用なのでスキップ
-
-                Texture2D* tex = material->GetTexture(id);
-                if (!tex)
-                {
-                    tex = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/white.png");
-                }
-
-                if (tex)
-                {
-                    D3D12_GPU_DESCRIPTOR_HANDLE handle = GetSRV(tex, srvAllocator);
-                    commandList->SetGraphicsRootDescriptorTable(4 + info.bindPoint, handle);
-                }
-            }
-
-            // --- 4. Draw ---
             if (material->GetShader())
             {
                 commandList->SetPipelineState(material->GetShader()->GetPSO(false));

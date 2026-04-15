@@ -7,6 +7,13 @@ struct MaterialLayout
     float _Metallic;
     float _Roughness;
     float _Occlusion;
+    float _pad0;
+    uint _MainTexIndex;
+    uint _NormalTexIndex;
+    uint _MetallicRoughnessTexIndex;
+    uint _AOTexIndex;
+    uint _EnvMapIndex;
+    uint3 _pad1;
 };
 
 ConstantBuffer<CameraLayout> bCamera : register(b0, space0);
@@ -19,12 +26,8 @@ ConstantBuffer<ObjectLayout> bObject : register(b1, space0);
 ConstantBuffer<LightConstants> bLightConstants : register(b2, space0);
 ConstantBuffer<MaterialLayout> bMaterialConstants : register(b3, space0);
 
-StructuredBuffer<LightLayout> lights : register(t0);
-Texture2D _MainTex : register(t1);
-Texture2D _NormalTex : register(t2);
-Texture2D _MetallicRoughnessTex : register(t3);
-Texture2D _AOTex : register(t4);
-Texture2D _EnvMap : register(t5);
+StructuredBuffer<LightLayout> lights : register(t0, space0);
+Texture2D _Textures[4096] : register(t0, space1);
 SamplerState linearSampler : register(s0);
 
 static const float PI = 3.14159265359;
@@ -120,31 +123,36 @@ PS_INPUT VSMain(VS_INPUT input)
 
 float4 PSMain(PS_INPUT input) : SV_TARGET
 {
-    float4 texColor = _MainTex.Sample(linearSampler, input.uv);
+    // --- Albedo ---
+    float4 texColor = _Textures[bMaterialConstants._MainTexIndex].Sample(linearSampler, input.uv);
     float4 albedo = texColor * bMaterialConstants._BaseColor;
 
-    float3 mr = _MetallicRoughnessTex.Sample(linearSampler, input.uv).rgb;
-    float metallic = mr.b * bMaterialConstants._Metallic;
-    float roughness = saturate(mr.g * bMaterialConstants._Roughness);
-
-    float ao = _AOTex.Sample(linearSampler, input.uv).r * bMaterialConstants._Occlusion;
-
-    float3 N = normalize(input.normal);
-
-    float3 normalSample = _NormalTex.Sample(linearSampler, input.uv).rgb;
-
-    if (abs(normalSample.r - 0.5) > 0.001 ||
-        abs(normalSample.g - 0.5) > 0.001 ||
-        abs(normalSample.b - 1.0) > 0.001)
+    // --- Metallic / Roughness ---
+    float metallic = bMaterialConstants._Metallic;
+    float roughness = bMaterialConstants._Roughness;
+    if (bMaterialConstants._MetallicRoughnessTexIndex > 0)
     {
+        float3 mr = _Textures[bMaterialConstants._MetallicRoughnessTexIndex].Sample(linearSampler, input.uv).rgb;
+        metallic = mr.b * metallic;
+        roughness = saturate(mr.g * roughness);
+    }
+
+    // --- AO ---
+    float ao = bMaterialConstants._Occlusion;
+    if (bMaterialConstants._AOTexIndex > 0)
+    {
+        ao = _Textures[bMaterialConstants._AOTexIndex].Sample(linearSampler, input.uv).r * ao;
+    }
+
+    // --- Normal ---
+    float3 N = normalize(input.normal);
+    if (bMaterialConstants._NormalTexIndex > 0)
+    {
+        float3 normalSample = _Textures[bMaterialConstants._NormalTexIndex].Sample(linearSampler, input.uv).rgb;
         float3 T = normalize(input.tangent);
-
         T = normalize(T - N * dot(N, T));
-
         float3 B = normalize(cross(N, T));
-
         float3x3 TBN = float3x3(T, B, N);
-
         float3 nm = normalSample * 2.0 - 1.0;
         N = normalize(mul(nm, TBN));
     }
@@ -205,11 +213,16 @@ float4 PSMain(PS_INPUT input) : SV_TARGET
               max(dot(N, L), 0.0);
     }
 
-    float2 envUV = SampleEquirectangular(R);
-    float3 envReflection =
-        _EnvMap.SampleLevel(linearSampler, envUV, roughness * 8.0).rgb;
+    // --- Environment ---
+    float3 envReflection = float3(0, 0, 0);
+    if (bMaterialConstants._EnvMapIndex > 0)
+    {
+        float2 envUV = SampleEquirectangular(R);
+        envReflection = _Textures[bMaterialConstants._EnvMapIndex].SampleLevel(linearSampler, envUV, roughness * 8.0).rgb;
+    }
 
-    float3 envDiffuse = albedo.rgb * ao * 0.3;
+    float ambientFactor = (bMaterialConstants._EnvMapIndex > 0) ? 0.3 : 0.03;
+    float3 envDiffuse = albedo.rgb * ao * ambientFactor;
 
     float3 Fibl = FresnelSchlick(max(dot(N, V), 0.0), F0);
 

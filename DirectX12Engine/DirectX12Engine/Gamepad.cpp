@@ -81,6 +81,16 @@ void Gamepad::Update()
         rightStickValue.x = GetNormalizedValue(state.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
         rightStickValue.y = GetNormalizedValue(state.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
         m_rightStick.Update(rightStickValue);
+
+		// Ç«ÇÍÇ©ÇÃÉ{É^ÉìÇ™âüÇ≥ÇÍÇƒÇ¢ÇÈÇ©ÅH
+        for (int i = 0; i < (int)GamepadButton::Max; i++)
+        {
+            if(m_buttons[i].IsPressed())
+            {
+                m_isAnyButtonPressed = true;
+                break;
+			}
+        }
     }
     else if (result == ERROR_DEVICE_NOT_CONNECTED)
     {

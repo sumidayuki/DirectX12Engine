@@ -10,6 +10,7 @@ private:
     ComPtr<ID3D12Resource>          m_nativeTexture;      // Direct3D12リソース
     ComPtr<ID3D12Resource>          m_uploadBuffer;       // アップロードバッファ
     ComPtr<ID3D12DescriptorHeap>    m_descriptorHeap;     // ディスクリプタヒープ
+	uint32_t                        m_bindlessIndex;      // BindlessHeapに登録されたテクスチャのインデックス
 
 public:
     // デフォルトコンストラクタ
@@ -25,6 +26,9 @@ public:
         const void* initialData,
         size_t rowPitch);
 
+	void SetBindlessIndex(uint32_t index) { m_bindlessIndex = index; }
+
+	uint32_t GetBindlessIndex() const { return m_bindlessIndex; }
 
     // ディスクリプタヒープを取得します。
     ID3D12DescriptorHeap* GetDescriptorHeap() const { return m_descriptorHeap.Get(); }

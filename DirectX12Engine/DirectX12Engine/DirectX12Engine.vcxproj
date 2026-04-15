@@ -71,6 +71,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>3DActionGame</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -163,6 +166,8 @@
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AttackableSystem.cpp" />
     <ClCompile Include="BattleCameraSystem.cpp" />
+    <ClCompile Include="BehaviourTreeSystem.cpp" />
+    <ClCompile Include="BindlessHeap.cpp" />
     <ClCompile Include="BoneSocketSystem.cpp" />
     <ClCompile Include="Bounds.cpp" />
     <ClCompile Include="ButtonControl.cpp" />
@@ -273,17 +278,23 @@
     <ClInclude Include="AttackableSystem.h" />
     <ClInclude Include="BattleCamera.h" />
     <ClInclude Include="BattleCameraSystem.h" />
+    <ClInclude Include="BehaviourTree.h" />
+    <ClInclude Include="BehaviourTreeSystem.h" />
+    <ClInclude Include="BindlessHeap.h" />
     <ClInclude Include="BoneSocket.h" />
     <ClInclude Include="BoneSocketSystem.h" />
     <ClInclude Include="Bounds.h" />
     <ClInclude Include="BoxCollider.h" />
     <ClInclude Include="BoxCollider2D.h" />
+    <ClInclude Include="BehaviourTreeNode.h" />
+    <ClInclude Include="BTActions.h" />
+    <ClInclude Include="BTComposites.h" />
+    <ClInclude Include="BTDecorators.h" />
     <ClInclude Include="ButtonControl.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="CharacterImporter.h" />
     <ClInclude Include="CharacterStatus.h" />
-    <ClInclude Include="Children.h" />
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="CircleCollider2D.h" />
     <ClInclude Include="Collider.h" />
@@ -319,7 +330,6 @@
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="GuardState.h" />
     <ClInclude Include="GuardSystem.h" />
-    <ClInclude Include="HierarchyDepth.h" />
     <ClInclude Include="HP.h" />
     <ClInclude Include="HPSystem.h" />
     <ClInclude Include="IComponentData.h" />
@@ -335,7 +345,6 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="List.h" />
-    <ClInclude Include="LocalTransform.h" />
     <ClInclude Include="MainScene.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mathf.h" />
@@ -347,8 +356,6 @@
     <ClInclude Include="ModelImporter.h" />
     <ClInclude Include="ModelImporterSettings.h" />
     <ClInclude Include="Mouse.h" />
-    <ClInclude Include="MYEngine.h" />
-    <ClInclude Include="Parent.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="PhysicsSystem.h" />
@@ -392,11 +399,12 @@
     <ClInclude Include="TextureImporter.h" />
     <ClInclude Include="TextureWrapMode.h" />
     <ClInclude Include="TitleScene.h" />
-    <ClInclude Include="TransformDirtyTag.h" />
     <ClInclude Include="TransformSystem.h" />
     <ClInclude Include="TypeInfo.h" />
     <ClInclude Include="UIAPI.h" />
+    <ClInclude Include="UICanvas.h" />
     <ClInclude Include="UICanvasSystem.h" />
+    <ClInclude Include="UIObject.h" />
     <ClInclude Include="UIImage.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector3Int.h" />
@@ -418,7 +426,6 @@
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Velocity.h" />
     <ClInclude Include="World.h" />
-    <ClInclude Include="WorldTransform.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Camera.hlsli" />
@@ -485,7 +492,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
       <FileType>Document</FileType>
     </None>
-    <None Include="UICanvas.hlsl">
+    <None Include="ScreenSpaceOverlay.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

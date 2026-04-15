@@ -1,5 +1,4 @@
 #pragma once
-#include "MyEngine.h"
 
 namespace SpriteAPI
 {

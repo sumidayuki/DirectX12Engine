@@ -35,16 +35,27 @@ public:
 
     // テクスチャ設定
     void SetTexture(uint64_t id, Texture2D* texture);
-    void SetTexture(std::string_view name, Texture2D* texture) { SetTexture(Shader::PropertyToID(name), texture); }
-    
+
+    void SetTexture(std::string_view name, Texture2D* texture)
+    {
+        uint64_t id = Shader::PropertyToID(name);
+        m_textures[id] = texture;
+
+        std::string indexVarName = std::string(name) + "Index";
+        WriteBindlessIndex(indexVarName, texture);
+    }
+
     Texture2D* GetTexture(uint64_t id) const;
 
-    void SetBaseColor(const Color& color) { SetColor(Shader::PropertyToID("_BaseColor"), color); }
-    void SetMainTexture(Texture2D* tex) { SetTexture(Shader::PropertyToID("_MainTex"), tex); }
+    void SetBaseColor(const Color& color) { SetColor("_BaseColor", color); }
+    void SetMainTexture(Texture2D* tex) { SetTexture("_MainTex", tex); }
 
     const void* GetConstantBufferData() const { return m_constantBufferData.data(); }
 
     size_t GetConstantBufferSize() const { return m_constantBufferData.size(); }
 
     const std::unordered_map<uint64_t, ComPtr<Texture2D>>& GetTextures() const { return m_textures; }
+
+private:
+	void WriteBindlessIndex(const std::string& indexVarName, Texture2D* texture);
 };

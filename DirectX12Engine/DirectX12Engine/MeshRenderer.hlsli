@@ -9,6 +9,7 @@
 struct ObjectLayout
 {
     matrix world; // ワールド変換行列
+    uint textureIndex;
 };
 
 // ライトに関する定数

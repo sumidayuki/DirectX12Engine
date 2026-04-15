@@ -5,7 +5,7 @@
 void ShaderRegistry::StaticConstructor()
 {
     ShaderRegistry::LoadShader(L"Assets/Shaders/Standard.shader"); // Standardシェーダーを明示的に読み込む
-	ShaderRegistry::LoadShader(L"Assets/Shaders/PBR.shader");   // Spriteシェーダーを明示的に読み込む
+    ShaderRegistry::LoadShader(L"Assets/Shaders/PBR.shader");   // PBRシェーダーを明示的に読み込む
 }
 
 void ShaderRegistry::StaticDestructor()
@@ -17,33 +17,22 @@ void ShaderRegistry::AllShadersCompile()
 {
     ID3D12Device* d3d12Device = Graphics::GetD3D12Device();
 
-    CD3DX12_DESCRIPTOR_RANGE ranges[6];
-    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0
-    ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); // t1
-    ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2); // t2
-    ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3); // t3
-    ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4); // t4
-    ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5); // t5
+    CD3DX12_DESCRIPTOR_RANGE ranges[2];
+    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);  // t0 space0: Lights
+    ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, BindlessHeap::MAX_DESCRIPTORS, 0, 1);  // t0[] space1: Bindless
 
-    CD3DX12_ROOT_PARAMETER rootParameters[10];
-
-    rootParameters[0].InitAsConstantBufferView(0); // b0
-    rootParameters[1].InitAsConstantBufferView(1); // b1
-    rootParameters[2].InitAsConstants(1, 2);       // b2
-    rootParameters[3].InitAsConstantBufferView(3); // b3
-
-    rootParameters[4].InitAsDescriptorTable(1, &ranges[0]); // t0
-
-    rootParameters[5].InitAsDescriptorTable(1, &ranges[1]); // t1
-    rootParameters[6].InitAsDescriptorTable(1, &ranges[2]); // t2
-    rootParameters[7].InitAsDescriptorTable(1, &ranges[3]); // t3
-    rootParameters[8].InitAsDescriptorTable(1, &ranges[4]); // t4
-    rootParameters[9].InitAsDescriptorTable(1, &ranges[5]); // t5
+    CD3DX12_ROOT_PARAMETER rootParameters[6];
+    rootParameters[0].InitAsConstantBufferView(0);             // b0: Camera
+    rootParameters[1].InitAsConstantBufferView(1);             // b1: Object
+    rootParameters[2].InitAsConstants(1, 2);                   // b2: LightConstants
+    rootParameters[3].InitAsConstantBufferView(3);             // b3: Material
+    rootParameters[4].InitAsDescriptorTable(1, &ranges[0]);    // t0 space0: Lights
+    rootParameters[5].InitAsDescriptorTable(1, &ranges[1]);    // t0[] space1: Bindless Textures
 
     CD3DX12_STATIC_SAMPLER_DESC sampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
     CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc;
-    rootSigDesc.Init(10, rootParameters, 1, &sampler, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    rootSigDesc.Init(6, rootParameters, 1, &sampler, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> signature;
     ComPtr<ID3DBlob> error;

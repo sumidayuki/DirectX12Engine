@@ -108,24 +108,18 @@ void InputManager::Update()
 
 bool InputManager::IsAnyKeyPressed()
 {
-	for (int i = 0; i < 256; i++)
-	{
-		if (m_keysLast[i])
-		{
-			return true;
-		}
+	if(Keyboard::IsPressedAnyKey())
+    {
+        return true;
 	}
 
 	for (int i = 0; i < MaxGamepadCount; i++)
 	{
 		if (m_gamepads[i]->IsConnected())
 		{
-			for (int j = 0; j < (int)GamepadButton::Max; j++)
-			{
-				if (m_gamepads[i]->GetButton((GamepadButton)j).IsPressed())
-				{
-					return true;
-				}
+			if(m_gamepads[i]->IsAnyButtonPressed())
+            {
+                return true;
 			}
 		}
 	}
@@ -263,9 +257,6 @@ void InputManager::OnInputMouse(const RAWMOUSE& mouse)
 void InputManager::OnInputKeyboard(const RAWKEYBOARD& keyboard)
 {
     m_keysLast[keyboard.VKey] = true;
-
-
-
 }
 
 

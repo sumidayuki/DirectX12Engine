@@ -88,6 +88,8 @@ void Shader::Reflect(ID3DBlob* vsBytecode, ID3DBlob* psBytecode)
     InternalReflect(vsBytecode);
     InternalReflect(psBytecode);
 
+	m_textureCount = (uint32_t)m_resourceTable.size();
+
     OutputDebugStringA("Shader Variable Table:\n");
 
     for (auto& [id, info] : m_variableTable)
@@ -100,6 +102,8 @@ void Shader::Reflect(ID3DBlob* vsBytecode, ID3DBlob* psBytecode)
 Shader::Shader(const ShaderInfo& info)
     : m_info(info)
 	, m_materialBufferSize(0)
+	, m_textureIndexBlockOffset(0)
+	, m_textureCount(0)
 {
 }
 

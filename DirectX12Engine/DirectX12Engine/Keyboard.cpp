@@ -1,38 +1,58 @@
 #include "Keyboard.h"
 
-void Keyboard::Initialize()
+
+void Keyboard::StaticConstructor()
 {
-    for (int i = 0; i < 256; i++)
-    {
-        m_keys[i].Update(false);
-    }
+    Update();
 }
+
+
+void Keyboard::StaticDestructor()
+{
+
+}
+
 
 void Keyboard::Update()
 {
+    m_isPressedAnyKey = false;
+
     unsigned char states[256];
     if (GetKeyboardState(states))
     {
-        for(int i = 0; i < 256; i++)
+        m_isConnected = true;
+        for (int i = 0; i < 256; i++)
         {
             // i番目のキーが押されているか？
-			const bool current = (states[i] & 0x80) != 0;
+            const bool current = (states[i] & 0x80) != 0;
 
             // i番目のキーの状態を更新
             m_keys[i].Update(current);
+
+            if (current)
+            {
+                bool isIgnored = false;
+
+                if (i <= 0x07) isIgnored = true;       // マウスボタン等を除外
+                if (i == 0x14) isIgnored = true;       // Caps Lock
+                if (i == 0x90) isIgnored = true;       // Num Lock
+                if (i == 0x5B || i == 0x5C) isIgnored = true; // Left/Right Windows Key
+                if (i == 240)  isIgnored = true;
+				if (i == 244)  isIgnored = true;
+
+                if (!isIgnored)
+                {
+                    m_isPressedAnyKey = true;
+                }
+            }
         }
     }
     else
     {
-        OutputDebugStringA("GetKeyboardState failed!\n");
-    }
-
-    // デバッグ：キーの状態をログ出力
-    if (m_keys[VK_LEFT].IsRepeated())
-    {
-        OutputDebugStringA("Left key is repeated!\n");
+        m_isConnected = false;
     }
 }
+
 
 const ButtonControl& Keyboard::GetKeyState(KeyCode key)
 {

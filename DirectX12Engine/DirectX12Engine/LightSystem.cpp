@@ -1,7 +1,6 @@
 #include "LightSystem.h"
 #include "Light.hlsli"
 #include "Graphics.h"
-#include "DescriptorAllocator.h"
 #include "World.h"
 #include "TransformSystem.h"
 
@@ -15,6 +14,18 @@ void LightSystem::Start(World& world)
         sizeof(LightLayout)
     ));
     m_activeLightCount = 0;
+
+    // BindlessHeapにLightバッファSRVを登録（1回だけ）
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Buffer.FirstElement = 0;
+    srvDesc.Buffer.NumElements = MAX_LIGHT;
+    srvDesc.Buffer.StructureByteStride = sizeof(LightLayout);
+
+    m_lightSrvIndex = BindlessHeap::GetInstance()->RegisterBuffer(
+        m_lightBuffer->GetNativeBufferPtr(), srvDesc);
 }
 
 void LightSystem::Update(World& world)
@@ -41,23 +52,11 @@ void LightSystem::Update(World& world)
 
     m_activeLightCount = (int)activeLightsLayout.size();
 
-    // 1. GPUバッファへデータをコピー
+    // GPUバッファへデータをコピー
     if (m_activeLightCount > 0)
     {
         void* pData = m_lightBuffer->LockBufferForWrite(0, m_activeLightCount);
         memcpy(pData, activeLightsLayout.data(), sizeof(LightLayout) * m_activeLightCount);
         m_lightBuffer->UnlockBufferAfterWrite();
     }
-
-    // 2. SRV（デスクリプタ）の更新
-    DescriptorAllocator* allocator = world.GetSrvAllocator();
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.Buffer.FirstElement = 0;
-    srvDesc.Buffer.NumElements = MAX_LIGHT;
-    srvDesc.Buffer.StructureByteStride = sizeof(LightLayout);
-
-    m_lightBufferGpuHandle = allocator->CreateSRV(m_lightBuffer->GetNativeBufferPtr(), srvDesc, &m_lightBufferCpuHandle);
 }

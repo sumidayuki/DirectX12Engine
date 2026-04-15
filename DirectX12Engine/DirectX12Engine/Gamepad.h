@@ -82,6 +82,8 @@ private:
 
     bool m_isConnected;
 
+	static inline bool m_isAnyButtonPressed;
+
 public:
     // デフォルトコンストラクタ
     Gamepad(PlayerIndex playerIndex);
@@ -120,4 +122,6 @@ public:
 
     // 指定したボタンの状態を取得します。
     const ButtonControl& GetButton(GamepadButton gamepadButton) const;
+
+	static bool IsAnyButtonPressed() { return m_isAnyButtonPressed; }
 };

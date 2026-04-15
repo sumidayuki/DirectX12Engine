@@ -67,6 +67,7 @@ struct ShaderVariableInfo
 struct ShaderResourceInfo
 {
 	uint32_t bindPoint;
+    uint32_t cbOffset;
 };
 
 class Shader : public Reference
@@ -85,6 +86,9 @@ private:
     std::unordered_map<uint64_t, ShaderVariableInfo> m_variableTable;
 	std::unordered_map<uint64_t, ShaderResourceInfo> m_resourceTable;
     uint32_t m_materialBufferSize;
+
+    uint32_t m_textureIndexBlockOffset;
+    uint32_t m_textureCount;
 
 private:
     void Reflect(ID3DBlob* vsBytecode, ID3DBlob* psBytecode);
@@ -112,4 +116,16 @@ public:
 	const std::unordered_map<uint64_t, ShaderVariableInfo>& GetVariableTable() const { return m_variableTable; }
 	const std::unordered_map<uint64_t, ShaderResourceInfo>& GetResourceTable() const { return m_resourceTable; }
 	uint32_t GetMaterialBufferSize() const { return m_materialBufferSize; }
+
+	/// <summary>
+	/// テクスチャインデックス領域のオフセットを取得します。
+	/// </summary>
+	/// <returns></returns>
+	uint32_t GetTextureIndexBlockOffset() const { return m_textureIndexBlockOffset; }
+
+	/// <summary>
+	/// このシェーダーが使用するテクスチャの数を取得します。
+	/// </summary>
+	/// <returns></returns>
+	uint32_t GetTextureCount() const { return m_textureCount; }
 };

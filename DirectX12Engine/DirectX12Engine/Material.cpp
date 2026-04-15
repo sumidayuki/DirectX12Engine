@@ -91,3 +91,24 @@ Texture2D* Material::GetTexture(uint64_t id) const
     }
     return nullptr;
 }
+
+void Material::WriteBindlessIndex(const std::string& indexVarName, Texture2D* texture)
+{
+    if (!m_shader) return;
+
+    uint32_t index = (texture && texture->GetBindlessIndex() != UINT32_MAX)
+        ? texture->GetBindlessIndex() : 0;
+
+    // •Ï”ƒe[ƒuƒ‹‚©‚ç "_XXXIndex" •Ï”‚ðŒŸõ
+    uint64_t varId = Shader::PropertyToID(indexVarName);
+    const auto& vt = m_shader->GetVariableTable();
+    auto it = vt.find(varId);
+    if (it != vt.end())
+    {
+        uint32_t offset = it->second.offset;
+        if (offset + sizeof(uint32_t) <= m_constantBufferData.size())
+        {
+            memcpy(m_constantBufferData.data() + offset, &index, sizeof(uint32_t));
+        }
+    }
+}
