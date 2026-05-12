@@ -1,115 +1,27 @@
 #include "UICanvasSystem.h"
+#include "ShaderRegistry.h"
 
 struct UICanvasSystem::ConstantBufferLayout
 {
-    // Slot 0 (b0): ortho
-    struct Ortho { Matrix4x4 orthoMatrix; };
-
-    // Slot 1 (b1): object
-    struct Object
+    struct Ortho
     {
-        Matrix4x4    world;
-        Color        color;
-        Vector2      minUV;
-        Vector2      maxUV;
-        unsigned int textureIndex;
-        unsigned int padding[3];
+        Matrix4x4 orthoMatrix;
     };
 
-    struct QuadVertex { Vector2 position; Vector2 uv; };
+    struct Object
+    {
+        Matrix4x4 world;
+        Color color;
+        Vector2 minUV;
+        Vector2 maxUV;
+        UINT textureIndex;
+        UINT hasTexture;
+        UINT padding[2];
+    };
 };
 
 void UICanvasSystem::Start(World& world)
 {
-    ID3D12Device* device = Graphics::GetD3D12Device();
-
-    ComPtr<ShaderBytecode> vs;
-    vs.Attach(new ShaderBytecode(L"UICanvas.hlsl", "VSMain", "vs_5_1"));
-
-    ComPtr<ShaderBytecode> ps;
-    ps.Attach(new ShaderBytecode(L"UICanvas.hlsl", "PSMain", "ps_5_1"));
-
-    // --- RootSignature ---
-    D3D12_ROOT_PARAMETER rootParams[3];
-    memset(rootParams, 0, sizeof(rootParams));
-
-    rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParams[0].Descriptor.ShaderRegister = 0;
-    rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-    rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParams[1].Descriptor.ShaderRegister = 1;
-    rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-    // BindlessHeapからテクスチャ配列を参照
-    D3D12_DESCRIPTOR_RANGE range = {};
-    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    range.BaseShaderRegister = 0;
-    range.RegisterSpace = 0;
-    range.NumDescriptors = BindlessHeap::MAX_DESCRIPTORS;
-    range.OffsetInDescriptorsFromTableStart = 0;
-
-    rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[2].DescriptorTable.NumDescriptorRanges = 1;
-    rootParams[2].DescriptorTable.pDescriptorRanges = &range;
-    rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-    D3D12_STATIC_SAMPLER_DESC sampler = {};
-    sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-    sampler.MaxLOD = D3D12_FLOAT32_MAX;
-
-    D3D12_ROOT_SIGNATURE_DESC rsDesc = {};
-    rsDesc.NumParameters = _countof(rootParams);
-    rsDesc.pParameters = rootParams;
-    rsDesc.NumStaticSamplers = 1;
-    rsDesc.pStaticSamplers = &sampler;
-    rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-    ComPtr<ID3DBlob> blob, errBlob;
-    D3D12SerializeRootSignature(&rsDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, blob.ReleaseAndGetAddressOf(), errBlob.ReleaseAndGetAddressOf());
-    if (errBlob) { OutputDebugStringA((const char*)errBlob->GetBufferPointer()); assert(0); }
-    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_ID3D12RootSignature, (void**)m_rootSignature.ReleaseAndGetAddressOf());
-
-    // --- PSO ---
-    static const D3D12_INPUT_ELEMENT_DESC inputElems[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    };
-
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC pso = {};
-    pso.InputLayout.NumElements = _countof(inputElems);
-    pso.InputLayout.pInputElementDescs = inputElems;
-    pso.VS = { vs->GetBytecodePointer(), vs->GetBytecodeLength() };
-    pso.PS = { ps->GetBytecodePointer(), ps->GetBytecodeLength() };
-    pso.pRootSignature = m_rootSignature.Get();
-    pso.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    pso.SampleDesc.Count = 1;
-    pso.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-    pso.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-    pso.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-    pso.NumRenderTargets = 1;
-    pso.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-    pso.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-    pso.DepthStencilState.DepthEnable = FALSE;
-    pso.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-    pso.BlendState.RenderTarget[0].BlendEnable = TRUE;
-    pso.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-    pso.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-    pso.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-    pso.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-    pso.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-    pso.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-    pso.BlendState.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-
-    device->CreateGraphicsPipelineState(&pso, IID_ID3D12PipelineState, (void**)m_pipelineState.ReleaseAndGetAddressOf());
-
-    // --- リングバッファ ---
     const UINT slotSize = (sizeof(ConstantBufferLayout::Object) + 255) & ~255;
     const UINT totalSlots = (1 + MAX_UI_PER_FRAME) * Graphics::BackBafferCount;
     m_constantBufferRing.Attach(new GraphicsBuffer(
@@ -120,7 +32,6 @@ void UICanvasSystem::Start(World& world)
     ));
     m_mappedConstants = (BYTE*)m_constantBufferRing->LockBufferForWrite();
 
-    // 単位クワッドの作成
     struct QV { Vector2 p; Vector2 uv; };
     QV verts[4] = {
         { {0,0}, {0,0} }, { {1,0}, {1,0} },
@@ -132,12 +43,157 @@ void UICanvasSystem::Start(World& world)
     m_quadIndexBuffer.Attach(new GraphicsBuffer(GraphicsBuffer::Target::Index, GraphicsBuffer::UsageFlags::None, 6, sizeof(uint16_t), indices));
 }
 
+void UICanvasSystem::CalculateRectTransforms(World& world, Entity currentEntity, const Vector2& parentRectMin, const Vector2& parentRectMax)
+{
+    RectTransform* rect = world.GetComponent<RectTransform>(currentEntity);
+    Vector2 currentMin = parentRectMin;
+    Vector2 currentMax = parentRectMax;
+
+    if (rect)
+    {
+        float pWidth = parentRectMax.x - parentRectMin.x;
+        float pHeight = parentRectMax.y - parentRectMin.y;
+
+        float anchorMinX = parentRectMin.x + pWidth * rect->anchorMin.x;
+        float anchorMinY = parentRectMin.y + pHeight * rect->anchorMin.y;
+        float anchorMaxX = parentRectMin.x + pWidth * rect->anchorMax.x;
+        float anchorMaxY = parentRectMin.y + pHeight * rect->anchorMax.y;
+
+        float posX = anchorMinX + rect->anchoredPosition.x;
+        float posY = anchorMinY + rect->anchoredPosition.y;
+
+        rect->rectMin.x = posX - rect->pivot.x * rect->sizeDelta.x;
+        rect->rectMin.y = posY - rect->pivot.y * rect->sizeDelta.y;
+
+        rect->rectMax.x = rect->rectMin.x + rect->sizeDelta.x + (anchorMaxX - anchorMinX);
+        rect->rectMax.y = rect->rectMin.y + rect->sizeDelta.y + (anchorMaxY - anchorMinY);
+
+        currentMin = rect->rectMin;
+        currentMax = rect->rectMax;
+    }
+
+    Transform* transform = world.GetComponent<Transform>(currentEntity);
+    if (!transform) return;
+
+    Entity childEntity = transform->firstChild;
+    while (childEntity.id != (EntitySize)-1)
+    {
+        if (world.IsAlive(childEntity))
+        {
+            CalculateRectTransforms(world, childEntity, currentMin, currentMax);
+        }
+        Transform* cTrans = world.GetComponent<Transform>(childEntity);
+        childEntity = cTrans ? cTrans->nextSibling : Entity{ (EntitySize)-1 };
+    }
+}
+
+void UICanvasSystem::CollectUIChildren(World& world, Transform* parentTransform, std::vector<UIDrawItem>& outItems)
+{
+    Entity childEntity = parentTransform->firstChild;
+
+    while (childEntity.id != (EntitySize)-1)
+    {
+        if (!world.IsAlive(childEntity))
+            break;
+
+        Transform* childTransform = world.GetComponent<Transform>(childEntity);
+        if (!childTransform)
+            break;
+
+        RectTransform* rect = world.GetComponent<RectTransform>(childEntity);
+        UIGraphic* graphic = world.GetComponent<UIGraphic>(childEntity);
+
+        if (rect && graphic && graphic->isEnabled)
+        {
+            UIDrawItem item;
+            item.entity = childEntity;
+            item.rect = rect;
+            item.graphic = graphic;
+            item.depth = graphic->depth;
+            outItems.push_back(item);
+        }
+
+        CollectUIChildren(world, childTransform, outItems);
+        childEntity = childTransform->nextSibling;
+    }
+}
+
+void UICanvasSystem::Update(World& world)
+{
+    float sw = (float)Screen::GetWidth();
+    float sh = (float)Screen::GetHeight();
+
+    View<Canvas> canvasView(world);
+    for (auto [canvasEntity, canvas] : canvasView)
+    {
+        if (canvas.renderMode != RenderMode::ScreenSpaceOverlay)
+            continue;
+
+        Transform* canvasTransform = world.GetComponent<Transform>(canvasEntity);
+        if (!canvasTransform) continue;
+
+        Vector2 canvasMin(0.0f, 0.0f);
+        Vector2 canvasMax(sw, sh);
+
+        CalculateRectTransforms(world, canvasEntity, canvasMin, canvasMax);
+    }
+}
+
+void UICanvasSystem::DrawRect(
+    ID3D12GraphicsCommandList* cmdList,
+    UINT& objIndex,
+    UINT frameOffset,
+    UINT slotSize,
+    D3D12_GPU_VIRTUAL_ADDRESS gpuBase,
+    float posX, float posY,
+    float width, float height,
+    const Color& color,
+    Sprite* sprite
+)
+{
+    if (objIndex >= MAX_UI_PER_FRAME) return;
+
+    ConstantBufferLayout::Object obj;
+    memset(&obj, 0, sizeof(obj));
+    obj.world.m[0][0] = width;
+    obj.world.m[1][1] = height;
+    obj.world.m[2][2] = 1.0f;
+    obj.world.m[3][0] = posX;
+    obj.world.m[3][1] = posY;
+    obj.world.m[3][3] = 1.0f;
+    obj.world = obj.world.Transpose();
+    obj.color = color;
+
+    if (sprite && sprite->GetTexture())
+    {
+        obj.minUV = sprite->GetMinUV();
+        obj.maxUV = sprite->GetMaxUV();
+        obj.textureIndex = sprite->GetTexture()->GetBindlessIndex();
+        obj.hasTexture = 1;
+    }
+    else
+    {
+        obj.minUV = Vector2(0, 0);
+        obj.maxUV = Vector2(1, 1);
+        obj.textureIndex = 0;
+        obj.hasTexture = 0;
+    }
+
+    UINT slotIndex = frameOffset + 1 + objIndex;
+    memcpy(m_mappedConstants + slotIndex * slotSize, &obj, sizeof(obj));
+
+    cmdList->SetGraphicsRootConstantBufferView(1, gpuBase + slotIndex * slotSize); // Register b1
+    cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+    objIndex++;
+}
+
 void UICanvasSystem::Draw(World& world)
 {
-    View<UIImage> view(world);
-    bool hasAny = false;
-    for (auto [e, img] : view) { hasAny = true; break; }
-    if (!hasAny) return;
+    View<Canvas> canvasView(world);
+    if (canvasView.Empty()) return;
+
+    Shader* uiShader = ShaderRegistry::GetShader("ScreenSpaceOverlay");
+    if (!uiShader) return;
 
     ID3D12GraphicsCommandList* cmdList = Graphics::GetCurrentFrameResource()->GetCommandList();
     const UINT frameIndex = Graphics::GetCurrentFrameResource()->GetFrameIndex();
@@ -146,7 +202,6 @@ void UICanvasSystem::Draw(World& world)
     const UINT frameOffset = frameIndex * slotsPerFrame;
     const D3D12_GPU_VIRTUAL_ADDRESS gpuBase = m_constantBufferRing->GetNativeBufferPtr()->GetGPUVirtualAddress();
 
-    // 正射影行列
     float sw = (float)Screen::GetWidth();
     float sh = (float)Screen::GetHeight();
 
@@ -163,18 +218,18 @@ void UICanvasSystem::Draw(World& world)
     memcpy(m_mappedConstants + (frameOffset + 0) * slotSize, &ortho, sizeof(ortho));
     D3D12_GPU_VIRTUAL_ADDRESS orthoGpu = gpuBase + (frameOffset + 0) * slotSize;
 
-    cmdList->SetPipelineState(m_pipelineState.Get());
-    cmdList->SetGraphicsRootSignature(m_rootSignature.Get());
+    cmdList->SetPipelineState(uiShader->GetPSO());
+    cmdList->SetGraphicsRootSignature(ShaderRegistry::GetRootSignature());
 
-    // BindlessHeapを共有（グローバルヒープを使用！）
-    ID3D12DescriptorHeap* heaps[] = { BindlessHeap::GetInstance()->GetHeap()->GetNativeHeapPointer() };
+    ID3D12DescriptorHeap* heaps[] = { BindlessHeap::GetInstance()->GetHeap()->GetNativeHeapPointer()};
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-    cmdList->SetGraphicsRootConstantBufferView(0, orthoGpu);
-    cmdList->SetGraphicsRootDescriptorTable(2, BindlessHeap::GetInstance()->GetHeap()->GetGPUDescriptorHandle(0));
+    // Bind Root constants
+    cmdList->SetGraphicsRootConstantBufferView(0, orthoGpu); // Register b0
+    cmdList->SetGraphicsRootDescriptorTable(5, BindlessHeap::GetInstance()->GetHeap()->GetGPUDescriptorHandle(0)); // Register t0[] at space1 (Root Parameter 5 in ShaderRegistry)
+
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    // 共用クワッド
     D3D12_VERTEX_BUFFER_VIEW vbv = {};
     vbv.BufferLocation = m_quadVertexBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress();
     vbv.StrideInBytes = m_quadVertexBuffer->GetStride();
@@ -187,41 +242,91 @@ void UICanvasSystem::Draw(World& world)
     ibv.Format = DXGI_FORMAT_R16_UINT;
     cmdList->IASetIndexBuffer(&ibv);
 
-
-
     UINT objIndex = 0;
-    for (auto [entity, image] : view)
+
+    struct CanvasEntry
     {
-        if (!image.isEnabled) continue;
-        if (!image.sprite) continue;
-        if (!image.sprite->GetTexture()) continue;
-        if (objIndex >= MAX_UI_PER_FRAME) break;
+        Entity entity;
+        Canvas* canvas;
+    };
 
-        // テクスチャはBindlessHeapに既に登録済み（TextureImporterで登録）
-        UINT texIndex = image.sprite->GetTexture()->GetBindlessIndex();
+    std::vector<CanvasEntry> canvases;
+    for (auto [e, c] : canvasView) canvases.push_back({ e, &c });
+    std::sort(canvases.begin(), canvases.end(), [](const CanvasEntry& a, const CanvasEntry& b) {
+        return a.canvas->sortingOrder < b.canvas->sortingOrder;
+        });
 
-        float offX = image.position.x - image.pivot.x * image.size.x;
-        float offY = image.position.y - image.pivot.y * image.size.y;
+    for (auto& ce : canvases)
+    {
+        if (ce.canvas->renderMode != RenderMode::ScreenSpaceOverlay) continue;
 
-        ConstantBufferLayout::Object obj;
-        memset(&obj, 0, sizeof(obj));
-        obj.world.m[0][0] = image.size.x;
-        obj.world.m[1][1] = image.size.y;
-        obj.world.m[2][2] = 1.0f;
-        obj.world.m[3][0] = offX;
-        obj.world.m[3][1] = offY;
-        obj.world.m[3][3] = 1.0f;
-        obj.world = obj.world.Transpose();
-        obj.color = image.color;
-        obj.minUV = image.sprite->GetMinUV();
-        obj.maxUV = image.sprite->GetMaxUV();
-        obj.textureIndex = texIndex;
+        Transform* canvasTransform = world.GetComponent<Transform>(ce.entity);
+        if (!canvasTransform) continue;
 
-        UINT slotIndex = frameOffset + 1 + objIndex;
-        memcpy(m_mappedConstants + slotIndex * slotSize, &obj, sizeof(obj));
+        std::vector<UIDrawItem> items;
+        CollectUIChildren(world, canvasTransform, items);
 
-        cmdList->SetGraphicsRootConstantBufferView(1, gpuBase + slotIndex * slotSize);
-        cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-        objIndex++;
+        std::sort(items.begin(), items.end(), [](const UIDrawItem& a, const UIDrawItem& b) {
+            return a.depth < b.depth;
+            });
+
+        for (auto& item : items)
+        {
+            RectTransform* rect = item.rect;
+            float offX = rect->rectMin.x;
+            float offY = rect->rectMin.y;
+            float width = rect->rectMax.x - rect->rectMin.x;
+            float height = rect->rectMax.y - rect->rectMin.y;
+
+            Slider* slider = world.GetComponent<Slider>(item.entity);
+            if (slider)
+            {
+                DrawRect(cmdList, objIndex, frameOffset, slotSize, gpuBase,
+                    offX, offY, width, height, slider->backgroundColor, slider->backgroundSprite.Get());
+
+                if (slider->isLeftToRight)
+                {
+                    float normValue = (slider->value - slider->minValue) / (slider->maxValue - slider->minValue);
+                    normValue = (normValue < 0.0f) ? 0.0f : ((normValue > 1.0f) ? 1.0f : normValue);
+                    float fillWidth = width * normValue;
+                    DrawRect(cmdList, objIndex, frameOffset, slotSize, gpuBase,
+                        offX, offY, fillWidth, height, slider->fillColor, slider->fillSprite.Get());
+                }
+                else
+                {
+                    float normValue = (slider->value - slider->minValue) / (slider->maxValue - slider->minValue);
+                    normValue = (normValue < 0.0f) ? 0.0f : ((normValue > 1.0f) ? 1.0f : normValue);
+                    float fillWidth = width * normValue;
+                    DrawRect(cmdList, objIndex, frameOffset, slotSize, gpuBase,
+						offX + width - fillWidth, offY, fillWidth, height, slider->fillColor, slider->fillSprite.Get());
+                }
+
+                continue;
+            }
+
+			Button* button = world.GetComponent<Button>(item.entity);
+            if (button)
+            {
+                Color btnColor;
+                switch (button->state)
+                {
+                case UIButtonState::Normal: btnColor = button->normalColor; break;
+                case UIButtonState::Hovered: btnColor = button->hoveredColor; break;
+                case UIButtonState::Selected: btnColor = button->selectedColor; break;
+                case UIButtonState::Pressed: btnColor = button->pressedColor; break;
+                case UIButtonState::Disabled: btnColor = button->disabledColor; break;
+                default: btnColor = button->normalColor; break;
+                }
+                DrawRect(cmdList, objIndex, frameOffset, slotSize, gpuBase,
+                    offX, offY, width, height, btnColor, button->sprite.Get());
+                continue;
+			}
+
+            Image* image = world.GetComponent<Image>(item.entity);
+            Sprite* sprite = (image && image->sprite) ? image->sprite.Get() : nullptr;
+
+            DrawRect(cmdList, objIndex, frameOffset, slotSize, gpuBase,
+                offX, offY, width, height, item.graphic->color, sprite);
+        }
     }
 }

@@ -40,6 +40,7 @@ struct ShaderInfo
     std::string vsShaderModel;
     std::string psEntry;
     std::string psShaderModel;
+	bool useSkinning;
 
     // PSOŒÅ’è‹@”\î•ñ
     std::vector<InputElement> inputLayout; // JSON‚ğ‚»‚Ì‚Ü‚Ü•Û

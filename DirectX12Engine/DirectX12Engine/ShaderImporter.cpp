@@ -1,14 +1,5 @@
 #include "ShaderImporter.h"
 
-std::string ReadAllText(const std::wstring& path)
-{
-	std::ifstream ifs(path, std::ios::binary);
-	if (!ifs) return {};
-
-	return std::string((std::istreambuf_iterator<char>(ifs)),
-		std::istreambuf_iterator<char>());
-}
-
 ShaderImporter::ShaderImporter()
 {
 }
@@ -43,7 +34,7 @@ Shader* ShaderImporter::Import()
 	try
 	{
 		// Json全体をパースしてルートオブジェクトを取得
-		std::string text = ReadAllText(path);
+		std::string text = StringUtility::ReadAllText(path);
 
 		// debug: 最初の数文字確認
 		OutputDebugStringA(text.substr(0, 20).c_str());
@@ -94,6 +85,7 @@ void ShaderImporter::ProcessPath(const Json& json, ShaderInfo& info)
 	info.vsShaderModel = json.at("VS_ShaderModel").get<std::string>();
 	info.psEntry = json.at("PS_Entry").get<std::string>();
 	info.psShaderModel = json.at("PS_ShaderModel").get<std::string>();
+	info.useSkinning = json.value("UseSkinning", true);
 
 	OutputDebugStringW((L"Shaderのパス読み込みに成功\n"));
 }

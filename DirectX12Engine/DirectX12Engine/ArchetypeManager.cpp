@@ -1,6 +1,14 @@
 #include "ArchetypeManager.h"
 #include "FNV-1a.h"
 
+void ArchetypeManager::Clear()
+{
+	m_entityToChunk.clear();
+	m_entityToArchetype.clear();
+	m_chunks.clear();
+	m_archetypes.clear();
+}
+
 const Archetype* ArchetypeManager::GetOrCreateArchetype(std::vector<TypeInfo> typeList)
 {
 	Archetype temp(typeList);

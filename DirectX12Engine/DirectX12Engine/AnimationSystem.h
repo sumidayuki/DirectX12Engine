@@ -24,7 +24,7 @@ private:
 	/// <param name="keyframes"></param>
 	/// <returns></returns>
 	template<typename T>
-	int FindKeyfrmeIndex(float animationTime, const std::vector<Keyframe<T>>& keyframes);
+	static int FindKeyfrmeIndex(float animationTime, const std::vector<Keyframe<T>>& keyframes);
 
 	/// <summary>
 	/// 位置を線形補間します。
@@ -32,7 +32,7 @@ private:
 	/// <param name="animationTime"></param>
 	/// <param name="boneAnim"></param>
 	/// <returns></returns>
-	Vector3 InterpolatePosition(float animationTime, const BoneAnimation& boneAnim);
+	static Vector3 InterpolatePosition(float animationTime, const BoneAnimation& boneAnim);
 
 	/// <summary>
 	/// 回転を球面線形補間（Slerp）します。
@@ -40,7 +40,7 @@ private:
 	/// <param name="animationTime"></param>
 	/// <param name="boneAnim"></param>
 	/// <returns></returns>
-	Quaternion InterpolateRotation(float animationTime, const BoneAnimation& boneAnim);
+	static Quaternion InterpolateRotation(float animationTime, const BoneAnimation& boneAnim);
 
 	/// <summary>
 	/// スケールを線形補間します。
@@ -48,7 +48,7 @@ private:
 	/// <param name="animationTime"></param>
 	/// <param name="boneAnim"></param>
 	/// <returns></returns>
-	Vector3 InterpolateScale(float animationTime, const BoneAnimation& boneAnim);
+	static Vector3 InterpolateScale(float animationTime, const BoneAnimation& boneAnim);
 
 	/// <summary>
 	/// ボーンの階層を再帰的に更新します。
@@ -58,7 +58,7 @@ private:
 	/// <param name="animation"></param>
 	/// <param name="currentTime"></param>
 	/// <param name="boneTransforms"></param>
-	void CalculateBoneTransform(const Bone* bone, const Matrix4x4& parentTransform, const Animation* animation, float currentTime, std::unordered_map<std::string, Matrix4x4>& boneTransforms);
+	static void CalculateBoneTransform(const Bone* bone, const Matrix4x4& parentTransform, const Animation* animation, float currentTime, std::unordered_map<std::string, Matrix4x4>& boneTransforms);
 
 public:
 	void Update(World& world) override;

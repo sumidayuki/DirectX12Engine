@@ -38,6 +38,10 @@ private:
     static inline CursorMotion  m_motionInScreen;
     static inline CursorMotion  m_motionInClient;
 
+    static inline bool m_isVisible = true;
+
+    static inline bool m_isLocked = false;
+
     // ホイール速度
     static inline float m_wheelVelocity;
 
@@ -79,5 +83,14 @@ public:
 
     // 指定したボタンの状態を取得します。
     static ButtonControl GetButtonState(MouseButton button);
+
+    // カーソルの表示/非表示を設定します。
+    static void SetVisible(bool isVisible);
+
+    static bool IsVisible() { return m_isVisible; }
+
+    static void SetLock(bool isLock);
+
+    static bool IsLocked() { return m_isLocked; }
 };
 

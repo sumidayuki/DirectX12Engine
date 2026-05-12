@@ -85,18 +85,6 @@
     <Filter Include="Engine\ECS\Component\Collider">
       <UniqueIdentifier>{408567bc-fc20-4824-82d8-300c8f128024}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\ECS\Component\Collider\Circle">
-      <UniqueIdentifier>{7fd5ce92-818d-4ebd-b453-2e134251b35d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\ECS\Component\Collider\Box">
-      <UniqueIdentifier>{47f64d3e-abf7-4287-90f6-86b3d9588113}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\ECS\Component\Collider\Sphere">
-      <UniqueIdentifier>{8246b519-b7da-4ff4-bb7d-4341f994010e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\ECS\Component\Collider\AABB">
-      <UniqueIdentifier>{85ffa155-12c3-4730-8ad2-bacccc1a2c15}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\ECS\Component\SkinnedMeshRenderer">
       <UniqueIdentifier>{03fc5827-054e-4375-a095-8ddea0dca213}</UniqueIdentifier>
     </Filter>
@@ -192,9 +180,6 @@
     </Filter>
     <Filter Include="Engine\ECS\Component\UI">
       <UniqueIdentifier>{1416a0a0-d8b3-470f-98bf-a04d11a1f77e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\ECS\System\UICanvasSystem">
-      <UniqueIdentifier>{e8bb9bb8-b4ed-4b96-b0fd-756b34f6c597}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Graphics">
       <UniqueIdentifier>{32d0800e-1a21-4cd9-ab66-e08cc5c9639f}</UniqueIdentifier>
@@ -382,6 +367,42 @@
     <Filter Include="Engine\System\BehaviourTree\BTActions">
       <UniqueIdentifier>{a3155664-fed7-4b87-a586-facfa87aaf41}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\ECS\Component\UI\LayoutGroup">
+      <UniqueIdentifier>{50db71dc-eb49-4648-a079-75ef05142579}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\UISystems">
+      <UniqueIdentifier>{f143135b-0dd3-4ad6-965d-fbc215f242ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\UISystems\UIEventSystem">
+      <UniqueIdentifier>{d197ee46-f761-4c09-a09f-f8e64781a544}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\UISystems\UICanvasSystem">
+      <UniqueIdentifier>{e8bb9bb8-b4ed-4b96-b0fd-756b34f6c597}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\UISystems\UISliderSystem">
+      <UniqueIdentifier>{ebe27f66-ef23-4945-98bc-6131fdb5406f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\UISystems\UIButtonSystem">
+      <UniqueIdentifier>{a7daffd3-283c-4f7e-8436-f0b00a804902}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\UISystems\UILayoutSystem">
+      <UniqueIdentifier>{e951604b-4b76-40f0-9a70-78d643113502}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource\Asset\UI">
+      <UniqueIdentifier>{cd1de03c-9f3f-4fa1-895f-32f3c2f266fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Input\InputDeviceType">
+      <UniqueIdentifier>{10a1a167-94f8-48bf-aa99-60c3008547e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource\AssetImporter\UILayout">
+      <UniqueIdentifier>{d6aac911-ab7b-448d-9e86-d1a53acdc060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\Component\LocomotionData">
+      <UniqueIdentifier>{9ede0595-48bb-4059-9be5-35f3f16e54fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Utils\Locomotion">
+      <UniqueIdentifier>{ebbab2a2-4c43-40fb-9a83-09d960c4dba3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -561,9 +582,6 @@
     <ClCompile Include="ProjectileSystem.cpp">
       <Filter>Engine\ECS\System\ProjectileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="DescriptorAllocator.cpp">
-      <Filter>Engine\Graphics\DescriptorHeap</Filter>
-    </ClCompile>
     <ClCompile Include="AssetManager.cpp">
       <Filter>Engine\Resource\Asset</Filter>
     </ClCompile>
@@ -636,23 +654,14 @@
     <ClCompile Include="BattleCameraSystem.cpp">
       <Filter>Game\BattleCamera</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerMoveSystem.cpp">
-      <Filter>Game\Character\Player</Filter>
-    </ClCompile>
     <ClCompile Include="CharacterImporter.cpp">
       <Filter>Game\Character\Importer</Filter>
     </ClCompile>
     <ClCompile Include="GuardSystem.cpp">
       <Filter>Game\Character\Guard</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyAISystem.cpp">
-      <Filter>Game\Character\Enemy</Filter>
-    </ClCompile>
     <ClCompile Include="UICanvasSystem.cpp">
-      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="UIAPI.cpp">
-      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
+      <Filter>Engine\ECS\System\UISystems\UICanvasSystem</Filter>
     </ClCompile>
     <ClCompile Include="SpriteAPI.cpp">
       <Filter>Engine\System\Utils</Filter>
@@ -662,6 +671,30 @@
     </ClCompile>
     <ClCompile Include="BehaviourTreeSystem.cpp">
       <Filter>Engine\ECS\System\BehaviourTreeSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="UIAPI.cpp">
+      <Filter>Engine\ECS\System\UISystems</Filter>
+    </ClCompile>
+    <ClCompile Include="UISliderSystem.cpp">
+      <Filter>Engine\ECS\System\UISystems\UISliderSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="UIEventSystem.cpp">
+      <Filter>Engine\ECS\System\UISystems\UIEventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="UIButtonSystem.cpp">
+      <Filter>Engine\ECS\System\UISystems\UIButtonSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="UILayoutSystem.cpp">
+      <Filter>Engine\ECS\System\UISystems\UILayoutSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="UILayoutImporter.cpp">
+      <Filter>Engine\Resource\AssetImporter\UILayout</Filter>
+    </ClCompile>
+    <ClCompile Include="ButtonFunctionRegistry.cpp">
+      <Filter>Engine\Resource\Asset\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>Engine\Resource\Asset\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -740,14 +773,8 @@
     <ClInclude Include="Vector3Int.h">
       <Filter>Engine\Math\Vector\Vector3</Filter>
     </ClInclude>
-    <ClInclude Include="CircleCollider2D.h">
-      <Filter>Engine\ECS\Component\Collider\Circle</Filter>
-    </ClInclude>
     <ClInclude Include="CollisionSystem.h">
       <Filter>Engine\ECS\System\CollisionSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="BoxCollider2D.h">
-      <Filter>Engine\ECS\Component\Collider\Box</Filter>
     </ClInclude>
     <ClInclude Include="Entity.h">
       <Filter>Engine\ECS\Entity</Filter>
@@ -917,9 +944,6 @@
     <ClInclude Include="PlayerCameraSystem.h">
       <Filter>Game\Character\Player</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerMove.h">
-      <Filter>Game\Character\Player</Filter>
-    </ClInclude>
     <ClInclude Include="EntityManager.h">
       <Filter>Engine\ECS\Entity</Filter>
     </ClInclude>
@@ -940,9 +964,6 @@
     </ClInclude>
     <ClInclude Include="ProjectileSystem.h">
       <Filter>Engine\ECS\System\ProjectileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="DescriptorAllocator.h">
-      <Filter>Engine\Graphics\DescriptorHeap</Filter>
     </ClInclude>
     <ClInclude Include="Singleton.h">
       <Filter>Engine\System\Singleton</Filter>
@@ -1007,12 +1028,6 @@
     <ClInclude Include="Layers.h">
       <Filter>Engine\System\Layers</Filter>
     </ClInclude>
-    <ClInclude Include="BoxCollider.h">
-      <Filter>Engine\ECS\Component\Collider\Box</Filter>
-    </ClInclude>
-    <ClInclude Include="SphereCollider.h">
-      <Filter>Engine\ECS\Component\Collider\Sphere</Filter>
-    </ClInclude>
     <ClInclude Include="SpatialHashGrid2D.h">
       <Filter>Engine\ECS\System\CollisionSystem\SpatialHashGrid\2D</Filter>
     </ClInclude>
@@ -1033,9 +1048,6 @@
     </ClInclude>
     <ClInclude Include="DebugStats.h">
       <Filter>Engine\System\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="AABBCollider.h">
-      <Filter>Engine\ECS\Component\Collider\AABB</Filter>
     </ClInclude>
     <ClInclude Include="BoneSocket.h">
       <Filter>Engine\ECS\Component\BoneSocket</Filter>
@@ -1103,9 +1115,6 @@
     <ClInclude Include="BattleCameraSystem.h">
       <Filter>Game\BattleCamera</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerMoveSystem.h">
-      <Filter>Game\Character\Player</Filter>
-    </ClInclude>
     <ClInclude Include="Tag.h">
       <Filter>Engine\ECS\Component\Tag</Filter>
     </ClInclude>
@@ -1118,25 +1127,16 @@
     <ClInclude Include="GuardSystem.h">
       <Filter>Game\Character\Guard</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyAISystem.h">
-      <Filter>Game\Character\Enemy</Filter>
-    </ClInclude>
     <ClInclude Include="UICanvasSystem.h">
-      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="UIAPI.h">
-      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
+      <Filter>Engine\ECS\System\UISystems\UICanvasSystem</Filter>
     </ClInclude>
     <ClInclude Include="SpriteAPI.h">
       <Filter>Engine\System\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="UIObject.h">
-      <Filter>Engine\ECS\Component\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIImage.h">
+    <ClInclude Include="Image.h">
       <Filter>Engine\ECS\Component\UI\UIObjects</Filter>
     </ClInclude>
-    <ClInclude Include="UICanvas.h">
+    <ClInclude Include="Canvas.h">
       <Filter>Engine\ECS\Component\UI</Filter>
     </ClInclude>
     <ClInclude Include="BindlessHeap.h">
@@ -1159,6 +1159,78 @@
     </ClInclude>
     <ClInclude Include="BehaviourTreeSystem.h">
       <Filter>Engine\ECS\System\BehaviourTreeSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="WarrokBT.h">
+      <Filter>Game\Character\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Slider.h">
+      <Filter>Engine\ECS\Component\UI\UIObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="UIGraphic.h">
+      <Filter>Engine\ECS\Component\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>Engine\ECS\Component\UI\UIObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSystem.h">
+      <Filter>Engine\ECS\Component\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="RectTransform.h">
+      <Filter>Engine\ECS\Component\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="HorizontalLayoutGroup.h">
+      <Filter>Engine\ECS\Component\UI\LayoutGroup</Filter>
+    </ClInclude>
+    <ClInclude Include="VerticalLayoutGroup.h">
+      <Filter>Engine\ECS\Component\UI\LayoutGroup</Filter>
+    </ClInclude>
+    <ClInclude Include="TextAnchor.h">
+      <Filter>Engine\ECS\Component\UI\LayoutGroup</Filter>
+    </ClInclude>
+    <ClInclude Include="RectOffset.h">
+      <Filter>Engine\ECS\Component\UI\LayoutGroup</Filter>
+    </ClInclude>
+    <ClInclude Include="UIAPI.h">
+      <Filter>Engine\ECS\System\UISystems</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>Engine\Resource\Asset\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIEventSystem.h">
+      <Filter>Engine\ECS\System\UISystems\UIEventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="UISliderSystem.h">
+      <Filter>Engine\ECS\System\UISystems\UISliderSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="UIButtonSystem.h">
+      <Filter>Engine\ECS\System\UISystems\UIButtonSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="UILayoutSystem.h">
+      <Filter>Engine\ECS\System\UISystems\UILayoutSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="InputDeviceType.h">
+      <Filter>Engine\Input\InputDeviceType</Filter>
+    </ClInclude>
+    <ClInclude Include="UILayoutImporter.h">
+      <Filter>Engine\Resource\AssetImporter\UILayout</Filter>
+    </ClInclude>
+    <ClInclude Include="ButtonFunctionRegistry.h">
+      <Filter>Engine\Resource\Asset\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionEvents.h">
+      <Filter>Engine\ECS\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionQuery.h">
+      <Filter>Engine\ECS\System\CollisionSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionMatrix.h">
+      <Filter>Engine\ECS\System\CollisionSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="LocomotionData.h">
+      <Filter>Engine\ECS\Component\LocomotionData</Filter>
+    </ClInclude>
+    <ClInclude Include="LocomotionUtility.h">
+      <Filter>Engine\System\Utils\Locomotion</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1183,13 +1255,13 @@
     <None Include="Standard.hlsli">
       <Filter>Engine\Resource\Asset\Shader\HLSL</Filter>
     </None>
-    <None Include="ScreenSpaceOverlay.hlsl">
-      <Filter>Engine\ECS\System\UICanvasSystem</Filter>
-    </None>
     <None Include="PBR.hlsl">
       <Filter>Engine\Resource\Asset\Shader\HLSL</Filter>
     </None>
     <None Include="Standard.hlsl">
+      <Filter>Engine\Resource\Asset\Shader\HLSL</Filter>
+    </None>
+    <None Include="ScreenSpaceOverlay.hlsl">
       <Filter>Engine\Resource\Asset\Shader\HLSL</Filter>
     </None>
   </ItemGroup>

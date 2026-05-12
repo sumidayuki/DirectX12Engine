@@ -1,84 +1,179 @@
 #include "Precompiled.h"
 #include "PlayerTag.h"
 #include "CharacterImporter.h"
+#include "LocomotionUtility.h"
 
-void EnemySystem::Move(Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, World& world)
+bool EnemySystem::ProcessTurn(World& world, Transform& transform, Animator& animator, LocomotionData& loco)
+{
+	if (loco.state == LocomotionState::Turning)
+	{
+		if (!animator.isPlaying)
+		{
+			transform.rotation = loco.turnTargetRot;
+			transform.dirty = true;
+			loco.state = LocomotionState::Idle;
+			TransformSystem::GetInstance()->EvaluateImmediate(world, transform);
+
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+
+void EnemySystem::Move(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, LocomotionData& loco)
 {
 	aiAgent.updatePosition = true;
 	aiAgent.updateRotation = false;
 
 	Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
 	Vector3 targetPos = targetTrans->position;
+	Vector3 dir = targetPos - transform.position;
+	dir.y = 0;
 
-	Vector3 dir = (targetPos - transform.position).Normalized();
-	dir.y = 0; // Y軸（上下）の回転は無視
+	float currentSpeed = Vector3(aiAgent.velocity.x, 0, aiAgent.velocity.z).Magnitude();
 
-	if (dir.SqrMagnitude() > 0.001f)
+	if (aiAgent.speed >= 200.0f && currentSpeed > 0.1f)
 	{
-		Quaternion targetRot = Quaternion::LookRotation(dir);
-		// 補間（Slerp）を使って滑らかに向かせる
-		transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 10.0f);
-		transform.dirty = true;
-	}
-
-	// AIAgentの速度に基づいてアニメーションを切り替える
-	float speed = aiAgent.velocity.Magnitude();
-
-	if (speed > 10.0f) // 移動中
-	{
-		if (animator.currentClipName != "Walk") 
+		if (dir.SqrMagnitude() > 0.001f)
 		{
-			AnimationSystem::Play(animator, "Walk");
+			dir = dir.Normalized();
+			Quaternion targetRot = Quaternion::LookRotation(dir);
+			transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 10.0f);
+			transform.dirty = true;
+		}
+
+		if (animator.currentClipName != "Run")
+		{
+			AnimationSystem::Play(animator, "Run");
 			animator.isLoop = true;
 		}
+		loco.state = LocomotionState::Moving;
 	}
-	else // 待機中（ここが Idle 状態）
+	else if (currentSpeed > 0.1f)
 	{
-		if (animator.currentClipName != "Idle") 
+		if (dir.SqrMagnitude() > 0.001f)
+		{
+			dir = dir.Normalized();
+			Quaternion targetRot = Quaternion::LookRotation(dir);
+			transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 10.0f);
+			transform.dirty = true;
+		}
+
+		Vector3 charForward = transform.rotation * Vector3::forward;
+		charForward.y = 0;
+		if (charForward.SqrMagnitude() > 0.001f) charForward = charForward.Normalized();
+
+		Vector3 moveDir = Vector3(aiAgent.velocity.x, 0, aiAgent.velocity.z).Normalized();
+		float angle = LocomotionUtility::CalculateMoveAngle(charForward, moveDir);
+		std::string targetClip = LocomotionUtility::SelectDirectionalClip(
+			angle, "Walk", "Walk_Backward", "Walk_Right", "Walk_Left");
+		if (animator.currentClipName != targetClip)
+		{
+			AnimationSystem::Play(animator, targetClip);
+			animator.isLoop = true;
+		}
+		loco.state = LocomotionState::Moving;
+	}
+	else
+	{
+		if (ProcessTurn(world, transform, animator, loco))
+		{
+			return;
+		}
+
+		if (dir.SqrMagnitude() > 0.001f)
+		{
+			dir = dir.Normalized();
+
+			// 現在の正面方向とターゲット方向の角度差を計算
+			Vector3 charForward = transform.rotation * Vector3::forward;
+			charForward.y = 0;
+			if (charForward.SqrMagnitude() > 0.001f) charForward = charForward.Normalized();
+
+			float angleToTarget = LocomotionUtility::CalculateMoveAngle(charForward, dir);
+
+			// 視界外(80度以上)に行ったらターンする。80度にすることで、真後ろ(180度)の時に90度ターンが2回連続で入りやすくなります。
+			if (Mathf::Abs(angleToTarget) > 80.0f)
+			{
+				std::string turnClip = (angleToTarget > 0) ? "Turn_Left_90" : "Turn_Right_90";
+
+				if (animator.clips.count(turnClip) > 0)
+				{
+					if (loco.state != LocomotionState::Turning)
+					{
+						// 90度だけ回転した状態を目標とする
+						Quaternion rot90 = Quaternion::AngleAxis((angleToTarget > 0) ? 90.0f : -90.0f, Vector3::up);
+						loco.turnTargetRot = transform.rotation * rot90;
+					}
+
+					loco.state = LocomotionState::Turning;
+					AnimationSystem::Play(animator, turnClip);
+					animator.isLoop = false;
+					return;
+				}
+			}
+		}
+
+		if (animator.currentClipName != "Idle")
 		{
 			AnimationSystem::Play(animator, "Idle");
 			animator.isLoop = true;
 		}
+		loco.state = LocomotionState::Idle;
 	}
 }
 
-void EnemySystem::JampAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world)
+void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world)
 {
-	// 設定値（アニメーションに合わせる）
-	const float startTime = 0.51f; // 移動開始秒数
-	const float endTime = 1.60f; // ぴったり着く秒数
+	// 設定値
+	const float startTime = 0.51f; // 移動開始秒
+	const float endTime = 1.3f;
 	const float duration = endTime - startTime;
 
-	// 1. 攻撃開始の最初のフレーム
+	// 攻撃開始の最初のフレーム
 	if (!state.isAnimed)
 	{
 		aiAgent.updatePosition = false;
 
-		// ターゲットの現在地を「最終目的地」としてロック
-		Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
-		if (targetTrans) 
-		{
-			enemy.lastTargetPos = targetTrans->position;
-		}
-
-		enemy.startJumpPos = transform.position;
-
 		const auto& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
-		AnimationSystem::Play(animator, move.animationName);
+		AnimationSystem::Play(animator, move.animationName, true);
 		state.isAnimed = true;
 	}
 
 	float currentTime = state.timer;
 
-	// 2. 移動中
-	if (currentTime >= startTime && currentTime <= endTime)
+	// ジャンプ直前までターゲットの位置を追いかけ、向きも更新し続ける
+	if (currentTime < startTime)
+	{
+		Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
+		if (targetTrans)
+		{
+			enemy.lastTargetPos = targetTrans->position;
+			Vector3 dir = enemy.lastTargetPos - transform.position;
+			dir.y = 0;
+			if (dir.SqrMagnitude() > 0.001f)
+			{
+				dir = dir.Normalized();
+				Quaternion targetRot = Quaternion::LookRotation(dir);
+				transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 10); // ターゲットの方を向く
+				transform.dirty = true;
+			}
+		}
+		enemy.startJumpPos = transform.position;
+	}
+	// 移動中
+	else if (currentTime >= startTime && currentTime <= endTime)
 	{
 		float t = (currentTime - startTime) / duration;
 
-		transform.position = Vector3::Lerp(enemy.startJumpPos, enemy.lastTargetPos, t);
+		// イージング
+		float easeT = t * (2.0f - t);
+
+		transform.position = Vector3::Lerp(enemy.startJumpPos, enemy.lastTargetPos, easeT);
 		transform.dirty = true;
 	}
-	// 3. 移動時間を過ぎた場合（完全に目的地に固定）
+	// 移動時間を過ぎた場合（完全に目的地に固定）
 	else if (currentTime > endTime)
 	{
 		transform.position = enemy.lastTargetPos;
@@ -93,7 +188,7 @@ bool EnemySystem::ProcessCollision(World& world, Collider* coll, ComboState& sta
 		if (world.GetComponent<PlayerTag>(coll->info.other))
 		{
 			// 重複ヒットチェック
-			for (auto targetEntity : attackable.entities) 
+			for (auto targetEntity : attackable.entities)
 			{
 				if (targetEntity == coll->info.other)
 				{
@@ -104,7 +199,7 @@ bool EnemySystem::ProcessCollision(World& world, Collider* coll, ComboState& sta
 			const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
 			Damageable* damageable = world.GetComponent<Damageable>(coll->info.other);
 
-			if (damageable) 
+			if (damageable)
 			{
 				Damage dmg;
 				dmg.damage = move.damage;
@@ -120,17 +215,19 @@ bool EnemySystem::ProcessCollision(World& world, Collider* coll, ComboState& sta
 
 void EnemySystem::Start(World& world)
 {
+	m_isInvincivle = false;
 	m_hitBox = nullptr;
 	m_leftHandColl = nullptr;
 	m_rightHandColl = nullptr;
 	m_jumpAttackColl = nullptr;
+	m_hpBar = nullptr;
 }
 
 void EnemySystem::Update(World& world)
 {
-	View<Enemy, AIAgent, Transform, Collider, Animator, HP, ComboState, Damageable, Attackable> view(world);
+	View<Enemy, AIAgent, Transform, Collider, Animator, HP, ComboState, Damageable, Attackable, BehaviourTree, LocomotionData> view(world);
 
-	for (auto [entity, enemy, aiAgent, transform, collider, animator, hp, state, damageable, attackable] : view)
+	for (auto [entity, enemy, aiAgent, transform, collider, animator, hp, state, damageable, attackable, behaviourTree, loco] : view)
 	{
 		// コライダーが設定されていないなら
 		if (!m_leftHandColl && !m_rightHandColl)
@@ -141,6 +238,7 @@ void EnemySystem::Update(World& world)
 			leftColl.type = ColliderType::Sphere;
 			leftColl.radius = 30.0f;
 			leftColl.isTrigger = true;
+			leftColl.collisionMask = Layers::Player;
 			BoneSocket socket;
 			socket.targetEntity = entity;
 			socket.targetBoneName = "mixamorig:LeftHand";
@@ -155,6 +253,7 @@ void EnemySystem::Update(World& world)
 			rightColl.type = ColliderType::Sphere;
 			rightColl.radius = 30.0f;
 			rightColl.isTrigger = true;
+			rightColl.collisionMask = Layers::Player;
 			BoneSocket socket2;
 			socket2.targetEntity = entity;
 			socket2.targetBoneName = "mixamorig:RightHand";
@@ -166,8 +265,9 @@ void EnemySystem::Update(World& world)
 			Entity jump = world.CreateEntity();
 			Collider jumpColl;
 			jumpColl.type = ColliderType::Sphere;
-			jumpColl.radius = 80.0f;
+			jumpColl.radius = 100.0f;
 			jumpColl.isTrigger = true;
+			jumpColl.collisionMask = Layers::Player;
 			BoneSocket socket3;
 			socket3.targetEntity = entity;
 			socket3.targetBoneName = "mixamorig:Hips";
@@ -175,9 +275,27 @@ void EnemySystem::Update(World& world)
 			world.AddComponent<Attackable>(jump, Attackable{});
 			m_jumpAttackColl = world.AddComponent<Collider>(jump, jumpColl);
 			m_jumpAttackColl->isEnable = false;
+
+			m_hpBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("EnemyHPBar")));
+			m_hpBar->maxValue = hp.maxHP;
+			m_hpBar->minValue = 0;
+			m_hpBar->value = hp.maxHP;
 		}
 
-		// 死亡・被弾処理は最優先（PlayerSystemのガード等の割り込みに近い考え方）
+		bool punchAttackReady = enemy.attackCoolDownTimer <= 0;
+		behaviourTree.blackboard.SetBool("PunchAttackReady", punchAttackReady);
+
+		bool jumpAttackReady = enemy.jumpAttackCoolDownTimer <= 0;
+		behaviourTree.blackboard.SetBool("JumpAttackReady", jumpAttackReady);
+
+		bool isRecovery = enemy.recoveryTimer >= 0;
+		behaviourTree.blackboard.SetBool("IsRecovery", isRecovery);
+
+		Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
+		Vector3 toTarget = targetTrans->position - transform.position;
+		float distance = toTarget.Magnitude();
+		behaviourTree.blackboard.SetFloat("distToTarget", distance);
+
 		if (hp.isDeath)
 		{
 			if (animator.currentClipName != "Death")
@@ -186,7 +304,7 @@ void EnemySystem::Update(World& world)
 			}
 
 			aiAgent.updatePosition = false;
-			
+
 			if (!animator.isPlaying)
 			{
 				SceneManager::ChangeScene("Title");
@@ -195,35 +313,30 @@ void EnemySystem::Update(World& world)
 		}
 
 		// 被弾による硬直とコンボ強制終了
-		if (!damageable.damageQueue.empty()) 
+		if (!damageable.damageQueue.empty())
 		{
 			while (!damageable.damageQueue.empty())
 			{
 
-				if (state.currentMoveId != 3)
+				if (!m_isInvincivle)
 				{
 					state.currentMoveId = 0; // コンボ中断
 					animator.isLoop = false;
-					AnimationSystem::Play(animator, "Hit_00", true);
 					hp.currentHP -= damageable.damageQueue.front().damage;
+					m_hpBar->value = hp.currentHP;
+					loco.state = LocomotionState::Idle;
 				}
 				damageable.damageQueue.pop();
 			}
 		}
 
-		if (animator.currentClipName == "Hit_00" && animator.isPlaying) 
-		{
-			aiAgent.updatePosition = false;
-			continue;
-		}
-
 		switch (state.currentMoveId)
 		{
 		case 0:
-			Move(enemy, aiAgent, transform, animator, world);
+			Move(world, enemy, aiAgent, transform, animator, loco);
 			break;
 		case 3:
-			JampAttack(entity, enemy, aiAgent, transform, state, animator, world);
+			JumpAttack(entity, enemy, aiAgent, transform, state, animator, world);
 			break;
 
 		default:
@@ -233,23 +346,25 @@ void EnemySystem::Update(World& world)
 
 		if (state.currentMoveId != 0)
 		{
+			const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
 			// アニメーション再生（一度だけ）
-			if (!state.isAnimed) 
+			if (!state.isAnimed)
 			{
-				const auto& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
 				AnimationSystem::Play(animator, move.animationName);
+				AIAgentSystem::GetInstance()->ResetAI(aiAgent);
 				state.isAnimed = true;
 				aiAgent.updatePosition = false; // 攻撃中は移動停止
+				loco.state = LocomotionState::Idle;
 			}
 
 			// ヒット判定期間（canHit）の処理
 			if (state.canHit && !state.hitConfirm)
 			{
-				if (state.currentMoveId == 1 || state.currentMoveId == 3)
+				if (state.currentMoveId == 1)
 				{
 					m_leftHandColl->isEnable = true;
 				}
-				if (state.currentMoveId == 2 || state.currentMoveId == 3)
+				if (state.currentMoveId == 2)
 				{
 					m_rightHandColl->isEnable = true;
 				}
@@ -286,6 +401,11 @@ void EnemySystem::Update(World& world)
 				attackable.entities.clear();
 				attackable.isAttacking = false;
 			}
+
+			if (move.hitEndTime <= state.timer / move.duration)
+			{
+				enemy.recoveryTimer = enemy.recoveryTime;
+			}
 		}
 		else
 		{
@@ -296,5 +416,9 @@ void EnemySystem::Update(World& world)
 			attackable.entities.clear();
 			attackable.isAttacking = false;
 		}
+
+		enemy.attackCoolDownTimer -= Time::GetDeltaTime();
+		enemy.jumpAttackCoolDownTimer -= Time::GetDeltaTime();
+		enemy.recoveryTimer -= Time::GetDeltaTime();
 	}
 };

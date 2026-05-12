@@ -3,7 +3,8 @@
 // 文字列に関するユーティリティクラス
 class StringUtility
 {
-
+public:
+    static std::string ReadAllText(const std::wstring& path);
 };
 
 

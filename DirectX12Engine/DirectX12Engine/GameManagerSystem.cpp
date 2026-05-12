@@ -3,6 +3,8 @@
 #include "BattleCamera.h"
 #include "Enemy.h"
 #include "CharacterImporter.h"
+#include "WarrokBT.h"
+#include "PlayerCamera.h"
 
 bool GameManagerSystem::Load(World& world)
 {
@@ -15,25 +17,31 @@ bool GameManagerSystem::Load(World& world)
 void GameManagerSystem::Start(World& world)
 {
 	// プレイヤーを生成
-	Entity player = world.CreateWithModel(L"Assets/player-01.fbx", nullptr, Vector3(0, 0, -500), Quaternion::identity);
+	Entity player = world.CreateWithModel(L"Assets/player-01.fbx", nullptr, Vector3(0, 0, -500), Quaternion::identity, Layers::Player);
 	world.AddComponent<Input>(player, Input{});
 	world.AddComponent<PlayerTag>(player, PlayerTag{});
+	world.AddComponent<LocomotionData>(player, LocomotionData{});
 	CharacterImporter::GetInstance()->CharcterInitialize("Archer", player, world);
 
 	m_player = player;
 
 	// 敵を生成
-	Entity warrok = world.CreateWithModel(L"Assets/Warrok-00.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0));
+	Entity warrok = world.CreateWithModel(L"Assets/Warrok-00.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0), Layers::Enemy);
 	Transform* warrokT = world.GetComponent<Transform>(warrok);
 	warrokT->scale = warrokT->scale * 1.5f;
 	Enemy enemy;
-	enemy.attackCoolDown = 0.0f;
 	enemy.target = player;
 	world.AddComponent<Enemy>(warrok, enemy);
 	AIAgent agent;
 	agent.speed = 175.0f;
 	agent.acceleration = 10.0f;
 	world.AddComponent<AIAgent>(warrok, agent);
+	world.AddComponent<LocomotionData>(warrok, LocomotionData{});
+	BehaviourTree bt;
+	bt.root = WarrokBT::Create();
+	bt.blackboard.self = warrok;
+	bt.blackboard.target = player;
+	world.AddComponent<BehaviourTree>(warrok, std::move(bt));
 	CharacterImporter::GetInstance()->CharcterInitialize("Warrok", warrok, world);
 	world.GetComponent<Collider>(warrok)->offset = Vector3(0, 180.0f, 0);
 
@@ -46,19 +54,21 @@ void GameManagerSystem::Start(World& world)
 	float farPlane = 5000.0f;
 
 	// バトルカメラの作成
-	Entity parent = world.CreateCamera3D(fov, aspect, nearPlane, farPlane);
+	Entity cameraEntity = world.CreateCamera3D(fov, aspect, nearPlane, farPlane);
 
 	//Entity skybox = world.CreateSphere(1000.0f, 16, 16);
 	//Transform* skyboxT = world.GetComponent<Transform>(skybox);
 	//TransformSystem::GetInstance()->SetParent(*skyboxT, parentT);
 
-	BattleCamera battleCamera;
-	battleCamera.character1 = player;
-	battleCamera.character2 = warrok;
-	world.AddComponent<BattleCamera>(parent, battleCamera);
+	PlayerCamera playerCamera;
+	playerCamera.player = player;
+	playerCamera.offset = Vector3(50, 200, -350);
+	playerCamera.sensitivity = 0.1;
+	world.AddComponent<PlayerCamera>(cameraEntity, playerCamera);
 
 }
 
 void GameManagerSystem::Update(World& world)
 {
+
 }

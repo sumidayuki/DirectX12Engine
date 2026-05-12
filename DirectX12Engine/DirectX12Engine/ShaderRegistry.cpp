@@ -4,8 +4,8 @@
 
 void ShaderRegistry::StaticConstructor()
 {
-    ShaderRegistry::LoadShader(L"Assets/Shaders/Standard.shader"); // Standardシェーダーを明示的に読み込む
-    ShaderRegistry::LoadShader(L"Assets/Shaders/PBR.shader");   // PBRシェーダーを明示的に読み込む
+    ShaderRegistry::LoadShader(L"Assets/Shaders/PBR.shader");
+	ShaderRegistry::LoadShader(L"Assets/Shaders/ScreenSpaceOverlay.shader");
 }
 
 void ShaderRegistry::StaticDestructor()

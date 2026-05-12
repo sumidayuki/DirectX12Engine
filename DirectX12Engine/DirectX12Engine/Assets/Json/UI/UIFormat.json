@@ -1,0 +1,62 @@
+{
+    "name": "ImageFormat",
+    "type": "Image",
+    "source": "Assets/white.png",
+    "rect": {
+        "pos": [ 100, 100 ],
+        "size": [ 100, 100 ],
+        "anchorMin": [ 0.5, 0.5 ],
+        "anchorMax": [ 0.5, 0.5 ],
+        "pivot": [ 0.5, 0.5 ]
+    },
+    "graphic": {
+        "color": [ 1, 1, 1, 1 ],
+        "depth": 0,
+        "raycastTarget": false
+    }
+}
+{
+    "name": "ButtonFormat",
+    "type": "Button",
+    "onClick": "ButtonClicked",
+    "source": "Assets/white.png",
+    "normalColor": [ 1, 1, 1, 1 ],
+    "hoveredColor": [ 0.8, 0.8, 0.8, 1 ],
+    "selectedColor": [ 0.7, 0.7, 0.7, 1 ],
+    "pressedColor": [ 0.6, 0.6, 0.6, 1 ],
+    "disabledColor": [ 0.4, 0.4, 0.4, 1 ],
+    "rect": {
+        "pos": [ 100, 100 ],
+        "size": [ 100, 50 ],
+        "anchorMin": [ 0.5, 0.5 ],
+        "anchorMax": [ 0.5, 0.5 ],
+        "pivot": [ 0.5, 0.5 ]
+    },
+    "graphic": {
+        "color": [ 1, 1, 1, 1 ],
+        "depth": 0,
+        "raycastTarget": true
+    }
+}
+{
+    "name": "SliderFormat","
+    "type": "Slider",
+    "background": "Assets/white.png",
+    "backgroundColor": [ 0.5, 0.5, 0.5, 1 ],
+    "fill": "Assets/white.png",
+    "fillColor": [ 1, 0, 0, 1 ],
+    "initialValue": 1.0,
+    "leftToRight": true,
+    "rect": {
+        "pos": [ 50, 50 ],
+        "size": [ 200, 20 ],
+        "anchorMin": [ 0.5, 0.5 ],
+        "anchorMax": [ 0.5, 0.5 ],
+        "pivot": [ 0.5, 0.5 ]
+    },
+    "graphic": {
+        "color": [ 1, 1, 1, 1 ],
+        "depth": 0,
+        "raycastTarget": false
+    }
+}

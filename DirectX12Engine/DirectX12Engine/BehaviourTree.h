@@ -3,6 +3,6 @@
 
 struct BehaviourTree : IComponentData
 {
-	std::unique_ptr<BTNode> root;
+	std::shared_ptr<BTNode> root;
 	Blackboard blackboard;
 };

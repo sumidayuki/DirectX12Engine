@@ -7,18 +7,19 @@ Scene::Scene()
 
 bool Scene::OnLoad()
 {
-	if (!Load())
+	if (!m_world.Load(m_world))
 	{
 		return false;
 	}
 
-	return m_world.Load(m_world);
+	return Load();
 }
 
 void Scene::OnUnload()
 {
-	Unload();
+	m_world.Unload(m_world);
 	m_world.Clear();
+	Unload();
 }
 
 void Scene::OnStart()

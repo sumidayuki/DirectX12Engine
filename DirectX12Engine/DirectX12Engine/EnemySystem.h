@@ -4,14 +4,17 @@
 class EnemySystem : public System
 {
 private:
+	bool m_isInvincivle;
 	Transform* m_hitBox;
 	Collider* m_leftHandColl;
 	Collider* m_rightHandColl;
 	Collider* m_jumpAttackColl;
+	Slider* m_hpBar;
 
 private:
-	void Move(Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, World& world);
-	void JampAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world);
+	bool ProcessTurn(World& world, Transform& transform, Animator& animator, LocomotionData& loco);
+	void Move(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, LocomotionData& loco);
+	void JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world);
 	bool ProcessCollision(World& world, Collider* coll, ComboState& state, Attackable& attackable);
 
 private:

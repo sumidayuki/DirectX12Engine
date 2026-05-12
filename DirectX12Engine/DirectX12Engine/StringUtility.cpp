@@ -1,5 +1,13 @@
 #include "StringUtility.h"
 
+std::string StringUtility::ReadAllText(const std::wstring& path)
+{
+    std::ifstream ifs(path, std::ios::binary);
+    if (!ifs) return {};
+
+    return std::string((std::istreambuf_iterator<char>(ifs)),
+        std::istreambuf_iterator<char>());
+}
 
 //---------------------------------------------------------------------------------------------------------------------------------------------
 // マルチバイト文字列からワイド文字列に変換

@@ -90,12 +90,18 @@ public:
 	void Translate(Transform& transform, const Vector3& translation);
 
 	/// <summary>
-	/// 指定した回転軸に指定の角度だけ回転させます。
+	/// 指定した軸を中心に回転させます。
 	/// </summary>
-	/// <param name="transform">回転させたいtransform</param>
+	/// <param name="transform">回転するtransform</param>
 	/// <param name="axis">回転軸</param>
 	/// <param name="angle">角度</param>
 	void Rotate(Transform& transform, const Vector3 axis, float angle);
+
+	/// <summary>
+	/// Transform の行列を即座に再計算します。
+	/// システムの更新順序により、同一フレーム内で姿勢変更と描画を反映させたい場合に使用します。
+	/// </summary>
+	void EvaluateImmediate(World& world, Transform& transform);
 
 private:
 

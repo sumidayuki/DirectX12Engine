@@ -13,6 +13,8 @@ namespace Layers
 
 	// ユーザー用定義レイヤー
 	constexpr LayerMask Environment = 1 << 8;
+	constexpr LayerMask Player = 1 << 9;
+	constexpr LayerMask Enemy = 1 << 10;
 
 	// 全レイヤー
 	constexpr LayerMask Everything = 0xFFFFFFFF;

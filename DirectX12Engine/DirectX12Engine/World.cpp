@@ -381,9 +381,15 @@ bool World::Load(World& world)
 	world.AddSystem(std::make_unique<AIAgentSystem>());
 	world.AddSystem(std::make_unique<HPSystem>());
 	world.AddSystem(std::make_unique<PhysicsSystem>());
+	world.AddSystem(std::make_unique<UILayoutSystem>());
+	world.AddSystem(std::make_unique<UICanvasSystem>());
+	world.AddSystem(std::make_unique<UIEventSystem>());
+	world.AddSystem(std::make_unique<UIButtonSystem>());
+	world.AddSystem(std::make_unique<UISliderSystem>());
 
 	TransformSystem::CreateSingleton();
 	AIAgentSystem::CreateSingleton();
+	UIManager::CreateSingleton();
 	m_transformSystem = TransformSystem::GetInstance();
 
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/White.png");
@@ -398,6 +404,27 @@ bool World::Load(World& world)
 			return false;
 		}
 	}
+	return true;
+}
+
+bool World::Unload(World& world)
+{
+	TransformSystem::DestroySingleton();
+	AIAgentSystem::DestroySingleton();
+	UIManager::DestroySingleton();
+
+	m_allCameraEntities.clear();
+	m_allCameras.clear();
+	m_allEntities.clear();
+	m_allRootEntities.clear();
+	m_entityNames.clear();
+	m_systems.clear();
+	m_transformSystem = nullptr;
+	m_cameraSystem = nullptr;
+
+	m_am.Clear();
+	m_em.Clear();
+
 	return true;
 }
 

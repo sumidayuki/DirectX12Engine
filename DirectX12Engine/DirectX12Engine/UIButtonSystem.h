@@ -1,6 +1,6 @@
 #pragma once
 
-class PlayerMoveSystem : public System
+class UIButtonSystem : public System
 {
 public:
 	void Update(World& world) override;

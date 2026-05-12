@@ -22,14 +22,16 @@ struct ObjectBuffer
     float2 minUV;
     float2 maxUV;
     uint textureIndex;
-    uint3 padding;
+    uint hasTexture; // テクスチャの有無 (0: なし, 1: あり)
+    uint2 padding;
 };
 
 ConstantBuffer<OrthoBuffer> cOrtho : register(b0, space0);
 ConstantBuffer<ObjectBuffer> cObject : register(b1, space0);
 
 // Bindless: テクスチャ配列（インデックスでアクセス）
-Texture2D _Textures[4096] : register(t0, space0);
+// Bindless textures array
+Texture2D _Textures[4096] : register(t0, space1);
 
 SamplerState _Sampler : register(s0, space0);
 
@@ -56,9 +58,19 @@ struct PSOutput
 
 PSOutput PSMain(VSOutput input)
 {
-    // Bindless: インデックスでテクスチャを選択
-    float4 texColor = _Textures[cObject.textureIndex].Sample(_Sampler, input.uv);
-    float4 finalColor = texColor * cObject.color;
+    float4 finalColor;
+
+    if (cObject.hasTexture)
+    {
+        // テクスチャあり: Bindlessインデックスでテクスチャ選択
+        float4 texColor = _Textures[cObject.textureIndex].Sample(_Sampler, input.uv);
+        finalColor = texColor * cObject.color;
+    }
+    else
+    {
+        // テクスチャなし: 単色矩形
+        finalColor = cObject.color;
+    }
 
     if (finalColor.a < 0.001f)
         discard;

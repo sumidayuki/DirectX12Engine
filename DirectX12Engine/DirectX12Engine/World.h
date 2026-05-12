@@ -14,7 +14,6 @@ private:
 	EntityManager							m_em;
 	ArchetypeManager						m_am;
 	std::vector<std::unique_ptr<System>>	m_systems;
-	std::unique_ptr<DescriptorAllocator>	m_srvAllocator;
 	CameraSystem*							m_cameraSystem;
 	std::list<Entity>						m_allEntities;
 	std::list<Entity>						m_allRootEntities;
@@ -27,14 +26,12 @@ private:
 	void CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants);
 
 public:
-	World() { m_srvAllocator = std::make_unique<DescriptorAllocator>(50000, Graphics::BackBafferCount, DescriptorHeapType::CBV_SRV_UAV); }
+	World() {}
 
 	/// <summary>
 	/// ワールドの全エンティティ・システム・リソースをクリアします。
 	/// </summary>
 	void Clear();
-
-	DescriptorAllocator* GetSrvAllocator() { return m_srvAllocator.get(); }
 
 	TransformSystem* GetTransformSystem() { return m_transformSystem; }
 
@@ -205,6 +202,7 @@ public:
 
 private:
 	bool Load(World& world);
+	bool Unload(World& world);
 
 	void Start(World& world);
 

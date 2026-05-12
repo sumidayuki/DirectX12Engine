@@ -2,8 +2,7 @@
 #include "ButtonControl.h"
 #include "KeyCode.h"
 #include "Gamepad.h"
-
-// 授業で作りました。
+#include "InputDeviceType.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 // 入力デバイス統括クラス
@@ -54,8 +53,11 @@ private:
     // キーボード/マウス/ジョイスティックのキー状態配列
     static inline bool m_keysLast[KeyCodeCount];
     static inline ButtonControl m_keys[KeyCodeCount];
+    static inline InputDeviceType m_currentInputDeviceType;
 
 public:
+	static InputDeviceType GetCurrentInputDeviceType() { return m_currentInputDeviceType; }
+
     // キーボード/マウス/ジョイスティックのキー状態を取得します。
     static const ButtonControl& GetKey(KeyCode key);
 

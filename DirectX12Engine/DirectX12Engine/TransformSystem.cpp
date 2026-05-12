@@ -325,6 +325,57 @@ void TransformSystem::Start(World& world)
 {
 }
 
+void TransformSystem::EvaluateImmediate(World& world, Transform& transform)
+{
+	std::vector<Transform*> stack;
+	stack.reserve(16);
+	stack.push_back(&transform);
+
+	while (!stack.empty())
+	{
+		Transform* t = stack.back();
+		stack.pop_back();
+
+		UpdateLocalMatrix(*t);
+
+		if (t->parent != INVALID_ENTITY)
+		{
+			Transform* parent = world.GetComponent<Transform>(t->parent);
+			if (parent)
+			{
+				t->localToWorldMatrix = t->localMatrix * parent->localToWorldMatrix;
+				t->hierarchyDepth = parent->hierarchyDepth + 1;
+			}
+			else
+			{
+				t->localToWorldMatrix = t->localMatrix;
+				t->hierarchyDepth = 0;
+			}
+		}
+		else
+		{
+			t->localToWorldMatrix = t->localMatrix;
+			t->hierarchyDepth = 0;
+		}
+
+		t->dirty = false;
+		t->hasChanged = true;
+		t->inverseDirty = true;
+
+		// Add children to stack
+		Entity childEntity = t->firstChild;
+		while (childEntity != INVALID_ENTITY)
+		{
+			Transform* child = world.GetComponent<Transform>(childEntity);
+			if (child)
+			{
+				stack.push_back(child);
+			}
+			childEntity = child ? child->nextSibling : INVALID_ENTITY;
+		}
+	}
+}
+
 void TransformSystem::UpdateLocalMatrix(Transform& transform)
 {
 	transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);

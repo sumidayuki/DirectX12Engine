@@ -49,7 +49,7 @@ void PlayerCameraSystem::Draw(World& world)
         if (Physics::Raycast(world, ray, hit, distance, Layers::Environment))
         {
             // ÅIˆÊ’u‚ðŒvŽZ
-            targetPosition = hit.point;
+            targetPosition = hit.point + ray.GetDirection() * 5;
         }
 
         TransformSystem::GetInstance()->SetLocalPosition(transform, targetPosition);

@@ -99,9 +99,16 @@ void InputManager::Update()
     // キーボードの入力状態を更新
     Keyboard::Update();
 
+	m_currentInputDeviceType = InputDeviceType::Keyboard_Mouse;
+
     // ゲームパッドの入力状態を更新
     for (int i = 0; i < MaxGamepadCount; i++)
     {
+        if (i == 0 && m_gamepads[i]->IsConnected())
+        {
+			m_currentInputDeviceType = InputDeviceType::Gamepad;
+        }
+
         m_gamepads[i]->Update();
     }
 }

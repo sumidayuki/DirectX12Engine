@@ -1,6 +1,6 @@
 #pragma once
 
-class EnemyAISystem : public System
+class UISliderSystem : public System
 {
 private:
 	void Update(World& world) override;

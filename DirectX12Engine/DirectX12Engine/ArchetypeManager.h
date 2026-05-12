@@ -15,6 +15,8 @@ private:
 public:
 	ArchetypeManager() = default;
 
+	void Clear();
+
 	/// <summary>
 	/// w’è‚µ‚½ComponentType‚É‘Î‰‚µ‚½Chunk‚ğ‚·‚×‚Äæ“¾‚µ‚Ü‚·B
 	/// </summary>

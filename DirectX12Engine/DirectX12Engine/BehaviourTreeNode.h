@@ -10,8 +10,8 @@ enum class BTStatus
 struct Blackboard
 {
 	World* world = nullptr;
-	Entity self;
-	Entity target;
+	Entity self = INVALID_ENTITY;
+	Entity target = INVALID_ENTITY;
 
 	std::unordered_map<std::string, float> floats;
 	std::unordered_map<std::string, Vector3> vectors;

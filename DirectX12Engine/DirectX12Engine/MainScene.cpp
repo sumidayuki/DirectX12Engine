@@ -3,6 +3,7 @@
 #include "DebugManager.h"
 #include "ArrowSystem.h"
 #include "CharacterImporter.h"
+#include "UILayoutImporter.h"
 
 bool MainScene::Load()
 {
@@ -25,10 +26,14 @@ bool MainScene::Load()
 	m_world.AddSystem(std::make_unique<ComboSystem>());
 	m_world.AddSystem(std::make_unique<GuardSystem>());
 	m_world.AddSystem(std::make_unique<PlayerSystem>());
+	m_world.AddSystem(std::make_unique<PlayerCameraSystem>());
 	m_world.AddSystem(std::make_unique<BattleCameraSystem>());
-	m_world.AddSystem(std::make_unique<EnemyAISystem>());
+	m_world.AddSystem(std::make_unique<BehaviourTreeSystem>());
 	m_world.AddSystem(std::make_unique<EnemySystem>());
 	m_world.AddSystem(std::make_unique<ArrowSystem>());
+
+	UILayoutImporter importer;
+	importer.Import(L"Assets/Json/UI/MainSceneUI.json", m_world);
 
 	return true;
 }
@@ -289,21 +294,24 @@ void MainScene::Start()
 
 	// 壁の一つ手前にコライダーを生成
 	{
-		Entity wallCollider = m_world.CreateCube(5000.0f, 500.0f, 10.0f, Layers::Environment, Color::white, true);
+		Entity wallCollider = m_world.CreateCube(5000.0f, 500.0f, 20.0f, Layers::Environment, Color::white, true);
 		m_world.GetComponent<Transform>(wallCollider)->position = Vector3(1000, 250, 1000);
 	}
 	{
-		Entity wallCollider = m_world.CreateCube(10.0f, 500.0f, 5000.0f, Layers::Environment, Color::white, true);
+		Entity wallCollider = m_world.CreateCube(20.0f, 500.0f, 5000.0f, Layers::Environment, Color::white, true);
 		m_world.GetComponent<Transform>(wallCollider)->position = Vector3(1000, 250, 1000);
 	}
 	{
-		Entity wallCollider = m_world.CreateCube(5000.0f, 500.0f, 10.0f, Layers::Environment, Color::white, true);
+		Entity wallCollider = m_world.CreateCube(5000.0f, 500.0f, 20.0f, Layers::Environment, Color::white, true);
 		m_world.GetComponent<Transform>(wallCollider)->position = Vector3(-1000, 250, -1000);
 	}
 	{
-		Entity wallCollider = m_world.CreateCube(10.0f, 500.0f, 5000.0f, Layers::Environment, Color::white, true);
+		Entity wallCollider = m_world.CreateCube(20.0f, 500.0f, 5000.0f, Layers::Environment, Color::white, true);
 		m_world.GetComponent<Transform>(wallCollider)->position = Vector3(-1000, 250, -1000);
 	}
+
+	Mouse::SetVisible(false);
+	Mouse::SetLock(true);
 }
 
 void MainScene::Update()

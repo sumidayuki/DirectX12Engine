@@ -8,57 +8,100 @@
 #include "BattleCamera.h"
 #include "GuardState.h"
 #include "CharacterImporter.h"
+#include "LocomotionUtility.h"
 
-void PlayerSystem::Move(Transform& transform, Input& input, Animator& animator)
+// ターンアニメーションの再生終了と、その後の座標確定を管理
+bool PlayerSystem::ProcessTurn(World& world, Transform& transform, Animator& animator, LocomotionData& loco)
 {
-	// カメラのTransformがなければ処理しない
-	if (!m_cameraTransform) return;
-
-	// カメラの向きを基準とした前方と右方向を取得
-	Vector3 camForward = m_cameraTransform->rotation * Vector3::forward;
-	Vector3 camRight = m_cameraTransform->rotation * Vector3::right;
-
-	// Y軸の傾きを無視して、水平なベクトルにする
-	camForward.y = 0;
-	camRight.y = 0;
-	camForward.Normalized();
-	camRight.Normalized();
-
-	// カメラの向きと入力から、ワールド座標系での移動方向を決定
-	Vector3 moveDirection = camForward * input.direction.y + camRight * input.direction.x;
-
-	// アニメーションクリップの決定
-	std::string targetClip = "Idle";
-
-	// 移動入力があるかどうかの閾値
-	const float moveThreshold = 0.01f;
-
-	if (moveDirection.SqrMagnitude() > moveThreshold)
+	if (loco.state == LocomotionState::Turning)
 	{
-		moveDirection = moveDirection.Normalized(); // 方向を正規化
+		if (!animator.isPlaying)
+		{
+			transform.rotation = loco.turnTargetRot;
+			transform.dirty = true;
 
-		// 移動速度を決定
-		m_currentSpeed = input.dash ? RunSpeed : WalkSpeed;
+			TransformSystem::GetInstance()->EvaluateImmediate(world, transform);
 
-		// アニメーションを決定 (常に前進アニメーションを使用)
-		targetClip = (m_currentSpeed == RunSpeed) ? "Run_Forward" : "Walk_Forward";
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
 
-		// プレイヤーの向きを、移動方向に滑らかに向ける
-		Quaternion targetRotation = Quaternion::LookRotation(moveDirection, Vector3::up);
-		const float rotationSpeed = 45.0f; // 回転の速さ (値が大きいほど速い)
-		transform.rotation = Quaternion::Slerp(transform.rotation, targetRotation, Time::GetDeltaTime() * rotationSpeed);
-
-		// プレイヤーを移動させる
-		TransformSystem::GetInstance()->Translate(transform, moveDirection * m_currentSpeed * Time::GetDeltaTime());
+// 入力に基づいたキャラクターの移動と回転を制御
+void PlayerSystem::Move(World& world, Transform& transform, Input& input, Animator& anim, LocomotionData& loco)
+{
+	if (ProcessTurn(world, transform, anim, loco))
+	{
+		return;
 	}
 
-	// アニメーションの切り替え
-	if (animator.currentClipName != targetClip)
+	Vector3 camForward = m_cameraTransform->rotation * Vector3::forward;
+	Vector3 camRight = m_cameraTransform->rotation * Vector3::right;
+	camForward.y = 0; camRight.y = 0;
+	camForward = camForward.Normalized();
+	camRight = camRight.Normalized();
+	Vector3 moveDirection = camForward * input.direction.y + camRight * input.direction.x;
+
+	std::string targetClip = "Idle";
+	const float moveThreshold = 0.01f;
+	
+	Vector3 targetDirection = moveDirection;
+	loco.currentVelocity = Vector3::Lerp(loco.currentVelocity, targetDirection, Time::GetDeltaTime() * 15.0f);
+	if (loco.currentVelocity.SqrMagnitude() > 0.05f)
 	{
-		AnimationSystem::Play(animator, targetClip);
+		m_currentSpeed = input.dash ? RunSpeed : WalkSpeed;
+
+		if (moveDirection.SqrMagnitude() > moveThreshold)
+		{
+			Vector3 currentDir = loco.currentVelocity.Normalized();
+			Vector3 inputDir = moveDirection.Normalized();
+			float angle = LocomotionUtility::CalculateMoveAngle(currentDir, inputDir);
+
+			if (Mathf::Abs(angle) > 135.0f) 
+			{
+				std::string turnClip = (angle > 0) ? "Turn_Right_180" : "Turn_Left_180";
+				if (anim.clips.count(turnClip) > 0)
+				{
+					loco.state = LocomotionState::Turning;
+					loco.turnTargetRot = Quaternion::LookRotation(inputDir, Vector3::up);
+					loco.currentVelocity = inputDir;
+					AnimationSystem::Play(anim, turnClip);
+					anim.isLoop = false;
+					return;
+				}
+			}
+			else
+			{
+				targetClip = input.dash ? "Run_Forward" : "Walk_Forward";
+				Quaternion targetRotation = Quaternion::LookRotation(inputDir, Vector3::up);
+
+				transform.rotation = Quaternion::Slerp(transform.rotation, targetRotation, Time::GetDeltaTime() * 10);
+				TransformSystem::GetInstance()->Translate(
+					transform, inputDir * m_currentSpeed * Time::GetDeltaTime());
+				loco.state = LocomotionState::Moving;
+			}
+		}
+		else
+		{
+			targetClip = anim.currentClipName;
+			loco.state = LocomotionState::Moving;
+		}
+	}
+	else
+	{
+		loco.state = LocomotionState::Idle;
+	}
+
+	if (anim.currentClipName != targetClip)
+	{
+		AnimationSystem::Play(anim, targetClip);
+		anim.isLoop = true;
 	}
 }
 
+// 弓矢の生成と発射
 void PlayerSystem::DrawArrow(Transform& transform, float damage, Animator& anim, World& world)
 {
 	Vector3 forward = transform.rotation * Vector3::forward;
@@ -66,7 +109,6 @@ void PlayerSystem::DrawArrow(Transform& transform, float damage, Animator& anim,
 	forward.Normalized();
 
 	Vector3 pos = TransformSystem::GetInstance()->GetPosition(*m_bowTransform);
-
 	Entity a = world.CreateWithModel(L"Assets/Arrow.fbx", nullptr, pos, Quaternion::LookRotation(forward));
 
 	Projectile projectile;
@@ -76,15 +118,9 @@ void PlayerSystem::DrawArrow(Transform& transform, float damage, Animator& anim,
 
 	Attackable attackable;
 	attackable.damage = damage;
-	if (anim.currentClipName == "Attack_00")
-	{
-		attackable.damageType = DamageType::Normal;
-	}
-	else
-	{
-		attackable.damageType = DamageType::Heavy;
-	}
+	attackable.damageType = (anim.currentClipName == "Attack_00") ? DamageType::Normal : DamageType::Heavy;
 	world.AddComponent<Attackable>(a, attackable);
+
 	Collider collider;
 	collider.type = ColliderType::Sphere;
 	collider.radius = 10.0f;
@@ -94,6 +130,7 @@ void PlayerSystem::DrawArrow(Transform& transform, float damage, Animator& anim,
 	world.AddComponent<Arrow>(a, Arrow{});
 }
 
+// 近接攻撃（脚）の当たり判定処理
 void PlayerSystem::LegAttack(Transform& transform, ComboState& state, Animator& anim, Attackable& attackable, World& world)
 {
 	m_legAttackColl->isEnable = true;
@@ -113,9 +150,8 @@ void PlayerSystem::LegAttack(Transform& transform, ComboState& state, Animator& 
 					damage.type = DamageType::Normal;
 					damage.damage = 30;
 					damageable->damageQueue.push(damage);
-					attackable.entities.push_back(target);
+						attackable.entities.push_back(target);
 				}
-
 				state.hitConfirm = true;
 			}
 		}
@@ -124,23 +160,25 @@ void PlayerSystem::LegAttack(Transform& transform, ComboState& state, Animator& 
 
 void PlayerSystem::Start(World& world)
 {
-	Entity camera = world.FindEntityOfType<BattleCamera>();
+	Entity camera = world.FindEntityOfType<PlayerCamera>();
 	m_cameraTransform = world.GetComponent<Transform>(camera);
 
-	// 初期値
 	m_currentSpeed = WalkSpeed;
 	m_stateTimer = 0.0f;
 	m_currentState = PlayerState::Move;
 	m_bowTransform = nullptr;
 	m_legAttackColl = nullptr;
+	m_hpBar = nullptr;
 }
 
+// システムのメインループ
 void PlayerSystem::Update(World& world)
 {
-	View<PlayerTag, Transform, Input, Animator, ComboState, Attackable, HP, Damageable, GuardState> view(world);
+	View<PlayerTag, Transform, Input, Animator, ComboState, Attackable, HP, Damageable, GuardState, LocomotionData> view(world);
 
-	for (auto [entity, playerTag, transform, input, animator, state, attackable, hp, damageable, guard] : view)
+	for (auto [entity, playerTag, transform, input, animator, state, attackable, hp, damageable, guard, loco] : view)
 	{
+		// 死亡判定
 		if (hp.isDeath)
 		{
 			if (animator.currentClipName != "Death")
@@ -148,47 +186,35 @@ void PlayerSystem::Update(World& world)
 				animator.isLoop = false;
 				AnimationSystem::Play(animator, "Death");
 			}
-
-			if (!animator.isPlaying)
-			{
-				SceneManager::ChangeScene("Title");
-			}
+			if (!animator.isPlaying) SceneManager::ChangeScene("Title");
 			continue;
 		}
 
-		// ガード中はガードシステムに処理を任せる
+		// ガード状態の反映
 		guard.isGuarding = input.isGuard;
-
 		if (input.isGuard)
 		{
+			loco.currentVelocity = Vector3(0, 0, 0);
+
 			continue;
 		}
 
+		// 被ダメージ処理（Hitアニメーション再生）
 		if (!damageable.damageQueue.empty())
 		{
-			for (int i = 0; i < damageable.damageQueue.size(); i++)
+			Damage damage = damageable.damageQueue.front();
+			if (damage.type == DamageType::Normal)
 			{
-				Damage damage = damageable.damageQueue.front();
-
-				switch (damage.type)
-				{
-				case DamageType::Normal:
-					animator.isLoop = false;
-					AnimationSystem::Play(animator, "Hit_00", true);
-					hp.currentHP -= damage.damage;
-					damageable.damageQueue.pop();
-					break;
-
-				default:
-					break;
-				}
+				animator.isLoop = false;
+				AnimationSystem::Play(animator, "Hit_00", true);
+				hp.currentHP -= damage.damage;
+				damageable.damageQueue.pop();
+				m_hpBar->value = hp.currentHP;
 			}
-		}
 
-		if (animator.currentClipName == "Hit_00" && animator.isPlaying)
-		{
-			continue;
+			loco.state = LocomotionState::Idle;
 		}
+		if (animator.currentClipName == "Hit_00" && animator.isPlaying) continue;
 
 		if (!m_bowTransform)
 		{
@@ -208,6 +234,7 @@ void PlayerSystem::Update(World& world)
 			legColl.type = ColliderType::Sphere;
 			legColl.radius = 30.0f;
 			legColl.isTrigger = true;
+			legColl.collisionMask = Layers::Enemy;
 			BoneSocket socket;
 			socket.targetEntity = entity;
 			socket.targetBoneName = "mixamorig:RightToeBase";
@@ -217,22 +244,33 @@ void PlayerSystem::Update(World& world)
 			m_legAttackColl->isEnable = false;
 		}
 
+		if (!m_hpBar)
+		{
+			m_hpBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerHPBar")));
+			m_hpBar->maxValue = hp.maxHP;
+			m_hpBar->minValue = 0;
+			m_hpBar->value = hp.maxHP;
+		}
+
+		// 移動または攻撃への分岐
 		if (state.currentMoveId == 0)
 		{
-			animator.isLoop = true;
-
-			Move(transform, input, animator);
-
+			Move(world, transform, input, animator, loco);
 			continue;
 		}
 
-		animator.isLoop = false;
+		loco.currentVelocity = Vector3(0, 0, 0);
 
+		// コンボ攻撃中の回転・攻撃実行
+		animator.isLoop = false;
 		const ComboMove& currentMove = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
 
 		// 敵の情報を取得
 		if (!m_gameManager)
+		{
 			m_gameManager = world.GetSystem<GameManagerSystem>();
+		}
+
 		Entity enemy = m_gameManager->GetEnemy();
 		Transform* enemyTransform = world.GetComponent<Transform>(enemy);
 
@@ -289,16 +327,17 @@ void PlayerSystem::Update(World& world)
 
 			if (canFire)
 			{
-
 				switch (currentMove.attackType)
 				{
 				case 1:
 					DrawArrow(transform, currentMove.damage, animator, world);
 					state.hitConfirm = true;
 					break;
+
 				case 2:
 					LegAttack(transform, state, animator, attackable, world);
 					break;
+
 				default:
 					break;
 				}

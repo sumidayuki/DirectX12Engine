@@ -211,7 +211,6 @@ class Keyboard;
 // グラフィックス関連
 #include "DescriptorHeap.h"
 #include "BindlessHeap.h"
-#include "DescriptorAllocator.h"
 #include "GraphicsBuffer.h"
 #include "FrameResource.h"
 #include "Graphics.h"
@@ -241,6 +240,12 @@ class Keyboard;
 // Utils
 #include "Utils.h"
 
+// Behaviour Tree
+#include "BehaviourTreeNode.h"
+#include "BTComposites.h"
+#include "BTActions.h"
+#include "BTDecorators.h"
+
 // Archetype
 #include "Archetype.h"
 #include "ArchetypeManager.h"
@@ -263,15 +268,11 @@ class Keyboard;
 #include "MeshRenderer.h"
 #include "WFMeshRenderer.h"
 #include "Collider.h"
-#include "SphereCollider.h"
+#include "CollisionEvents.h"
 #include "ComboState.h"
 #include "CharacterStatus.h"
 #include "ComboInput.h"
 #include "ComboMove.h"
-#include "BoxCollider.h"
-#include "AABBCollider.h"
-#include "CircleCollider2D.h"
-#include "BoxCollider2D.h"
 #include "DebugRenderer.h"
 #include "BoneSocket.h"
 #include "MeshFilter.h"
@@ -283,10 +284,17 @@ class Keyboard;
 #include "Attackable.h"
 #include "Damageable.h"
 #include "Rigidbody.h"
-#include "UICanvas.h"
-#include "UIObject.h"
-#include "UIImage.h"
+#include "UIGraphic.h"
+#include "Canvas.h"
+#include "Image.h"
+#include "Button.h"
+#include "RectTransform.h"
+#include "Slider.h"
 #include "BehaviourTree.h";
+#include "HorizontalLayoutGroup.h"
+#include "VerticalLayoutGroup.h"
+#include "EventSystem.h"
+#include "LocomotionData.h"
 
 #include "Physics.h"
 #include "GeometryUtility.h"
@@ -300,13 +308,18 @@ class Keyboard;
 #include "ShapeRendererSystem.h"
 */
 
-// API
+#include "UIManager.h"
+
+// API, Utility
 #include "UIAPI.h"
 #include "SpriteAPI.h"
+#include "LocomotionUtility.h"
 
 // World
 #include "World.h"
 #include "View.h"
+
+#include "CollisionQuery.h"
 
 // Scene
 #include "Scene.h"

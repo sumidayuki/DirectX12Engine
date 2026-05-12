@@ -51,13 +51,39 @@ void Mouse::Update()
     // スクリーン空間での位置をクライアント空間での位置に変換する
     ScreenToClient(m_hWnd, &cursorPos);
 
-    // クライアント空間での位置、速度、加速度を計算する
-    m_motionInClient.position[1] = m_motionInClient.position[0];
-    m_motionInClient.position[0] = { cursorPos.x, cursorPos.y };
-    m_motionInClient.velocity[1] = m_motionInClient.velocity[0];
-    m_motionInClient.velocity[0].x = (float)(m_motionInClient.position[0].x - m_motionInClient.position[1].x);
-    m_motionInClient.velocity[0].y = (float)(m_motionInClient.position[0].y - m_motionInClient.position[1].y);
-    m_motionInClient.acceleration = m_motionInClient.velocity[0] - m_motionInClient.velocity[1];
+    if (m_isLocked)
+    {
+        // 中央固定モード: ウィンドウ中央からのオフセットを速度として計算する
+        RECT clientRect;
+        ::GetClientRect(m_hWnd, &clientRect);
+        const int centerX = (clientRect.right - clientRect.left) / 2;
+        const int centerY = (clientRect.bottom - clientRect.top) / 2;
+
+        // 速度 = 現在のカーソル位置 - ウィンドウ中央
+        m_motionInClient.velocity[1] = m_motionInClient.velocity[0];
+        m_motionInClient.velocity[0].x = (float)(cursorPos.x - centerX);
+        m_motionInClient.velocity[0].y = (float)(cursorPos.y - centerY);
+        m_motionInClient.acceleration = m_motionInClient.velocity[0] - m_motionInClient.velocity[1];
+
+        // 位置は中央として記録する (次フレームの差分計算に影響しないように)
+        m_motionInClient.position[1] = { centerX, centerY };
+        m_motionInClient.position[0] = { centerX, centerY };
+
+        // カーソルを中央に戻す
+        POINT screenCenter = { centerX, centerY };
+        ::ClientToScreen(m_hWnd, &screenCenter);
+        ::SetCursorPos(screenCenter.x, screenCenter.y);
+    }
+    else
+    {
+        // 通常モード: 前回位置との差分から速度を計算する
+        m_motionInClient.position[1] = m_motionInClient.position[0];
+        m_motionInClient.position[0] = { cursorPos.x, cursorPos.y };
+        m_motionInClient.velocity[1] = m_motionInClient.velocity[0];
+        m_motionInClient.velocity[0].x = (float)(m_motionInClient.position[0].x - m_motionInClient.position[1].x);
+        m_motionInClient.velocity[0].y = (float)(m_motionInClient.position[0].y - m_motionInClient.position[1].y);
+        m_motionInClient.acceleration = m_motionInClient.velocity[0] - m_motionInClient.velocity[1];
+    }
 
     // Windows APIを利用してマウスボタンの状態を取得する
     m_buttonStates[(int)MouseButton::Left].Update((GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0);
@@ -71,4 +97,38 @@ void Mouse::Update()
 ButtonControl Mouse::GetButtonState(MouseButton button)
 {
     return m_buttonStates[(int)button];
+}
+
+void Mouse::SetVisible(bool isVisible)
+{
+    if (m_isVisible == isVisible) return;
+    m_isVisible = isVisible;
+
+    // ShowCursor はカウンター方式なので、表示/非表示を1回だけ切り替える
+    if (isVisible)
+    {
+        while (::ShowCursor(TRUE) < 0) {}
+    }
+    else
+    {
+        while (::ShowCursor(FALSE) >= 0) {}
+    }
+}
+
+void Mouse::SetLock(bool isLock)
+{
+    if (m_isLocked == isLock) return;
+    m_isLocked = isLock;
+
+    if (isLock)
+    {
+        // 固定開始時にカーソルを中央へ移動
+        RECT clientRect;
+        ::GetClientRect(m_hWnd, &clientRect);
+        POINT center;
+        center.x = (clientRect.right - clientRect.left) / 2;
+        center.y = (clientRect.bottom - clientRect.top) / 2;
+        ::ClientToScreen(m_hWnd, &center);
+        ::SetCursorPos(center.x, center.y);
+    }
 }

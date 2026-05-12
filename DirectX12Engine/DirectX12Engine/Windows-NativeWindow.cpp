@@ -34,9 +34,6 @@ namespace Windows
 
         }
 
-        // カーソル非表示
-		::ShowCursor(FALSE);
-
         const DWORD dwStyle = WS_OVERLAPPEDWINDOW;      // ウィンドウスタイル
         const DWORD dwExStyle = WS_EX_APPWINDOW;        // 拡張ウィンドウスタイル
         const HMENU hMenu = nullptr;                    // メニューバーの作成
@@ -79,6 +76,23 @@ namespace Windows
         }
         break;
 #endif 
+        case WM_SETCURSOR:
+        {
+            // カーソルがクライアント領域内にある場合
+            if (LOWORD(msg.lParam) == HTCLIENT)
+            {
+                // Mouse::m_isVisible に応じてカーソルを設定する
+                if (!::Mouse::IsVisible())
+                {
+                    ::SetCursor(NULL);
+                    msg.result = TRUE;
+                    return;
+                }
+            }
+            // それ以外はデフォルト処理に委ねる
+            return this->DefWndProc(msg);
+        }
+
         case WM_DESTROY:
             ::PostQuitMessage(0);
             break;

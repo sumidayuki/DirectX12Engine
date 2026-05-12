@@ -6,7 +6,7 @@ void BehaviourTreeSystem::Update(World& world)
 	for (auto [entity, bt] : view)
 	{
         if (!bt.root) continue;
-
+    
         // Blackboard ‚ğÅVó‘Ô‚ÉXV
         bt.blackboard.world = &world;
         bt.blackboard.self = entity;

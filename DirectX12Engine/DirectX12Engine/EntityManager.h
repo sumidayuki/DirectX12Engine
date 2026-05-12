@@ -10,6 +10,8 @@ private:
 	std::vector<uint32_t> m_freeIds;		// EntityのID
 
 public:
+	void Clear();
+
 	/// <summary>
 	/// エンティティを作成します。
 	/// </summary>

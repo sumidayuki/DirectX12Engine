@@ -1,5 +1,11 @@
 #include "EntityManager.h"
 
+void EntityManager::Clear()
+{
+    m_generations.clear();
+    m_freeIds.clear();
+}
+
 Entity EntityManager::CreateEntity()
 {
     uint32_t id;
