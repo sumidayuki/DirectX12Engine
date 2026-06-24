@@ -70,6 +70,8 @@ void InputManager::StaticConstructor(HWND hWnd)
     {
         m_gamepads[i] = new Gamepad((PlayerIndex)i);
     }
+
+    m_inputBind = InputBind();
 }
 
 

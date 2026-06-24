@@ -16,46 +16,52 @@ void PlayerCameraSystem::Draw(World& world)
     {
         if (!m_playerTransform)
         {
-            // PlayerのTransformを取得
             m_playerTransform = world.GetComponent<Transform>(playerCamera.player);
-            if (!m_playerTransform) continue; // プレイヤーが見つからない場合はスキップ
+            if (!m_playerTransform) continue;
         }
 
-        const Vector3 currentPosition = transform.position;
+        playerCamera.currentScale = Mathf::Lerp(playerCamera.currentScale, playerCamera.targetScale, Time::GetDeltaTime() * playerCamera.zoomLerpFactor);
 
         const Vector2 mouseVelocity = Mouse::GetVelocity();
         m_yaw -= mouseVelocity.x * playerCamera.sensitivity;
         m_pitch = Mathf::Clamp(m_pitch + mouseVelocity.y * playerCamera.sensitivity, -40.0f, 80.0f);
 
-        // 球面座標を使ってカメラの望ましい位置を計算
-        const float distance = -playerCamera.offset.z;
-        const float height = playerCamera.offset.y;
         const float yawRad = m_yaw * Mathf::Deg2Rad;
         const float pitchRad = m_pitch * Mathf::Deg2Rad;
 
-        Vector3 offset;
-        offset.x = distance * Mathf::Cos(pitchRad) * Mathf::Sin(yawRad);
-        offset.y = distance * Mathf::Sin(pitchRad);
-        offset.z = -distance * Mathf::Cos(pitchRad) * Mathf::Cos(yawRad);
+        // スケール適用
+        const float currentDist = -playerCamera.offset.z * playerCamera.currentScale;
+        const float currentHeight = playerCamera.offset.y * playerCamera.currentScale;
+        const float currentSide = playerCamera.offset.x * playerCamera.currentScale;
 
-        const Vector3 lookAtPoint = m_playerTransform->position + Vector3(0.0f, height, 0.0f);
+        Vector3 cameraRight = Vector3(Mathf::Cos(yawRad), 0, -Mathf::Sin(yawRad));
 
-        Vector3 targetPosition = lookAtPoint + offset;
+        const Vector3 lookAtPoint = m_playerTransform->position
+            + Vector3(0.0f, currentHeight, 0.0f)
+            + (cameraRight * currentSide);
 
-        Ray ray = Ray(targetPosition, (lookAtPoint - targetPosition).Normalized());
+        // 球面座標から「注視点に対するカメラの相対位置」を計算
+        Vector3 relativePos;
+        relativePos.x = currentDist * Mathf::Cos(pitchRad) * Mathf::Sin(yawRad);
+        relativePos.y = currentDist * Mathf::Sin(pitchRad);
+        relativePos.z = -currentDist * Mathf::Cos(pitchRad) * Mathf::Cos(yawRad);
 
+        // 最終的なターゲット位置
+        Vector3 targetPosition = lookAtPoint + relativePos;
+
+        Ray ray = Ray(lookAtPoint, relativePos.Normalized());
         RaycastHit hit;
-
-        if (Physics::Raycast(world, ray, hit, distance, Layers::Environment))
+        // 注視点からカメラ方向へ飛ばす
+        if (Physics::Raycast(world, ray, hit, currentDist, Layers::Environment))
         {
-            // 最終位置を計算
-            targetPosition = hit.point + ray.GetDirection() * 5;
+            // 壁がある場合はヒット地点に寄せる
+            targetPosition = hit.point + (lookAtPoint - targetPosition).Normalized() * 0.1f;
         }
 
         TransformSystem::GetInstance()->SetLocalPosition(transform, targetPosition);
 
-        // カメラを注視点に向ける (位置が決定した後で回転を適用)
-        const Vector3 lookDirection = (lookAtPoint - transform.position).Normalized();
+        // 常に「ずらした後の注視点」を向く
+        const Vector3 lookDirection = (lookAtPoint - targetPosition).Normalized();
         TransformSystem::GetInstance()->SetLocalRotation(transform, Quaternion::LookRotation(lookDirection, Vector3::up));
     }
 }

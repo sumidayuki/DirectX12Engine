@@ -4,11 +4,15 @@
 #include "ArrowSystem.h"
 #include "CharacterImporter.h"
 #include "UILayoutImporter.h"
+#include "AIRuleImporter.h"
 
 bool MainScene::Load()
 {
 	CharacterImporter::CreateSingleton();
 	CharacterImporter::GetInstance()->Import();
+
+	AIRuleImporter aiImporter;
+	aiImporter.Import();
 
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/player-01.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Arrow.fbx");
@@ -20,15 +24,22 @@ bool MainScene::Load()
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/TextureNormal-00.jpg");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/T_Wall_C.png");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/T_Wall_N.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_guard.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_guard-attack.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_shageki.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_shageki-finish.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_rolling.png");
 
 	// Worldにシステムを追加
 	m_world.AddSystem(std::make_unique<GameManagerSystem>());
+	m_world.AddSystem(std::make_unique<StaminaSystem>());
 	m_world.AddSystem(std::make_unique<ComboSystem>());
 	m_world.AddSystem(std::make_unique<GuardSystem>());
+	m_world.AddSystem(std::make_unique<PlayerActionGuideSystem>());
 	m_world.AddSystem(std::make_unique<PlayerSystem>());
 	m_world.AddSystem(std::make_unique<PlayerCameraSystem>());
 	m_world.AddSystem(std::make_unique<BattleCameraSystem>());
-	m_world.AddSystem(std::make_unique<BehaviourTreeSystem>());
+	m_world.AddSystem(std::make_unique<AIStateMachineSystem>());
 	m_world.AddSystem(std::make_unique<EnemySystem>());
 	m_world.AddSystem(std::make_unique<ArrowSystem>());
 
@@ -315,7 +326,7 @@ void MainScene::Start()
 }
 
 void MainScene::Update()
-{	
+{
 }
 
 void MainScene::Draw()

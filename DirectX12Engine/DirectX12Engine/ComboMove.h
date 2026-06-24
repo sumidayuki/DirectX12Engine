@@ -3,6 +3,7 @@
 struct ComboMove : IComponentData
 {
     int moveId;                             // ユニークID
+    std::string textName;
     int attackType;                         // 攻撃タイプ（0:弱攻撃、1:強攻撃、2:特殊攻撃など）
     AttackInputType requiredInput;          // この技を出すために必要な入力タイプ
     bool isStarter;                         // 始動技判定フラグ

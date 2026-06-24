@@ -3,6 +3,7 @@
 #include "KeyCode.h"
 #include "Gamepad.h"
 #include "InputDeviceType.h"
+#include "InputBind.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 // 入力デバイス統括クラス
@@ -54,6 +55,8 @@ private:
     static inline bool m_keysLast[KeyCodeCount];
     static inline ButtonControl m_keys[KeyCodeCount];
     static inline InputDeviceType m_currentInputDeviceType;
+    
+    static inline InputBind m_inputBind;
 
 public:
 	static InputDeviceType GetCurrentInputDeviceType() { return m_currentInputDeviceType; }
@@ -65,6 +68,8 @@ public:
 
 	// 何か一つでもキーが押されているかを確認します。
 	static bool IsAnyKeyPressed();
+
+    static const InputBind& GetInputBind() { return m_inputBind; }
 };
 
 

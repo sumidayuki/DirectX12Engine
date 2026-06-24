@@ -13,30 +13,50 @@ void AssetManager::LoadAsset(AssetType type, const std::wstring& path)
 {
     switch (type)
     {
-    case AssetType::Texture:
+        case AssetType::Texture:
         {
-        if (m_textureCache.count(path)) return;
+            if (m_textureCache.count(path))
+            {
+                return;
+            }
 
-        Texture2D* texture = m_texImp.Import(path.c_str());
+            Texture2D* texture = m_texImp.Import(path.c_str());
 
-        if (texture)
+            if (texture)
+            {
+                m_textureCache[path] = texture;
+            }
+            break;
+        }
+        case AssetType::Model:
         {
-            m_textureCache[path] = texture;
-        }
-        break;
-        }
-    case AssetType::Model:
-        {
-        if (m_modelCache.count(path)) return;
+            if (m_modelCache.count(path))
+            {
+                return;
+            }
 
-        ModelData* modelData = m_modImp.Import(path);
+            ModelData* modelData = m_modImp.Import(path);
 
-        if (modelData)
+            if (modelData)
+            {
+                m_modelCache[path] = modelData;
+            }
+            break;
+        }
+        case AssetType::Audio:
         {
-            m_modelCache[path] = modelData;
-        }
-        break;
-        }
+            if (m_audioCache.count(path))
+            {
+                return;
+            }
+
+            AudioClip* clip = m_audImp.Import(path);
+            if (clip)
+            {
+                m_audioCache[path] = clip;
+            }
+            break;
+		}
     }
 }
 
@@ -182,4 +202,5 @@ void AssetManager::Clear()
     m_modelCache.clear();
 
     m_textureCache.clear();
+	m_audioCache.clear();
 }

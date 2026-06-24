@@ -30,7 +30,7 @@ bool PlayerSystem::ProcessTurn(World& world, Transform& transform, Animator& ani
 }
 
 // 入力に基づいたキャラクターの移動と回転を制御
-void PlayerSystem::Move(World& world, Transform& transform, Input& input, Animator& anim, LocomotionData& loco)
+void PlayerSystem::Move(World& world, Transform& transform, Input& input, Animator& anim, LocomotionData& loco, RollingState& rolling, Stamina& stamina)
 {
 	if (ProcessTurn(world, transform, anim, loco))
 	{
@@ -49,6 +49,26 @@ void PlayerSystem::Move(World& world, Transform& transform, Input& input, Animat
 	
 	Vector3 targetDirection = moveDirection;
 	loco.currentVelocity = Vector3::Lerp(loco.currentVelocity, targetDirection, Time::GetDeltaTime() * 15.0f);
+
+	if (input.isRolling && stamina.value >= 25.0f)
+	{
+		stamina.value -= 25.0f;
+		stamina.timer = 0.0f;
+
+		Vector3 rollDir = transform.rotation * Vector3::forward;
+		rollDir.y = 0;
+		rollDir = rollDir.Normalized();
+		transform.rotation = Quaternion::LookRotation(rollDir, Vector3::up);
+		rolling.direction = rollDir;
+		rolling.timer = 0.0f;
+		rolling.isRolling = true;
+		rolling.isInvincible = false;
+		loco.currentVelocity = Vector3(0, 0, 0);
+		AnimationSystem::Play(anim, "Rolling");
+		anim.isLoop = false;
+		return;
+	}
+
 	if (loco.currentVelocity.SqrMagnitude() > 0.05f)
 	{
 		m_currentSpeed = input.dash ? RunSpeed : WalkSpeed;
@@ -102,7 +122,7 @@ void PlayerSystem::Move(World& world, Transform& transform, Input& input, Animat
 }
 
 // 弓矢の生成と発射
-void PlayerSystem::DrawArrow(Transform& transform, float damage, Animator& anim, World& world)
+void PlayerSystem::DrawArrow(Transform& transform, float speed, float damage, Animator& anim, World& world)
 {
 	Vector3 forward = transform.rotation * Vector3::forward;
 	forward.y = 0;
@@ -113,7 +133,8 @@ void PlayerSystem::DrawArrow(Transform& transform, float damage, Animator& anim,
 
 	Projectile projectile;
 	projectile.lifeTime = 1.0f;
-	projectile.speed = 2000.0f;
+	projectile.speed = speed;
+	projectile.velocity = forward * projectile.speed;
 	world.AddComponent<Projectile>(a, projectile);
 
 	Attackable attackable;
@@ -162,6 +183,7 @@ void PlayerSystem::Start(World& world)
 {
 	Entity camera = world.FindEntityOfType<PlayerCamera>();
 	m_cameraTransform = world.GetComponent<Transform>(camera);
+	m_playerCamera = world.GetComponent<PlayerCamera>(camera);
 
 	m_currentSpeed = WalkSpeed;
 	m_stateTimer = 0.0f;
@@ -174,9 +196,9 @@ void PlayerSystem::Start(World& world)
 // システムのメインループ
 void PlayerSystem::Update(World& world)
 {
-	View<PlayerTag, Transform, Input, Animator, ComboState, Attackable, HP, Damageable, GuardState, LocomotionData> view(world);
+	View<PlayerTag, Transform, Input, Animator, ComboState, Attackable, HP, Damageable, GuardState, LocomotionData, RollingState, Stamina> view(world);
 
-	for (auto [entity, playerTag, transform, input, animator, state, attackable, hp, damageable, guard, loco] : view)
+	for (auto [entity, playerTag, transform, input, animator, state, attackable, hp, damageable, guard, loco, rolling, stamina] : view)
 	{
 		// 死亡判定
 		if (hp.isDeath)
@@ -191,8 +213,7 @@ void PlayerSystem::Update(World& world)
 		}
 
 		// ガード状態の反映
-		guard.isGuarding = input.isGuard;
-		if (input.isGuard)
+		if (guard.isGuarding)
 		{
 			loco.currentVelocity = Vector3(0, 0, 0);
 
@@ -205,11 +226,15 @@ void PlayerSystem::Update(World& world)
 			Damage damage = damageable.damageQueue.front();
 			if (damage.type == DamageType::Normal)
 			{
-				animator.isLoop = false;
-				AnimationSystem::Play(animator, "Hit_00", true);
-				hp.currentHP -= damage.damage;
+				if (!rolling.isInvincible)
+				{
+					animator.isLoop = false;
+					AnimationSystem::Play(animator, "Hit_00", true);
+					hp.currentHP -= damage.damage;
+					m_hpBar->value = hp.currentHP;
+				}
+
 				damageable.damageQueue.pop();
-				m_hpBar->value = hp.currentHP;
 			}
 
 			loco.state = LocomotionState::Idle;
@@ -252,10 +277,30 @@ void PlayerSystem::Update(World& world)
 			m_hpBar->value = hp.maxHP;
 		}
 
+		if (rolling.isRolling)
+		{
+			rolling.timer += Time::GetDeltaTime();
+			float progress = rolling.timer / rolling.duration;
+
+			rolling.isInvincible = (progress >= rolling.invincibleStart && progress <= rolling.invincibleEnd);
+			
+			float easedSpeed = rolling.speed * Mathf::Max(0.0f, 1.0f - progress * progress);
+			
+			TransformSystem::GetInstance()->Translate(transform, rolling.direction * easedSpeed * Time::GetDeltaTime());
+			
+			if (progress >= 1.0f || !animator.isPlaying)
+			{
+				rolling.isRolling = false;
+				rolling.isInvincible = false;
+				loco.state = LocomotionState::Idle;
+			}
+			continue;
+		}
+
 		// 移動または攻撃への分岐
 		if (state.currentMoveId == 0)
 		{
-			Move(world, transform, input, animator, loco);
+			Move(world, transform, input, animator, loco, rolling, stamina);
 			continue;
 		}
 
@@ -330,7 +375,8 @@ void PlayerSystem::Update(World& world)
 				switch (currentMove.attackType)
 				{
 				case 1:
-					DrawArrow(transform, currentMove.damage, animator, world);
+					m_playerCamera->targetScale = 0.9f;
+					DrawArrow(transform, 2000, currentMove.damage, animator, world);
 					state.hitConfirm = true;
 					break;
 
@@ -349,5 +395,6 @@ void PlayerSystem::Update(World& world)
 			attackable.isAttacking = false;
 			attackable.entities.clear();
 		}
+
 	}
 }

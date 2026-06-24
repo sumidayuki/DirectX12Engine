@@ -45,3 +45,13 @@ constexpr T FNV1a_Hash(std::string_view str) noexcept
 
     return hash;
 }
+
+constexpr std::uint32_t operator ""_h(const char* str, std::size_t len) noexcept
+{
+    return FNV1a_Hash<std::uint32_t>(std::string_view(str, len));
+}
+
+constexpr std::uint64_t operator ""_h64(const char* str, std::size_t len) noexcept
+{
+    return FNV1a_Hash<std::uint64_t>(std::string_view(str, len));
+}

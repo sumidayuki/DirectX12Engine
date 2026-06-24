@@ -124,6 +124,34 @@ void EnemySystem::Move(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& 
 	}
 }
 
+void EnemySystem::Miai(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status)
+{
+	Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
+
+	aiAgent.speed = StatusAPI::GetFloat(status, "miaiMoveSpeed");
+
+	float dx = transform.position.x - targetTrans->position.x;
+	float dz = transform.position.z - targetTrans->position.z;
+	float currentAngle = Mathf::Atan2(dz, dx);
+	float radius = Mathf::Sqrt(dx * dx + dz * dz);
+
+	float rotationSpeed = 0.01f;
+	float nextAngle = currentAngle + rotationSpeed;
+
+	float posX = targetTrans->position.x + radius * Mathf::Cos(nextAngle);
+	float posZ = targetTrans->position.z + radius * Mathf::Sin(nextAngle);
+
+	AIAgentSystem::GetInstance()->SetDestination(aiAgent, Vector3(posX, transform.position.y, posZ));
+}
+
+void EnemySystem::Approach(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status)
+{
+	m_isInvincivle = true;
+	Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
+	aiAgent.speed = StatusAPI::GetFloat(status, "approachMoveSpeed");
+	AIAgentSystem::GetInstance()->SetDestination(aiAgent, targetTrans->position);
+}
+
 void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world)
 {
 	// 設定値
@@ -139,6 +167,7 @@ void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Tra
 		const auto& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
 		AnimationSystem::Play(animator, move.animationName, true);
 		state.isAnimed = true;
+		m_isInvincivle = true;
 	}
 
 	float currentTime = state.timer;
@@ -225,9 +254,9 @@ void EnemySystem::Start(World& world)
 
 void EnemySystem::Update(World& world)
 {
-	View<Enemy, AIAgent, Transform, Collider, Animator, HP, ComboState, Damageable, Attackable, BehaviourTree, LocomotionData> view(world);
+	View<Enemy, AIAgent, Transform, Collider, Animator, HP, ComboState, Damageable, Attackable, LocomotionData, CharacterStatus, AIState> view(world);
 
-	for (auto [entity, enemy, aiAgent, transform, collider, animator, hp, state, damageable, attackable, behaviourTree, loco] : view)
+	for (auto [entity, enemy, aiAgent, transform, collider, animator, hp, state, damageable, attackable, loco, status, aiState] : view)
 	{
 		// コライダーが設定されていないなら
 		if (!m_leftHandColl && !m_rightHandColl)
@@ -282,24 +311,15 @@ void EnemySystem::Update(World& world)
 			m_hpBar->value = hp.maxHP;
 		}
 
-		bool punchAttackReady = enemy.attackCoolDownTimer <= 0;
-		behaviourTree.blackboard.SetBool("PunchAttackReady", punchAttackReady);
-
-		bool jumpAttackReady = enemy.jumpAttackCoolDownTimer <= 0;
-		behaviourTree.blackboard.SetBool("JumpAttackReady", jumpAttackReady);
-
-		bool isRecovery = enemy.recoveryTimer >= 0;
-		behaviourTree.blackboard.SetBool("IsRecovery", isRecovery);
-
 		Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
 		Vector3 toTarget = targetTrans->position - transform.position;
 		float distance = toTarget.Magnitude();
-		behaviourTree.blackboard.SetFloat("distToTarget", distance);
 
 		if (hp.isDeath)
 		{
 			if (animator.currentClipName != "Death")
 			{
+				animator.isLoop = false;
 				AnimationSystem::Play(animator, "Death");
 			}
 
@@ -312,22 +332,35 @@ void EnemySystem::Update(World& world)
 			continue;
 		}
 
-		// 被弾による硬直とコンボ強制終了
+		// ダメージ処理
 		if (!damageable.damageQueue.empty())
 		{
 			while (!damageable.damageQueue.empty())
 			{
 
-				if (!m_isInvincivle)
-				{
-					state.currentMoveId = 0; // コンボ中断
-					animator.isLoop = false;
-					hp.currentHP -= damageable.damageQueue.front().damage;
-					m_hpBar->value = hp.currentHP;
-					loco.state = LocomotionState::Idle;
-				}
+				hp.currentHP -= damageable.damageQueue.front().damage;
+				m_hpBar->value = hp.currentHP;
+
 				damageable.damageQueue.pop();
 			}
+		}
+
+		switch (aiState.currentStateID)
+		{
+		case "Miai"_h:
+			Miai(world, enemy, aiAgent, transform, status);
+			break;
+
+		case "Approach"_h:
+			Approach(world, enemy, aiAgent, transform, status);
+			break;
+
+		case "Recovery"_h:
+			AIAgentSystem::GetInstance()->ResetAI(aiAgent);
+			break;
+
+		default:
+			break;
 		}
 
 		switch (state.currentMoveId)
@@ -404,7 +437,21 @@ void EnemySystem::Update(World& world)
 
 			if (move.hitEndTime <= state.timer / move.duration)
 			{
-				enemy.recoveryTimer = enemy.recoveryTime;
+				switch (state.currentMoveId)
+				{
+				case 1:
+					StatusAPI::SetFloat(status, "AttackCoolDownTimer", StatusAPI::GetFloat(status, "AttackCoolDownTime"));
+					break;
+
+				case 3:
+					StatusAPI::SetFloat(status, "JumpAttackCoolDownTimer", StatusAPI::GetFloat(status, "JumpAttackCoolDownTime"));
+					break;
+
+				default:
+					break;
+				}
+
+				StatusAPI::SetFloat(status, "RecoveryTimer", StatusAPI::GetFloat(status, "RecoveryTime"));
 			}
 		}
 		else
@@ -415,10 +462,11 @@ void EnemySystem::Update(World& world)
 			m_jumpAttackColl->isEnable = false;
 			attackable.entities.clear();
 			attackable.isAttacking = false;
+			m_isInvincivle = false;
 		}
 
-		enemy.attackCoolDownTimer -= Time::GetDeltaTime();
-		enemy.jumpAttackCoolDownTimer -= Time::GetDeltaTime();
-		enemy.recoveryTimer -= Time::GetDeltaTime();
+		StatusAPI::SetFloat(status, "AttackCoolDownTimer", StatusAPI::GetFloat(status, "AttackCoolDownTimer") - Time::GetDeltaTime());
+		StatusAPI::SetFloat(status, "JumpAttackCoolDownTimer", StatusAPI::GetFloat(status, "JumpAttackCoolDownTimer") - Time::GetDeltaTime());
+		StatusAPI::SetFloat(status, "RecoveryTimer", StatusAPI::GetFloat(status, "RecoveryTimer") - Time::GetDeltaTime());
 	}
 };

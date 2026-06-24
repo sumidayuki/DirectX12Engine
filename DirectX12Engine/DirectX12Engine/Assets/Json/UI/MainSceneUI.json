@@ -46,6 +46,139 @@
                     "depth": 0,
                     "raycastTarget": false
                 }
+            },
+            {
+                "name": "PlayerStaminaBar",
+                "type": "Slider",
+                "background": "Assets/White.png",
+                "backgroundColor": [ 1.0, 0.0, 0.0, 1 ],
+                "fill": "Assets/White.png",
+                "fillColor": [ 1, 1, 0, 1 ],
+                "initialValue": 100.0,
+                "leftToRight": true,
+                "rect": {
+                    "pos": [ -910, -420 ],
+                    "size": [ 500, 20 ],
+                    "anchorMin": [ 0.5, 0.5 ],
+                    "anchorMax": [ 0.5, 0.5 ],
+                    "pivot": [ 0.0, 0.0 ]
+                },
+                "graphic": {
+                    "color": [ 1, 1, 1, 1 ],
+                    "depth": 0,
+                    "raycastTarget": false
+                }
+            },
+            {
+                "name": "PlayerActionGuide",
+                "type": "VerticalLayoutGroup",
+                "spacing": 10,
+                "rectOffset": {
+                    "left": 0,
+                    "right": 0,
+                    "top": 0,
+                    "bottom": 0
+                },
+                "textAnchor": "UpperLeft",
+                "rect": {
+                    "pos": [ -880, -200 ],
+                    "size": [ 100, 100 ],
+                    "anchorMin": [ 0.5, 0.5 ],
+                    "anchorMax": [ 0.5, 0.5 ],
+                    "pivot": [ 0.0, 0.0 ]
+                },
+                "elements": [
+                    {
+                        "name": "text_shageki",
+                        "type": "Image",
+                        "source": "Assets/Images/Text/text_shageki.png",
+                        "rect": [ 0, 370, 850, 110 ],
+                        "rectT": {
+                            "pos": [ 100, 100 ],
+                            "size": [ 435, 55 ],
+                            "anchorMin": [ 0.5, 0.5 ],
+                            "anchorMax": [ 0.5, 0.5 ],
+                            "pivot": [ 0.5, 0.5 ]
+                        },
+                        "graphic": {
+                            "color": [ 1, 1, 1, 1 ],
+                            "depth": 0,
+                            "raycastTarget": false
+                        }
+                    },
+                    {
+                        "name": "text_shageki-finish",
+                        "type": "Image",
+                        "source": "Assets/Images/Text/text_shageki-finish.png",
+                        "rect": [ 0, 370, 850, 110 ],
+                        "rectT": {
+                            "pos": [ 100, 100 ],
+                            "size": [ 435, 55 ],
+                            "anchorMin": [ 0.5, 0.5 ],
+                            "anchorMax": [ 0.5, 0.5 ],
+                            "pivot": [ 0.5, 0.5 ]
+                        },
+                        "graphic": {
+                            "color": [ 1, 1, 1, 1 ],
+                            "depth": 0,
+                            "raycastTarget": false
+                        }
+                    },
+                    {
+                        "name": "text_guard-attack",
+                        "type": "Image",
+                        "source": "Assets/Images/Text/text_guard-attack.png",
+                        "rect": [ 0, 370, 850, 110 ],
+                        "rectT": {
+                            "pos": [ 100, 100 ],
+                            "size": [ 435, 55 ],
+                            "anchorMin": [ 0.5, 0.5 ],
+                            "anchorMax": [ 0.5, 0.5 ],
+                            "pivot": [ 0.5, 0.5 ]
+                        },
+                        "graphic": {
+                            "color": [ 1, 1, 1, 1 ],
+                            "depth": 0,
+                            "raycastTarget": false
+                        }
+                    },
+                    {
+                        "name": "text_guard",
+                        "type": "Image",
+                        "source": "Assets/Images/Text/text_guard.png",
+                        "rect": [ 0, 370, 850, 110 ],
+                        "rectT": {
+                            "pos": [ 100, 100 ],
+                            "size": [ 435, 55 ],
+                            "anchorMin": [ 0.5, 0.5 ],
+                            "anchorMax": [ 0.5, 0.5 ],
+                            "pivot": [ 0.5, 0.5 ]
+                        },
+                        "graphic": {
+                            "color": [ 1, 1, 1, 1 ],
+                            "depth": 0,
+                            "raycastTarget": false
+                        }
+                    },
+                    {
+                        "name": "text_rolling",
+                        "type": "Image",
+                        "source": "Assets/Images/Text/text_rolling.png",
+                        "rect": [ 0, 370, 850, 110 ],
+                        "rectT": {
+                            "pos": [ 100, 100 ],
+                            "size": [ 435, 55 ],
+                            "anchorMin": [ 0.5, 0.5 ],
+                            "anchorMax": [ 0.5, 0.5 ],
+                            "pivot": [ 0.5, 0.5 ]
+                        },
+                        "graphic": {
+                            "color": [ 1, 1, 1, 1 ],
+                            "depth": 0,
+                            "raycastTarget": false
+                        }
+                    }
+                ]
             }
         ]
     }

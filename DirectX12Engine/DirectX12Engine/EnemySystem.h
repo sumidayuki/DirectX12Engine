@@ -14,6 +14,8 @@ private:
 private:
 	bool ProcessTurn(World& world, Transform& transform, Animator& animator, LocomotionData& loco);
 	void Move(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, LocomotionData& loco);
+	void Miai(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status);	
+	void Approach(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status);
 	void JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world);
 	bool ProcessCollision(World& world, Collider* coll, ComboState& state, Attackable& attackable);
 

@@ -37,16 +37,22 @@ bool CharacterImporter::CharcterInitialize(const std::string& name, Entity entit
 {
 	const CharacterInfo& info = m_characterInfos.at(name);
 
+	// CharacterStatus コンポーネントを付与
+	world.AddComponent<CharacterStatus>(entity, info.status);
+
 	world.AddComponent<Velocity>(entity, Velocity{});
 	HP playerHP;
-	playerHP.maxHP = info.maxHealth;
+	playerHP.maxHP = StatusAPI::GetFloat(info.status, "maxHealth", 100.0f);
 	world.AddComponent<HP>(entity, playerHP);
 	world.AddComponent<Damageable>(entity, Damageable{});
 	world.AddComponent<Rigidbody>(entity, Rigidbody{});
 	Collider bColl;
 	bColl.type = ColliderType::AABB;
-	bColl.size = Vector3(info.hitBoxX, info.hitBoxY, info.hitBoxZ);
-	bColl.offset = Vector3(0, info.hitBoxY * 0.5f, 0);
+	float hitBoxX = StatusAPI::GetFloat(info.status, "hitBoxX", 40.0f);
+	float hitBoxY = StatusAPI::GetFloat(info.status, "hitBoxY", 180.0f);
+	float hitBoxZ = StatusAPI::GetFloat(info.status, "hitBoxZ", 40.0f);
+	bColl.size = Vector3(hitBoxX, hitBoxY, hitBoxZ);
+	bColl.offset = Vector3(0, hitBoxY * 0.5f, 0);
 	world.AddComponent<Collider>(entity, bColl);
 	ComboState comboState;
 	comboState.name = name;
@@ -54,8 +60,9 @@ bool CharacterImporter::CharcterInitialize(const std::string& name, Entity entit
 	ComboInput comboInput;
 	world.AddComponent<ComboInput>(entity, comboInput);
 	GuardState guardState;
-	guardState.shieldMaxHealth = info.shieldMaxHealth;
-	guardState.shieldHealth = info.shieldMaxHealth;
+	float shieldMax = StatusAPI::GetFloat(info.status, "shieldMaxHealth", 100.0f);
+	guardState.shieldMaxHealth = shieldMax;
+	guardState.shieldHealth = shieldMax;
 	world.AddComponent<GuardState>(entity, guardState);
 	Attackable attackable;
 	world.AddComponent<Attackable>(entity, attackable);
@@ -105,14 +112,36 @@ void CharacterImporter::ProcessStatus(const Json& json, CharacterInfo& info)
 {
 	const Json& status = json.value("status", Json::object());
 
-	info.maxHealth = status.value("maxHealth", 100.0f);
-	info.walkSpeed = status.value("walkSpeed", 100.0f);
-	info.runSpeed = status.value("runSpeed", 250.0f);
-	info.hitBoxX = status.value("hitBoxX", 40.0f);
-	info.hitBoxY = status.value("hitBoxY", 180.0f);
-	info.hitBoxZ = status.value("hitBoxZ", 40.0f);
-	info.shieldMaxHealth = status.value("shieldMaxHealth", 100.0f);
-	info.shieldRegenRate = status.value("shieldRegenRate", 10.0f);
+	// JSON の型に応じて自動的に適切なマップに格納
+	for (auto& [key, value] : status.items())
+	{
+		if (value.is_boolean())
+		{
+			StatusAPI::SetBool(info.status, key, value.get<bool>());
+		}
+		else if (value.is_number())
+		{
+			// nlohmann JSON では 150.0 のような値も integer として判定される場合があるため
+			// 数値は全て float として格納する
+			StatusAPI::SetFloat(info.status, key, value.get<float>());
+		}
+		else if (value.is_string())
+		{
+			StatusAPI::SetString(info.status, key, value.get<std::string>());
+		}
+		else if (value.is_object())
+		{
+			// Vector3 として解釈 { "x": ..., "y": ..., "z": ... }
+			if (value.contains("x") && value.contains("y") && value.contains("z"))
+			{
+				Vector3 v;
+				v.x = value.value("x", 0.0f);
+				v.y = value.value("y", 0.0f);
+				v.z = value.value("z", 0.0f);
+				StatusAPI::SetVector(info.status, key, v);
+			}
+		}
+	}
 
 #if _DEBUG
 	OutputDebugStringW((L"CharacterのStatus読み込みに成功\n"));
@@ -138,6 +167,7 @@ void CharacterImporter::ProcessMoves(const Json& json, CharacterInfo& info)
 void CharacterImporter::ProcessMove(const Json& json, ComboMove& move)
 {
 	move.moveId = json.at("moveId").get<int>();
+	move.textName = json.value("textName", "");
 	move.attackType = json.at("attackType").get<int>();
 	move.isStarter = json.at("isStarter").get<bool>();
 	move.requiredInput = (AttackInputType)json.at("requiredInput").get<int>();

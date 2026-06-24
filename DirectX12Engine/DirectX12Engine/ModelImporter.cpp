@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <vector>
 #include <string>
+#include "AudioImporter.h"
 
 // ワイド文字列 (wstring) をUTF-8文字列 (std::string) に変換するヘルパー関数
 // WinAPIのWideCharToMultiByte関数を使用

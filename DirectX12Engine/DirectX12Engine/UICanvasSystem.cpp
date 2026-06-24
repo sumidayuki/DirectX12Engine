@@ -166,8 +166,12 @@ void UICanvasSystem::DrawRect(
 
     if (sprite && sprite->GetTexture())
     {
-        obj.minUV = sprite->GetMinUV();
-        obj.maxUV = sprite->GetMaxUV();
+        obj.minUV.x = sprite->GetMinUV().x;
+        obj.maxUV.x = sprite->GetMaxUV().x;
+
+        obj.minUV.y = sprite->GetMaxUV().y;
+        obj.maxUV.y = sprite->GetMinUV().y;
+
         obj.textureIndex = sprite->GetTexture()->GetBindlessIndex();
         obj.hasTexture = 1;
     }

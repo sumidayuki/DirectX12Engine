@@ -17,7 +17,7 @@ void InputSystem::Update(World& world)
 
         if (combo.attackInputType != AttackInputType::Attack3)
         {
-            input.guard1 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::Space).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasPressedThisFrame();
+            input.guard1 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasPressedThisFrame();
         }
         else
         {
@@ -26,7 +26,7 @@ void InputSystem::Update(World& world)
 
         if (input.isGuard)
         {
-            input.guard2 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::Space).WasReleasedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasReleasedThisFrame();
+            input.guard2 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).WasReleasedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasReleasedThisFrame();
             input.isGuard = !input.guard2;
         }
         else
@@ -43,13 +43,17 @@ void InputSystem::Update(World& world)
             input.isGuard = true;
         }
 
+		input.isRolling = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::Space).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::LeftTrigger).WasPressedThisFrame();
+
         // 垂直方向の入力を計算
         // Wキーが押されている場合は1.0f、Sキーが押されている場合は-1.0f、両方またはどちらも押されていない場合は0.0f
         float vertical = 0.0f;
-        if (input.moveUp && !input.moveDown) {
+        if (input.moveUp && !input.moveDown) 
+        {
             vertical = 1.0f;
         }
-        else if (!input.moveUp && input.moveDown) {
+        else if (!input.moveUp && input.moveDown) 
+        {
             vertical = -1.0f;
         }
 

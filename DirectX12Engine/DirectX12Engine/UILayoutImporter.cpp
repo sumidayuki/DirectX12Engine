@@ -1,6 +1,20 @@
 #include "UILayoutImporter.h"
 #include "ButtonFunctionRegistry.h"
 
+static const std::unordered_map<std::string, TextAnchor> TextAnchorMap =
+{
+	{ "UpperLeft",		TextAnchor::UpperLeft },		// ã¶
+	{ "UpperCenter",	TextAnchor::UpperCenter },		// ã’†‰›
+	{ "UpperRight",		TextAnchor::UpperRight },		// ã‰E
+	{ "MiddleLeft",		TextAnchor::MiddleLeft },		// ’†¶
+	{ "MiddleCenter",	TextAnchor::MiddleCenter },		// ’†‰›
+	{ "MiddleRight",	TextAnchor::MiddleRight },		// ’†‰E
+	{ "LowerLeft",		TextAnchor::LowerLeft },		// ‰º¶
+	{ "LowerCenter",	TextAnchor::LowerCenter },		// ‰º’†‰›
+	{ "LowerRight",		TextAnchor::LowerRight }		// ‰º‰E
+};
+
+
 UILayoutImporter::UILayoutImporter()
 {
 }
@@ -119,6 +133,10 @@ void UILayoutImporter::ProcessElement(const Json& json, Entity parent, World& wo
 	{
 		ProcessSlider(json, parent, world);
 	}
+	else if(type == "VerticalLayoutGroup")
+	{
+		ProcessVerticalLayout(json, parent, world);
+	}
 	else
 	{
 		std::ostringstream oss;
@@ -131,7 +149,7 @@ void UILayoutImporter::ProcessImage(const Json& json, Entity parent, World& worl
 {
 	const std::string& name = json.value("name", "UIImage");
 
-	const Json& rectJson = json.value("rect", Json::object());
+	const Json& rectJson = json.value("rectT", Json::object());
 	RectTransform rectT;
 	ProcessRectTransform(rectJson, rectT);
 
@@ -140,8 +158,16 @@ void UILayoutImporter::ProcessImage(const Json& json, Entity parent, World& worl
 	ProcessUIGraphic(graphicJson, graphic);
 	
 	Texture2D* texture = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, UTF8toUTF16LE::Convert(json.value("source", "")));
-	Rect rect = { 0, 0, (float)texture->GetWidth(), (float)texture->GetHeight() };
-	Sprite* sprite = Sprite::Create(texture, rect, Vector2(0.5f, 0.5f), 1.0f, 1.0f);
+
+	std::vector<float> rectTemp = json.value("rect", std::vector<float>{ 0, 0, (float)texture->GetWidth(), (float)texture->GetHeight() });
+
+	Rect rect;
+	rect.x = rectTemp[0];
+	rect.y = (float)texture->GetHeight() - rectTemp[1] - rectTemp[3];
+	rect.width = rectTemp[2];
+	rect.height = rectTemp[3];
+
+	Sprite* sprite = Sprite::Create(texture, rect, Vector2(0.5f, 0.5f), 100.0f, 100.0f);
 
 	Image image;
 	image.sprite = sprite;
@@ -242,6 +268,55 @@ void UILayoutImporter::ProcessSlider(const Json& json, Entity parent, World& wor
 	UIManager::GetInstance()->AddUIObject(sliderEntity, HashString(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()).c_str()), HashString(name.c_str()));
 }
 
+void UILayoutImporter::ProcessVerticalLayout(const Json& json, Entity parent, World& world)
+{
+	const std::string& name = json.value("name", "UIVarticalLayoutGroup");
+
+	const Json& rectJson = json.value("rect", Json::object());
+	RectTransform rect;
+	ProcessRectTransform(rectJson, rect);
+
+	float spacing = json.value("spacing", 0.0f);
+
+	const Json& rectOffsetJson = json.value("rectOffset", Json::object());
+	RectOffset rectOffset;
+	ProcessRectOffset(rectOffsetJson, rectOffset);
+
+	TextAnchor childAlignment;
+	if (json.contains("textAnchor"))
+	{
+		std::string textAnchorStr = json.value("textAnchor", "UpperLeft");
+		
+		auto it = TextAnchorMap.find(textAnchorStr);
+		if (it != TextAnchorMap.end())
+		{
+			childAlignment = it->second;
+		}
+	}
+	
+	Entity vlgEntity = world.CreateEntity(name, Layers::UI);
+	
+	VerticalLayoutGroup vlg;
+	vlg.spacing = spacing;
+	vlg.padding = rectOffset;
+	vlg.childAlignment = childAlignment;
+
+	world.AddComponent<RectTransform>(vlgEntity, rect);
+	world.AddComponent<VerticalLayoutGroup>(vlgEntity, vlg);
+
+	Transform* vlgT = world.GetComponent<Transform>(vlgEntity);
+	Transform* parentT = world.GetComponent<Transform>(parent);
+	TransformSystem::GetInstance()->SetParent(*vlgT, parentT);
+
+	UIManager::GetInstance()->AddUIObject(vlgEntity, HashString(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()).c_str()), HashString(name.c_str()));
+
+	const Json& elementsJson = json.value("elements", Json::array());
+	for (const auto& elementJson : elementsJson)
+	{
+		ProcessElement(elementJson, vlgEntity, world);
+	}
+}
+
 void UILayoutImporter::ProcessRectTransform(const Json& json, RectTransform& rect)
 {
 	std::vector<float> anchoredPosition = json.value("pos", std::vector<float>{ 0.0f, 0.0f });
@@ -255,6 +330,19 @@ void UILayoutImporter::ProcessRectTransform(const Json& json, RectTransform& rec
 	rect.anchorMin = Vector2(anchorMin[0], anchorMin[1]);
 	rect.anchorMax = Vector2(anchorMax[0], anchorMax[1]);
 	rect.pivot = Vector2(pivot[0], pivot[1]);
+}
+
+void UILayoutImporter::ProcessRectOffset(const Json& json, RectOffset& rectOffset)
+{
+	float left = json.value("left", 0.0f);
+	float right = json.value("right", 0.0f);
+	float top = json.value("top", 0.0f);
+	float bottom = json.value("bottom", 0.0f);
+
+	rectOffset.left = left;
+	rectOffset.right = right;
+	rectOffset.top = top;
+	rectOffset.bottom = bottom;
 }
 
 void UILayoutImporter::ProcessUIGraphic(const Json& json, UIGraphic& graphic)

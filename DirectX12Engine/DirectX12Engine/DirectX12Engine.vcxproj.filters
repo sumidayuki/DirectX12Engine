@@ -403,6 +403,30 @@
     <Filter Include="Engine\System\Utils\Locomotion">
       <UniqueIdentifier>{ebbab2a2-4c43-40fb-9a83-09d960c4dba3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\ECS\System\AudioSystem">
+      <UniqueIdentifier>{a80d6f54-85b2-463b-b3d0-6ed76be4bc97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource\Asset\Audio">
+      <UniqueIdentifier>{9874d277-9065-436b-bf3c-5e7db82bd191}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource\AssetImporter\Audio">
+      <UniqueIdentifier>{971bdbe5-3927-4d2d-9bbc-f484bf826892}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\Component\Audio">
+      <UniqueIdentifier>{e829ba8c-1b5d-4a56-b821-9e0c01b09ceb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Character\Rolling">
+      <UniqueIdentifier>{b3a72019-2e41-434b-a7c0-e0bbf670370f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Character\Stamina">
+      <UniqueIdentifier>{5288f7e8-72d9-4075-9c07-095603d970ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Character\Status">
+      <UniqueIdentifier>{d50ac47d-36bf-4867-b3f6-aab055268398}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Character\AI">
+      <UniqueIdentifier>{40e69127-dbf8-4420-9df0-19c69b568b31}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -663,9 +687,6 @@
     <ClCompile Include="UICanvasSystem.cpp">
       <Filter>Engine\ECS\System\UISystems\UICanvasSystem</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteAPI.cpp">
-      <Filter>Engine\System\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="BindlessHeap.cpp">
       <Filter>Engine\Graphics\DescriptorHeap</Filter>
     </ClCompile>
@@ -695,6 +716,42 @@
     </ClCompile>
     <ClCompile Include="UIManager.cpp">
       <Filter>Engine\Resource\Asset\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteAPI.cpp">
+      <Filter>Engine\ECS\System\SpriteRendererSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioSystem.cpp">
+      <Filter>Engine\ECS\System\AudioSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioAPI.cpp">
+      <Filter>Engine\ECS\System\AudioSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioImporter.cpp">
+      <Filter>Engine\Resource\AssetImporter\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>Engine\Resource\Asset\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioClip.cpp">
+      <Filter>Engine\Resource\Asset\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="StaminaSystem.cpp">
+      <Filter>Game\Character\Stamina</Filter>
+    </ClCompile>
+    <ClCompile Include="AIRuleImporter.cpp">
+      <Filter>Game\Character\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AIRuleRegistry.cpp">
+      <Filter>Game\Character\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AIStateMachineSystem.cpp">
+      <Filter>Game\Character\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerActionGuideSystem.cpp">
+      <Filter>Game\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="InputBind.cpp">
+      <Filter>Engine\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1130,9 +1187,6 @@
     <ClInclude Include="UICanvasSystem.h">
       <Filter>Engine\ECS\System\UISystems\UICanvasSystem</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteAPI.h">
-      <Filter>Engine\System\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Image.h">
       <Filter>Engine\ECS\Component\UI\UIObjects</Filter>
     </ClInclude>
@@ -1159,9 +1213,6 @@
     </ClInclude>
     <ClInclude Include="BehaviourTreeSystem.h">
       <Filter>Engine\ECS\System\BehaviourTreeSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="WarrokBT.h">
-      <Filter>Game\Character\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="Slider.h">
       <Filter>Engine\ECS\Component\UI\UIObjects</Filter>
@@ -1231,6 +1282,66 @@
     </ClInclude>
     <ClInclude Include="LocomotionUtility.h">
       <Filter>Engine\System\Utils\Locomotion</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteAPI.h">
+      <Filter>Engine\ECS\System\SpriteRendererSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioClip.h">
+      <Filter>Engine\Resource\Asset\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioSource.h">
+      <Filter>Engine\ECS\Component\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioListener.h">
+      <Filter>Engine\ECS\Component\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioSystem.h">
+      <Filter>Engine\ECS\System\AudioSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioAPI.h">
+      <Filter>Engine\ECS\System\AudioSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioImporter.h">
+      <Filter>Engine\Resource\AssetImporter\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>Engine\Resource\Asset\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="RollingState.h">
+      <Filter>Game\Character\Rolling</Filter>
+    </ClInclude>
+    <ClInclude Include="Stamina.h">
+      <Filter>Game\Character\Stamina</Filter>
+    </ClInclude>
+    <ClInclude Include="StaminaSystem.h">
+      <Filter>Game\Character\Stamina</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusAPI.h">
+      <Filter>Game\Character\Status</Filter>
+    </ClInclude>
+    <ClInclude Include="AIRuleImporter.h">
+      <Filter>Game\Character\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="AIRuleRegistry.h">
+      <Filter>Game\Character\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="AIDefinition.h">
+      <Filter>Game\Character\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="AIStateMachineSystem.h">
+      <Filter>Game\Character\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="AIState.h">
+      <Filter>Game\Character\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="AITrigger.h">
+      <Filter>Game\Character\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerActionGuideSystem.h">
+      <Filter>Game\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="InputBind.h">
+      <Filter>Engine\Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

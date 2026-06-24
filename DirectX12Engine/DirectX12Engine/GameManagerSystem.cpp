@@ -3,7 +3,6 @@
 #include "BattleCamera.h"
 #include "Enemy.h"
 #include "CharacterImporter.h"
-#include "WarrokBT.h"
 #include "PlayerCamera.h"
 
 bool GameManagerSystem::Load(World& world)
@@ -21,6 +20,18 @@ void GameManagerSystem::Start(World& world)
 	world.AddComponent<Input>(player, Input{});
 	world.AddComponent<PlayerTag>(player, PlayerTag{});
 	world.AddComponent<LocomotionData>(player, LocomotionData{});
+	RollingState rolling;
+	rolling.direction = Vector3::zero;
+	rolling.duration = 1.63f;
+	rolling.invincibleStart = 0.2f;
+	rolling.invincibleEnd = 0.8f;
+	rolling.speed = 350.0f;
+	world.AddComponent<RollingState>(player, rolling);
+	Stamina stamina;
+	stamina.barName = "PlayerStaminaBar";
+	stamina.maxValue = 100.0f;
+	stamina.value = stamina.maxValue;
+	world.AddComponent<Stamina>(player, stamina);
 	CharacterImporter::GetInstance()->CharcterInitialize("Archer", player, world);
 
 	m_player = player;
@@ -37,11 +48,15 @@ void GameManagerSystem::Start(World& world)
 	agent.acceleration = 10.0f;
 	world.AddComponent<AIAgent>(warrok, agent);
 	world.AddComponent<LocomotionData>(warrok, LocomotionData{});
-	BehaviourTree bt;
-	bt.root = WarrokBT::Create();
-	bt.blackboard.self = warrok;
-	bt.blackboard.target = player;
-	world.AddComponent<BehaviourTree>(warrok, std::move(bt));
+	AIState aiState;
+	std::string stateName = StatusAPI::GetString(CharacterImporter::GetInstance()->GetCharacterInfo("Warrok")->status, "aiCurrentState");
+	aiState.currentStateID = FNV1a_Hash<uint32_t>(stateName);
+	aiState.nextStateID = aiState.currentStateID;
+	aiState.stateTime = 0;
+	world.AddComponent<AIState>(warrok, aiState);
+	AITrigger trigger;
+	trigger.triggers = {};
+	world.AddComponent<AITrigger>(warrok, trigger);
 	CharacterImporter::GetInstance()->CharcterInitialize("Warrok", warrok, world);
 	world.GetComponent<Collider>(warrok)->offset = Vector3(0, 180.0f, 0);
 
@@ -62,13 +77,11 @@ void GameManagerSystem::Start(World& world)
 
 	PlayerCamera playerCamera;
 	playerCamera.player = player;
-	playerCamera.offset = Vector3(50, 200, -350);
+	playerCamera.offset = Vector3(-20, 200, -300);
 	playerCamera.sensitivity = 0.1;
 	world.AddComponent<PlayerCamera>(cameraEntity, playerCamera);
-
 }
 
 void GameManagerSystem::Update(World& world)
 {
-
 }

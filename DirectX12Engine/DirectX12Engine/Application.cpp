@@ -6,6 +6,7 @@
 #include "TitleScene.h"
 #include "MainScene.h"
 #include "ShaderRegistry.h"
+#include "AIRuleRegistry.h"
 
 void Application::Run()
 {
@@ -76,6 +77,11 @@ void Application::WorkerThreadEntryPoint()
     AssetManager::CreateSingleton();
 
     BindlessHeap::CreateSingleton();
+
+	AudioManager::CreateSingleton();
+	AudioManager::GetInstance()->Initialize();
+
+	AIRuleRegistry::CreateSingleton();
 
     // スプライトレンダラーの初期化
     SpriteRendererSystem::StaticConstructor();
@@ -172,6 +178,8 @@ void Application::WorkerThreadEntryPoint()
     AssetManager::DestroySingleton();
 
 	BindlessHeap::DestroySingleton();
+
+	AIRuleRegistry::DestroySingleton();
 
     DebugManager::GetInstance()->Shutdown();
     DebugManager::GetInstance()->DestroySingleton();

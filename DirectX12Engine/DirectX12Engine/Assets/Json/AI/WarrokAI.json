@@ -1,0 +1,106 @@
+{
+    "Miai": [
+        // ターゲットが死んでいたら追尾をリセットして待機
+        {
+            "Trigger": "OnUpdate",
+            "To": "Miai",
+            "Conditions": [
+                {
+                    "Type": "IsTargetDead"
+                }
+            ]
+        },
+        // ジャンプアタックの準備ができたら、即座にジャンプ攻撃状態へ
+        {
+            "Trigger": "OnUpdate",
+            "To": "Attack_JumpAttack",
+            "Input": "Attack3",
+            "Conditions": [
+                {
+                    "Type": "CoolDownReady",
+                    "TimerName": "JumpAttackCoolDownTimer"
+                }
+            ]
+        },
+        // 通常攻撃の準備ができたら、まずは接近状態（Approach）へ
+        {
+            "Trigger": "OnUpdate",
+            "To": "Approach",
+            "Conditions": [
+                {
+                    "Type": "CoolDownReady",
+                    "TimerName": "AttackCoolDownTimer"
+                }
+            ]
+        }
+    ],
+
+    "Approach": [
+        // 攻撃射程内
+        {
+            "Trigger": "OnUpdate",
+            "To": "Attack_Punch",
+            "Input": "Attack1",
+            "Conditions": [
+                {
+                    "Type": "PlayerInRange",
+                    "Range": 160.0
+                }
+            ]
+        }
+    ],
+
+    "Attack_Punch": [
+        // コンボ受付時間中かつ、まだコンボを継続すべきなら入力を連打する
+        {
+            "Trigger": "OnComboWindow",
+            "To": "Attack_Punch",
+            "Input": "Attack1",
+            "Conditions": [
+                {
+                    "Type": "ShouldContinuePunchCombo"
+                }
+            ]
+        },
+        // コンボが完全に終了したら、見合い状態に戻る
+        {
+            "Trigger": "OnComboFinished",
+            "To": "Recovery",
+            "Conditions": []
+        }
+    ],
+
+    "Attack_JumpAttack": [
+        // ジャンプアタックのコンボ窓が空いたら、最大3回までAttack3を入力し続ける
+        {
+            "Trigger": "OnComboWindow",
+            "To": "Attack_JumpAttack",
+            "Input": "Attack3",
+            "Conditions": [
+                {
+                    "Type": "UnderJumpComboCount",
+                    "Max": 3
+                }
+            ]
+        },
+        {
+            "Trigger": "OnComboFinished",
+            "To": "Recovery",
+            "Conditions": []
+        }
+    ],
+
+    "Recovery": [
+        // 被弾や硬直が解けたら、見合い状態に復帰する
+        {
+            "Trigger": "OnUpdate",
+            "To": "Miai",
+            "Conditions": [
+                {
+                    "Type": "IsSelfStunned",
+                    "Invert": true
+                }
+            ]
+        }
+    ]
+}

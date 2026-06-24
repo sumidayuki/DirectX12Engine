@@ -1,9 +1,11 @@
 #pragma once
+#include "PlayerCamera.h"
 
 enum class PlayerState
 {
 	Move,
 	Attack,
+	Step,
 };
 
 class PlayerSystem : public System
@@ -14,6 +16,8 @@ private:
 	PlayerState m_currentState;
 
 	Transform* m_cameraTransform;
+	PlayerCamera* m_playerCamera;
+
 	Transform* m_bowTransform;
 
 	Transform* m_coll;
@@ -32,8 +36,8 @@ private:
 
 private:
 	bool ProcessTurn(World& world, Transform& transform, Animator& animator, LocomotionData& loco);
-	void Move(World& world, Transform& transform, Input& input, Animator& anim, LocomotionData& loco);
-	void DrawArrow(Transform& transform, float damage, Animator& anim, World& world);
+	void Move(World& world, Transform& transform, Input& input, Animator& anim, LocomotionData& loco, RollingState& rolling, Stamina& stamina);
+	void DrawArrow(Transform& transform, float speed, float damage, Animator& anim, World& world);
 	void LegAttack(Transform& transform, ComboState& state, Animator& anim, Attackable& attackable, World& world);
 
 private:

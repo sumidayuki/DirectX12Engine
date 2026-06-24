@@ -3,11 +3,18 @@
 
 void GuardSystem::Update(World& world)
 {
-	View<Transform, GuardState, Damageable, Animator> view(world);
-	for (auto [entity, transform, guardState, damageable, animator] : view)
+	View<Transform, GuardState, Damageable, Animator, Input> view(world);
+	for (auto [entity, transform, guardState, damageable, animator, input] : view)
 	{
+		guardState.isGuarding = input.isGuard;
+
 		if (guardState.isGuarding)
 		{
+			if (animator.currentClipName == "Hit_00" && animator.isPlaying)
+			{
+				continue;
+			}
+
 			// ガードのスタートアニメーションを再生して、再生が終わっていたらループアニメーションに切り替える
 			if (animator.currentClipName != "Guard_Start" && animator.currentClipName != "Guard_Idle" && animator.currentClipName != "Guard_Impact")
 			{
@@ -25,7 +32,7 @@ void GuardSystem::Update(World& world)
 			{
 				Damage damage = damageable.damageQueue.front();
 				// シールドの耐久値を減少させる
-				guardState.shieldHealth -= damage.damage * 0.5f; // ダメージの50%をシールドに吸収させる
+				guardState.shieldHealth -= damage.damage; // ダメージの50%をシールドに吸収させる
 
 				animator.isLoop = false;
 				AnimationSystem::Play(animator, "Guard_Impact", true);
@@ -33,10 +40,11 @@ void GuardSystem::Update(World& world)
 				// シールドが破壊された場合の処理
 				if (guardState.shieldHealth <= 0)
 				{
-					guardState.shieldHealth = 0;
+					guardState.shieldHealth = guardState.shieldMaxHealth;
+					input.isGuard = false;
 					// シールド破壊アニメーションを再生
 					animator.isLoop = false;
-					AnimationSystem::Play(animator, "Shield_Break", true);
+					AnimationSystem::Play(animator, "Hit_00");
 				}
 
 				// ダメージはシールドで防いだため、HPには影響しない
@@ -65,7 +73,7 @@ void GuardSystem::Update(World& world)
 			// シールドが破壊されている場合、徐々に回復させる
 			if (guardState.shieldHealth < guardState.shieldMaxHealth)
 			{
-				guardState.shieldHealth += 10 * Time::GetDeltaTime();
+				guardState.shieldHealth += 2 * Time::GetDeltaTime();
 				guardState.shieldHealth = std::min(guardState.shieldHealth, guardState.shieldMaxHealth);
 			}
 		}

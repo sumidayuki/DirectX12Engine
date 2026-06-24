@@ -4,17 +4,9 @@ struct CharacterInfo
 {
 	std::string name;
 
-	float maxHealth = 100.0f;
-	float walkSpeed = 100.0f;
-	float runSpeed = 250.0f;
+	std::string aiFileName;
 
-	float hitBoxX = 40.0f;
-	float hitBoxY = 180.0f;
-	float hitBoxZ = 40.0f;
-
-	// ガード性能
-	float shieldMaxHealth = 100.0f;
-	float shieldRegenRate = 10.0f;   // 回復速度
+	CharacterStatus status;
 
 	std::vector<ComboMove> moves;
 };

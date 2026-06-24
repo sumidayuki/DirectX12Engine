@@ -1,8 +1,13 @@
 #pragma once
 
+/// <summary>
+/// キャラクターのステータスを汎用的に保持するコンポーネントです。
+/// </summary>
 struct CharacterStatus : IComponentData
 {
-	float maxHealth = 100.0f;
-    float walkSpeed = 100.0f;
-    float runSpeed = 250.0f;
+	std::unordered_map<std::string, float>       floats;
+	std::unordered_map<std::string, int>         ints;
+	std::unordered_map<std::string, bool>        bools;
+	std::unordered_map<std::string, Vector3>     vectors;
+	std::unordered_map<std::string, std::string> strings;
 };

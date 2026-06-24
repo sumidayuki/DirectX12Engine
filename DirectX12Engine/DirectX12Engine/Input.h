@@ -16,6 +16,7 @@ struct Input : IComponentData
 	bool guard1;
 	bool guard2;
 	bool isGuard;
+	bool isRolling;
 
 	float horizontal;
 	float vartical;

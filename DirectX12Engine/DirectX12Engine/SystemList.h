@@ -30,3 +30,7 @@
 #include "UIButtonSystem.h"
 #include "UISliderSystem.h"
 #include "BehaviourTreeSystem.h"
+#include "AudioSystem.h"
+#include "StaminaSystem.h"
+#include "AIStateMachineSystem.h"
+#include "PlayerActionGuideSystem.h"

@@ -386,6 +386,7 @@ bool World::Load(World& world)
 	world.AddSystem(std::make_unique<UIEventSystem>());
 	world.AddSystem(std::make_unique<UIButtonSystem>());
 	world.AddSystem(std::make_unique<UISliderSystem>());
+	world.AddSystem(std::make_unique<AudioSystem>());
 
 	TransformSystem::CreateSingleton();
 	AIAgentSystem::CreateSingleton();

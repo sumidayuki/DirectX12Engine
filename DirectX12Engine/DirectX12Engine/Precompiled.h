@@ -226,11 +226,13 @@ class Keyboard;
 #include "Material.h"
 #include "Skeleton.h"
 #include "Animation.h"
+#include "AudioClip.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"
 #include "TextureImporter.h"
 #include "ModelImporter.h"
+#include "AudioImporter.h"
 #include "AssetManager.h"
 
 // Entity
@@ -295,6 +297,13 @@ class Keyboard;
 #include "VerticalLayoutGroup.h"
 #include "EventSystem.h"
 #include "LocomotionData.h"
+#include "AudioSource.h"
+#include "AudioListener.h"
+#include "RollingState.h"
+#include "Stamina.h"
+#include "GuardState.h"
+#include "AIState.h"
+#include "AITrigger.h"
 
 #include "Physics.h"
 #include "GeometryUtility.h"
@@ -309,10 +318,13 @@ class Keyboard;
 */
 
 #include "UIManager.h"
+#include "AudioManager.h"
 
 // API, Utility
 #include "UIAPI.h"
+#include "AudioAPI.h"
 #include "SpriteAPI.h"
+#include "StatusAPI.h"
 #include "LocomotionUtility.h"
 
 // World

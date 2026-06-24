@@ -16,6 +16,8 @@ private:
 	void ProcessPanel(const Json& json, Entity parent, World& world);
 	void ProcessButton(const Json& json, Entity parent, World& world);
 	void ProcessSlider(const Json& json, Entity parent, World& world);
+	void ProcessVerticalLayout(const Json& json, Entity parent, World& world);
 	void ProcessRectTransform(const Json& json, RectTransform& rect);
+	void ProcessRectOffset(const Json& json, RectOffset& rectOffset);
 	void ProcessUIGraphic(const Json& json, UIGraphic& graphic);
 };

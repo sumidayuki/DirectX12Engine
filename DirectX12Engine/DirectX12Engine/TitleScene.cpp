@@ -7,6 +7,7 @@ bool TitleScene::Load()
 	m_world.AddSystem(std::make_unique<InputSystem>());
 
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/White.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/BGM/title.wav");
 
 	return true;
 }
@@ -24,6 +25,17 @@ void TitleScene::Start()
 
 	Entity text = m_world.CreateWithSprite(L"Assets/Title_Text.png", Rect(0, 0, 971, 125), Vector2(0.5f, 0.5f), 84, nullptr, Vector3(0, -2, 0));
 	m_titleText = m_world.GetComponent<SpriteRenderer>(text);
+
+	m_world.AddComponent<AudioListener>(camera, AudioListener{});
+
+	AudioClip* bgm = AssetManager::GetInstance()->GetAsset<AudioClip>(AssetType::Audio, L"Assets/Audio/BGM/title.wav");
+	AudioSource bgmSource;
+	bgmSource.clip = bgm;
+	bgmSource.playOnAwake = true;         // é©ìÆçƒê∂
+	bgmSource.volume = 0.5f;
+	bgmSource.spatialBlend = 0.0f;        // 2DÅiãóó£å∏êäÇ»ÇµÅj
+	bgmSource.loop = true;
+	m_world.AddComponent<AudioSource>(m_world.CreateEntity("TitleBGM"), bgmSource);
 }
 
 void TitleScene::Update()

@@ -80,10 +80,18 @@ void ComboSystem::Update(World& world)
         const ComboMove& currentMove = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
         float progress = state.timer / currentMove.duration;
 
+        AITrigger* trigger = world.GetComponent<AITrigger>(entity);
+        bool canInput = (progress >= currentMove.inputStart && progress <= currentMove.inputEnd);
+
+        if (trigger && canInput)
+        {
+            trigger->triggers.push_back("OnComboWindow"_h);
+        }
+
         // ƒRƒ“ƒ{“ü—Í‚Ì”»’è
         if (input.attackInputType != AttackInputType::Idle)
         {
-            if (progress >= currentMove.inputStart && progress <= currentMove.inputEnd)
+            if (canInput)
             {
                 int nextID = GetNextMoveID(state.name, input.attackInputType, currentMove.nextPossibleMoves);
                 if (nextID != -1)
@@ -113,6 +121,11 @@ void ComboSystem::Update(World& world)
 
         if (progress >= 1.0f)
         {
+            if (trigger)
+            {
+				trigger->triggers.push_back("OnComboFinished"_h);
+            }
+
             ResetCombo(state);
             ClearInput(input);
         }
