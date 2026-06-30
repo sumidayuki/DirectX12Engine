@@ -1,0 +1,32 @@
+{
+    "Attack1_Left": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Warrok/se-punch",
+                "pos": "mixamorig:LeftHand",
+                "time": 17
+            }
+        ]
+    },
+    "Attack1_Right": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Warrok/se-punch",
+                "pos": "mixamorig:RightHand",
+                "time": 17
+            }
+        ]
+    },
+    "Attack_02": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Warrok/se-jump",
+                "time": 100
+            }
+        ]
+    }
+
+}

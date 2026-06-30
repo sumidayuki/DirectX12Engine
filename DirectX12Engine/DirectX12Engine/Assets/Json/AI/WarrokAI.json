@@ -84,12 +84,20 @@
             ]
         },
         {
+            "Trigger": "OnComboWindow",
+            "To": "Approach",
+            "Conditions": [
+                {
+                    "Type": "IsTargetHit"
+                }
+            ]
+        },
+        {
             "Trigger": "OnComboFinished",
             "To": "Recovery",
             "Conditions": []
         }
     ],
-
     "Recovery": [
         // 被弾や硬直が解けたら、見合い状態に復帰する
         {

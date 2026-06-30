@@ -753,6 +753,9 @@
     <ClCompile Include="InputBind.cpp">
       <Filter>Engine\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Engine\Resource\Asset\Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h">

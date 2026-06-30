@@ -161,6 +161,7 @@
     <ClCompile Include="AIRuleImporter.cpp" />
     <ClCompile Include="AIRuleRegistry.cpp" />
     <ClCompile Include="AIStateMachineSystem.cpp" />
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationSystem.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ArchetypeManager.cpp" />

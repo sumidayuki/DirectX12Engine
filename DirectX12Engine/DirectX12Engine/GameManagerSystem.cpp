@@ -16,7 +16,7 @@ bool GameManagerSystem::Load(World& world)
 void GameManagerSystem::Start(World& world)
 {
 	// ÉvÉåÉCÉÑÅ[Çê∂ê¨
-	Entity player = world.CreateWithModel(L"Assets/player-01.fbx", nullptr, Vector3(0, 0, -500), Quaternion::identity, Layers::Player);
+	Entity player = world.CreateWithModel(L"Assets/Archer.fbx", nullptr, Vector3(0, 0, -500), Quaternion::identity, Layers::Player);
 	world.AddComponent<Input>(player, Input{});
 	world.AddComponent<PlayerTag>(player, PlayerTag{});
 	world.AddComponent<LocomotionData>(player, LocomotionData{});
@@ -37,7 +37,7 @@ void GameManagerSystem::Start(World& world)
 	m_player = player;
 
 	// ìGÇê∂ê¨
-	Entity warrok = world.CreateWithModel(L"Assets/Warrok-00.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0), Layers::Enemy);
+	Entity warrok = world.CreateWithModel(L"Assets/Warrok.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0), Layers::Enemy);
 	Transform* warrokT = world.GetComponent<Transform>(warrok);
 	warrokT->scale = warrokT->scale * 1.5f;
 	Enemy enemy;
@@ -74,6 +74,8 @@ void GameManagerSystem::Start(World& world)
 	//Entity skybox = world.CreateSphere(1000.0f, 16, 16);
 	//Transform* skyboxT = world.GetComponent<Transform>(skybox);
 	//TransformSystem::GetInstance()->SetParent(*skyboxT, parentT);
+
+	world.AddComponent<AudioListener>(cameraEntity, AudioListener{});
 
 	PlayerCamera playerCamera;
 	playerCamera.player = player;

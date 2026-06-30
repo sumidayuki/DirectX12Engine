@@ -19,6 +19,7 @@ void Scene::OnUnload()
 {
 	m_world.Unload(m_world);
 	m_world.Clear();
+	AudioManager::GetInstance()->CleanupFinishedVoices();
 	Unload();
 }
 

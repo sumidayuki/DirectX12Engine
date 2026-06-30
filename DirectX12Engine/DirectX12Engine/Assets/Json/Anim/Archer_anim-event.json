@@ -1,0 +1,67 @@
+{
+    "Run_Forward": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Archer/se-foot",
+                "pos": "mixamorig:LeftFoot",
+                "time": 13
+            },
+            {
+                "type": "play-se",
+                "name": "Archer/se-foot",
+                "pos": "mixamorig:RightFoot",
+                "time": 26
+            }
+        ]
+    },
+    "Attack_00": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Archer/se-shageki",
+                "pos": "mixamorig:Left_arch2",
+                "time": 6
+            }
+        ]
+    },
+    "Attack_01": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Archer/se-shageki",
+                "pos": "mixamorig:Left_arch2",
+                "time": 36
+            }
+        ]
+    },
+    "Attack_03": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Archer/se-kick",
+                "pos": "mixamorig:RightFoot",
+                "time": 17
+            }
+        ]
+    },
+    "Guard_Impact": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Archer/se-guard",
+                "pos": "mixamorig:Left_arch2",
+                "time": 1
+            }
+        ]
+    },
+    "Hit_00": {
+        "events": [
+            {
+                "type": "play-se",
+                "name": "Archer/se-damage",
+                "time": 3
+            }
+        ]
+    }
+}

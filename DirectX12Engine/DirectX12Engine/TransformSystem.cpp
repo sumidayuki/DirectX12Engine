@@ -471,16 +471,6 @@ void TransformSystem::UpdateAllDirtyTransforms(World& world)
 				Transform* child = world.GetComponent<Transform>(childEntity);
 				if (child)
 				{
-					// Force child to be "dirty" effectively because parent changed
-					// In this frame, we just push to stack and process.
-					// We don't need to set child->dirty = true physically if we just process it.
-					// However, avoids double processing if child is also in dirtyRoots?
-					// If child is in dirtyRoots, it will be processed later?
-					// No, stack processing handles it NOW.
-					// We should mark it as processed?
-					// The "dirty" check at loop start handles skips.
-					// But "hasChanged" is set to true. 
-
 					stack.push_back(child);
 				}
 				childEntity = child ? child->nextSibling : INVALID_ENTITY;
@@ -492,20 +482,4 @@ void TransformSystem::UpdateAllDirtyTransforms(World& world)
 void TransformSystem::Update(World& world)
 {
 	UpdateAllDirtyTransforms(world);
-
-	// Reset hasChanged flags? 
-	// Previous implementation reset them at start of frame or something.
-	// Ideally, hasChanged is valid FOR THIS FRAME. 
-	// So we should reset it at the start of Update.
-
-	/*
-	View<Transform> view(world);
-	for (auto [entity, transform] : view)
-	{
-		transform.hasChanged = false;
-	}
-	*/
-	// This was done in the previous recursive implementation. 
-	// We should probably do it here too, but UpdateAllDirtyTransforms is called ONCE per frame?
-	// If we clear hasChanged inside UpdateAllDirtyTransforms it might be safer.
 }

@@ -155,17 +155,22 @@ void AnimationSystem::Update(World& world)
 			continue;
 		}
 
+		float lastTime = animator.currentTime;
+		bool looped = false;
+		float duration = animator.currentClip->GetDuration();
+
 		// 時間を更新
 		animator.currentTime += Time::GetDeltaTime() * animator.currentClip->GetTicksPerSecond();
-		if (animator.currentTime >= animator.currentClip->GetDuration())
+		if (animator.currentTime >= duration)
 		{
 			if (animator.isLoop)
 			{
-				animator.currentTime = fmod(animator.currentTime, animator.currentClip->GetDuration());
+				animator.currentTime = fmod(animator.currentTime, duration);
+				looped = true;
 			}
 			else
 			{
-				animator.currentTime = animator.currentClip->GetDuration();
+				animator.currentTime = duration;
 				animator.isPlaying = false;
 			}
 		}
@@ -177,6 +182,52 @@ void AnimationSystem::Update(World& world)
 
 		std::unordered_map<std::string, Matrix4x4> boneTransforms;
 		CalculateBoneTransform(animator.skeleton->GetRootBone(), Matrix4x4::identity, animator.currentClip, animator.currentTime, boneTransforms);
+
+		const auto& events = animator.currentClip->GetEvents();
+
+		if (!events.empty())
+		{
+			if (!looped)
+			{
+				// 通常時：前回時間 < timeStamp <= 今回時間 のイベントを実行
+				for (const auto& ev : events)
+				{
+					if (ev.timeStamp > lastTime && ev.timeStamp <= animator.currentTime)
+					{
+						if (ev.value)
+						{
+							ev.value(world, entity);
+						}
+					}
+				}
+			}
+			else
+			{
+				// ループ跨ぎ時：区間が2つに分かれるのでそれぞれチェック
+				// 前回時間 から アニメーション終了(duration) まで
+				for (const auto& ev : events)
+				{
+					if (ev.timeStamp > lastTime && ev.timeStamp <= duration)
+					{
+						if (ev.value)
+						{
+							ev.value(world, entity);
+						}
+					}
+				}
+				// アニメーション開始(0) から 今回時間 まで
+				for (const auto& ev : events)
+				{
+					if (ev.timeStamp >= 0.0f && ev.timeStamp <= animator.currentTime)
+					{
+						if (ev.value)
+						{
+							ev.value(world, entity);
+						}
+					}
+				}
+			}
+		}
 
 		// 最終的な行列を計算
 		animator.finalBoneMatrices.resize(animator.skeleton->GetBoneCount());

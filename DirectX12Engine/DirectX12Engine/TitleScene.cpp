@@ -34,8 +34,7 @@ void TitleScene::Start()
 	bgmSource.playOnAwake = true;         // ©“®Ä¶
 	bgmSource.volume = 0.5f;
 	bgmSource.spatialBlend = 0.0f;        // 2Di‹——£Œ¸Š‚È‚µj
-	bgmSource.loop = true;
-	m_world.AddComponent<AudioSource>(m_world.CreateEntity("TitleBGM"), bgmSource);
+	//m_world.AddComponent<AudioSource>(m_world.CreateEntity("TitleBGM"), bgmSource);
 }
 
 void TitleScene::Update()
@@ -44,10 +43,14 @@ void TitleScene::Update()
 	float alpha = (std::sin(Time::GetTime() * 3.0f) + 1.0f) / 2.0f; // 0‚©‚ç1‚Ì”ÍˆÍ‚Å•Ï‰»
 	m_titleText->color.a = alpha;
 
-	if (InputManager::IsAnyKeyPressed())
+	static float time = 0.0f;
+
+	if (time >= 3.0f && InputManager::IsAnyKeyPressed())
 	{
 		SceneManager::ChangeScene("Main");
 	}
+
+	time += Time::GetDeltaTime();
 }
 
 void TitleScene::Draw()

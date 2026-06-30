@@ -23,6 +23,7 @@ private:
 	float m_duration;													// アニメーションの長さ
 	float m_ticksPerSecond;												// 1秒あたりのtick数
 	std::unordered_map<std::string, BoneAnimation> m_boneAnimations;	// ボーン名をキーとしたアニメーションデータ
+	std::vector<Keyframe<std::function<void(World& world, Entity entity)>>> m_events;
 
 public:
 	/// <summary>
@@ -49,6 +50,8 @@ public:
 	/// <returns></returns>
 	float GetTotalTime() const { return m_duration / m_ticksPerSecond; }
 
+	const std::vector<Keyframe<std::function<void(World& world, Entity entity)>>>& GetEvents() const { return m_events; }
+
 	/// <summary>
 	/// アニメーション名を設定します。
 	/// </summary>
@@ -66,6 +69,13 @@ public:
 	/// </summary>
 	/// <param name="ticks"></param>
 	void SetTicksPerSecond(float ticks) { m_ticksPerSecond = ticks; }
+
+	/// <summary>
+	/// 指定の時間にeventを設定します。
+	/// </summary>
+	/// <param name="event"></param>
+	/// <param name="timeStamp"></param>
+	void SetEvent(std::function<void(World& world, Entity entity)> event, float timeStamp);
 
 	/// <summary>
 	/// ボーンアニメーションデータを変更可能な形で取得します。

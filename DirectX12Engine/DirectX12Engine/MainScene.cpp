@@ -14,12 +14,11 @@ bool MainScene::Load()
 	AIRuleImporter aiImporter;
 	aiImporter.Import();
 
-	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/player-01.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Archer.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Arrow.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/field_1.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Wall_A.fbx");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Warrok-00.fbx");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Warrok-01.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Warrok.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/BaseTexture-00.jpg");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/TextureNormal-00.jpg");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/T_Wall_C.png");
@@ -29,6 +28,17 @@ bool MainScene::Load()
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_shageki.png");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_shageki-finish.png");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_rolling.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/KeyIcons/keyboard_space_icon.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/KeyIcons/keyboard_shift_icon.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/MouseIcons/mouse_left.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-foot.wav");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-guard.wav");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-kick.wav");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-shageki.wav");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-damage.wav");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Warrok/se-punch.wav");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Warrok/se-jump.wav");
+
 
 	// Worldにシステムを追加
 	m_world.AddSystem(std::make_unique<GameManagerSystem>());

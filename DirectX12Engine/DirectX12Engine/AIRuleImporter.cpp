@@ -146,6 +146,17 @@ void AIRuleImporter::ProcessCondition(const Json& json, Transition& transition)
 		break;
 	}
 
+	case "IsTargetHit"_h:
+	{
+		transition.conditions.push_back([invert](Entity entity, World& world) {
+			Enemy* enemy = world.GetComponent<Enemy>(entity);
+			Animator* animator = world.GetComponent<Animator>(enemy->target);
+
+			return animator->currentClipName == "Hit_00";
+		});
+		break;
+	}
+
 	case "ShouldContinuePunchCombo"_h:
 	{
 		transition.conditions.push_back([invert](Entity entity, World& world) {

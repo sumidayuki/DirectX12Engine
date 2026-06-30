@@ -4,7 +4,7 @@ class InputBind
 {
 private:
 	std::unordered_map<std::string, KeyCode> m_keyBindMap;
-	std::unordered_map<std::string, GamepadButton> m_buttonBindMap;
+	std::unordered_map<std::string, GamepadButton> m_buttonBindMap; 
 
 public:
 	InputBind();

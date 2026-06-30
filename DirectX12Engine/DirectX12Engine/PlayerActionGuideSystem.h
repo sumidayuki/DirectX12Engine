@@ -3,9 +3,6 @@
 class PlayerActionGuideSystem : public System
 {
 private:
-
-
-private:
 	void Start(World& world) override;
 	void Update(World& world) override;
 

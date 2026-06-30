@@ -69,6 +69,7 @@ private:
     void ProcessMeshes(const aiScene* scene, ModelData* modelData);
     void ProcessSkeleton(const aiScene* scene, ModelData* modelData);
     void ProcessAnimations(const aiScene* scene, ModelData* modelData);
+    void ProcessAnimationEvent(const std::string& name, Animation& anim);
     void ProcessHierarchy(const aiScene* scene, ModelData* modelData);
     void ReadSkeletonHierarchy(Bone* parentBone, const aiNode* node);
     void LoadBones(std::vector<Mesh::Vertex>& vertices, aiMesh* mesh, Skeleton* skeleton);

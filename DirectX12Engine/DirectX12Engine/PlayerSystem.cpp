@@ -217,7 +217,15 @@ void PlayerSystem::Update(World& world)
 		{
 			loco.currentVelocity = Vector3(0, 0, 0);
 
+			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
+			guardBar->value = guard.shieldHealth;
+
 			continue;
+		}
+		else
+		{
+			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
+			guardBar->value = guard.shieldHealth;
 		}
 
 		// 被ダメージ処理（Hitアニメーション再生）
@@ -275,6 +283,11 @@ void PlayerSystem::Update(World& world)
 			m_hpBar->maxValue = hp.maxHP;
 			m_hpBar->minValue = 0;
 			m_hpBar->value = hp.maxHP;
+
+			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
+			guardBar->maxValue = guard.shieldMaxHealth;
+			guardBar->minValue = 0;
+			guardBar->value = guard.shieldHealth;
 		}
 
 		if (rolling.isRolling)
@@ -395,6 +408,5 @@ void PlayerSystem::Update(World& world)
 			attackable.isAttacking = false;
 			attackable.entities.clear();
 		}
-
 	}
 }

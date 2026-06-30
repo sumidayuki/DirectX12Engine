@@ -611,8 +611,76 @@ void ModelImporter::ProcessAnimations(const aiScene* scene, ModelData* modelData
             }
             newAnimation->GetMutableBoneAnimations()[channel->mNodeName.C_Str()] = boneAnim;
         }
+
+        ProcessAnimationEvent(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()), *newAnimation);
+
         modelData->animations[animName] = newAnimation;
     }
+}
+
+void ModelImporter::ProcessAnimationEvent(const std::string& name, Animation& anim)
+{
+    std::string path = "Assets/Json/Anim/" + name + "_anim-event.json";
+
+    if (!std::filesystem::exists(path)) 
+    {
+        return;
+    }
+
+    std::string text = StringUtility::ReadAllText(UTF8toUTF16LE::Convert(path));
+    
+    Json json = Json::parse(text);
+
+    if (json.contains(anim.GetName()))
+    {
+        Json animData = json.value(anim.GetName(), json.object());
+        Json events = animData.value("events", json.array());
+
+        for (auto event : events)
+        {
+            uint32_t type = FNV1a_Hash<uint32_t>(event.value("type", ""));
+
+            std::function<void(World& world, Entity entity)> func;
+            switch (type)
+            {
+                case "play-se"_h:
+                {
+                    std::string se = event.value("name", "");
+                    bool isSelectedPos = event.contains("pos");
+                    std::string posName = event.value("pos", "");
+
+                    func = [se, isSelectedPos, posName](World& world, Entity entity)
+                    {
+                        std::string path = "Assets/Audio/SE/" + se + ".wav";
+                        Transform* t = world.GetComponent<Transform>(entity);
+                        AudioClip* clip = AssetManager::GetInstance()->GetAsset<AudioClip>(AssetType::Audio, UTF8toUTF16LE::Convert(path));
+                        Vector3 pos;
+                        if (isSelectedPos)
+                        {
+                            Transform* childT = TransformSystem::GetInstance()->FindChild(t, posName);
+                            pos = TransformSystem::GetInstance()->GetPosition(*childT);
+                        }
+                        else
+                        {
+                            pos = t->position;
+                        }
+                        AudioAPI::PlayClipAtPoint(world, clip, pos, 100);
+                    };
+                }
+
+                default:
+                    break;
+            }
+
+            float time = event.value("time", 0.0f);
+
+            anim.SetEvent(func, time);
+
+            OutputDebugStringA("AnimEvent");
+        }
+    }
+
+
 }
 
 static void DebugPrintAssimpNode(const aiNode* node, int level)
