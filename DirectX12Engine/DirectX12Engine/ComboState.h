@@ -3,8 +3,9 @@
 struct ComboState : IComponentData
 {
 	std::string name = "";
-	int currentMoveId = 0;
+	uint32_t currentMoveId = 0;
 	int comboIndex = 0;
+	bool isAttack = false;
 	bool canHit = false;
 	bool hitConfirm = false;
 	bool isAnimed = false;

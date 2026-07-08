@@ -1,14 +1,6 @@
 #include "AIRuleImporter.h"
 #include "AIRuleRegistry.h"
 
-static const std::unordered_map<std::string, AttackInputType> AttackInputTypeMap = 
-{
-	{"Idle", AttackInputType::Idle},
-	{"Attack1", AttackInputType::Attack1},
-	{"Attack2", AttackInputType::Attack2},
-	{"Attack3", AttackInputType::Attack3},
-};
-
 void AIRuleImporter::Import()
 {
 	// Assets/Json/AI/の全てのJSONファイルを読み込む
@@ -73,11 +65,7 @@ void AIRuleImporter::ProcessTransition(const Json& json, const std::string& stat
 	if (json.contains("Input"))
 	{
 		std::string inputStr = json.at("Input").get<std::string>();
-		auto it = AttackInputTypeMap.find(inputStr);
-		if (it != AttackInputTypeMap.end())
-		{
-			transition.input = it->second;
-		}
+		transition.input = StringToInputKey[inputStr];
 	}
 
 	for (auto& condJson : json.at("Conditions"))

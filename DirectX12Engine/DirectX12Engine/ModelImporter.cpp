@@ -646,8 +646,8 @@ void ModelImporter::ProcessAnimationEvent(const std::string& name, Animation& an
                 case "play-se"_h:
                 {
                     std::string se = event.value("name", "");
-                    bool isSelectedPos = event.contains("pos");
-                    std::string posName = event.value("pos", "");
+                    bool isSelectedPos = event.contains("bone");
+                    std::string posName = event.value("bone", "");
 
                     func = [se, isSelectedPos, posName](World& world, Entity entity)
                     {
@@ -672,7 +672,7 @@ void ModelImporter::ProcessAnimationEvent(const std::string& name, Animation& an
                     break;
             }
 
-            float time = event.value("time", 0.0f);
+            float time = event.value("frame", 0.0f);
 
             anim.SetEvent(func, time);
 

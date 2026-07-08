@@ -11,5 +11,5 @@ struct Transition
 	std::vector<ConditionFunc> conditions;  // 遷移条件のリスト（全て AND）
 	uint32_t nextState;                     // 遷移先ステートのハッシュ値（高速比較用）
 	std::string nextStateName;              // 遷移先ステートの名前（StatusAPI 書き込み用）
-	AttackInputType input = AttackInputType::Idle; // 遷移時に発行する入力
+	InputKey input = InputKey::None;        // 遷移時に発行する入力
 };

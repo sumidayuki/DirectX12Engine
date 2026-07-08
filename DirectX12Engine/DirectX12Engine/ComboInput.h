@@ -1,4 +1,5 @@
 #pragma once
+#include "InputBind.h"
 
 enum class AttackInputType
 {
@@ -10,6 +11,6 @@ enum class AttackInputType
 
 struct ComboInput : IComponentData
 {
-	AttackInputType attackInputType = AttackInputType::Idle;
+	InputKey inputKey = InputKey::None;
 	float timer = 0.0f;
 };

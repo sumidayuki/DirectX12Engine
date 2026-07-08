@@ -115,9 +115,6 @@
     <Filter Include="Engine\ECS\Component\AIAgent">
       <UniqueIdentifier>{06c72700-707c-4c3f-b63a-3945d943bc14}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\ECS\Component\Layer">
-      <UniqueIdentifier>{26338de0-b69a-40ca-a15e-3b5dfb957faf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\ECS\Component\DebugRenderer">
       <UniqueIdentifier>{3109a9d7-db8a-4cac-b9cc-ae1a3968c9e9}</UniqueIdentifier>
     </Filter>
@@ -426,6 +423,12 @@
     </Filter>
     <Filter Include="Game\Character\AI">
       <UniqueIdentifier>{40e69127-dbf8-4420-9df0-19c69b568b31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\Component\Layer">
+      <UniqueIdentifier>{26338de0-b69a-40ca-a15e-3b5dfb957faf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Character\Registry">
+      <UniqueIdentifier>{5f817933-08df-42f2-873a-02041bcf8d72}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -755,6 +758,9 @@
     </ClCompile>
     <ClCompile Include="Animation.cpp">
       <Filter>Engine\Resource\Asset\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterInfoRegistry.cpp">
+      <Filter>Game\Character\Registry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1345,6 +1351,12 @@
     </ClInclude>
     <ClInclude Include="InputBind.h">
       <Filter>Engine\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveData.h">
+      <Filter>Game\Character\Combo</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterInfoRegistry.h">
+      <Filter>Game\Character\Registry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

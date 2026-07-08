@@ -6,7 +6,7 @@
 #include "CharacterStatus.h"
 #include "CharacterImporter.h"
 
-void ComboSystem::TransionTo(ComboState& state, int newMoveID)
+void ComboSystem::TransionTo(ComboState& state, uint32_t newMoveID)
 {
     state.currentMoveId = newMoveID;
     state.comboIndex++;
@@ -28,19 +28,19 @@ void ComboSystem::ResetCombo(ComboState& state)
 
 void ComboSystem::ClearInput(ComboInput& input)
 {
-    input.attackInputType = AttackInputType::Idle;
+    input.inputKey = InputKey::None;
     input.timer = 0.0f; // InputSystem側のバッファ時間をリセット
 }
 
-int ComboSystem::GetNextMoveID(const std::string& name, AttackInputType type, const std::vector<int>& possibles)
+uint32_t ComboSystem::GetNextMoveID(const std::string& name, InputKey input, const std::vector<uint32_t>& possibles)
 {
-    for (int id : possibles)
+    for (uint32_t id : possibles)
     {
         // 遷移先候補のMoveデータを取得
         const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(name, id);
 
         // プレイヤーの入力(type)が、その技の必要入力(requiredInput)と一致するか判定
-        if (move.requiredInput == type)
+        if (move.inputKey == input)
         {
             return id; // 条件に一致する技のIDを返す
         }
@@ -62,11 +62,11 @@ void ComboSystem::Update(World& world)
 
         if (state.currentMoveId == 0)
         {
-            if (input.attackInputType != AttackInputType::Idle)
+            if (input.inputKey != InputKey::None)
             {
                 for (const auto& move : charInfo->moves)
                 {
-                    if (move.isStarter && move.requiredInput == input.attackInputType)
+                    if (move.isStarter && move.inputKey == input.inputKey)
                     {
                         TransionTo(state, move.moveId);
                         ClearInput(input);
@@ -80,6 +80,28 @@ void ComboSystem::Update(World& world)
         const ComboMove& currentMove = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
         float progress = state.timer / currentMove.duration;
 
+		// 攻撃しないムーブの場合は、コンボ入力の判定のみ行う
+        if (!currentMove.isAttack)
+        {
+            // コンボ入力の判定
+            if (input.inputKey != InputKey::None)
+            {
+                uint32_t nextID = GetNextMoveID(state.name, input.inputKey, currentMove.nextPossibleMoves);
+                if (nextID != -1)
+                {
+                    TransionTo(state, nextID);
+                    ClearInput(input);
+                }
+            }
+            else
+            {
+                ResetCombo(state);
+                ClearInput(input);
+            }
+
+            continue;
+        }
+
         AITrigger* trigger = world.GetComponent<AITrigger>(entity);
         bool canInput = (progress >= currentMove.inputStart && progress <= currentMove.inputEnd);
 
@@ -89,11 +111,11 @@ void ComboSystem::Update(World& world)
         }
 
         // コンボ入力の判定
-        if (input.attackInputType != AttackInputType::Idle)
+        if (input.inputKey != InputKey::None)
         {
             if (canInput)
             {
-                int nextID = GetNextMoveID(state.name, input.attackInputType, currentMove.nextPossibleMoves);
+                uint32_t nextID = GetNextMoveID(state.name, input.inputKey, currentMove.nextPossibleMoves);
                 if (nextID != -1)
                 {
                     TransionTo(state, nextID);

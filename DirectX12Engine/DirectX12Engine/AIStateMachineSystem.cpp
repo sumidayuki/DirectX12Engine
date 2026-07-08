@@ -1,6 +1,7 @@
 #include "Precompiled.h"
 #include "AIStateMachineSystem.h"
 #include "AIRuleRegistry.h"
+#include "InputBind.h"
 
 void AIStateMachineSystem::Update(World& world)
 {
@@ -60,7 +61,7 @@ void AIStateMachineSystem::Update(World& world)
 					}
 
 					aiState.currentStateID = transition.nextState;
-					comboInput.attackInputType = transition.input;
+					comboInput.inputKey = transition.input;
 					break; // Å‰‚ÉğŒ‚ğ–‚½‚·‘JˆÚ‚ªŒ©‚Â‚©‚Á‚½‚çó‘Ô‘JˆÚ‚ğŠm’è‚³‚¹‚Äƒ‹[ƒv‚ğ”²‚¯‚é
 				}
 			}

@@ -43,14 +43,12 @@ void TitleScene::Update()
 	float alpha = (std::sin(Time::GetTime() * 3.0f) + 1.0f) / 2.0f; // 0‚©‚ç1‚Ì”ÍˆÍ‚Å•Ï‰»
 	m_titleText->color.a = alpha;
 
-	static float time = 0.0f;
-
-	if (time >= 3.0f && InputManager::IsAnyKeyPressed())
+	if (m_time >= 3.0f && InputManager::IsAnyKeyPressed())
 	{
 		SceneManager::ChangeScene("Main");
 	}
 
-	time += Time::GetDeltaTime();
+	m_time += Time::GetDeltaTime();
 }
 
 void TitleScene::Draw()

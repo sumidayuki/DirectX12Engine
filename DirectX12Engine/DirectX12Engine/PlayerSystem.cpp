@@ -317,11 +317,18 @@ void PlayerSystem::Update(World& world)
 			continue;
 		}
 
+		const ComboMove& currentMove = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+
+		if (!currentMove.isAttack)
+		{
+			Move(world, transform, input, animator, loco, rolling, stamina);
+			continue;
+		}
+
 		loco.currentVelocity = Vector3(0, 0, 0);
 
 		// ƒRƒ“ƒ{UŒ‚’†‚Ì‰ñ“]EUŒ‚ŽÀs
 		animator.isLoop = false;
-		const ComboMove& currentMove = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
 
 		// “G‚Ìî•ñ‚ðŽæ“¾
 		if (!m_gameManager)
@@ -385,15 +392,16 @@ void PlayerSystem::Update(World& world)
 
 			if (canFire)
 			{
-				switch (currentMove.attackType)
+				switch (currentMove.moveId)
 				{
-				case 1:
-					m_playerCamera->targetScale = 0.9f;
+				case "attack-normal-1"_h:
+				case "attack-normal-2"_h:
+				case "attack-normal-3"_h:
 					DrawArrow(transform, 2000, currentMove.damage, animator, world);
 					state.hitConfirm = true;
 					break;
 
-				case 2:
+				case "attack-guard"_h:
 					LegAttack(transform, state, animator, attackable, world);
 					break;
 

@@ -4,13 +4,13 @@ class ComboSystem : public System
 {
 private:
 
-	void TransionTo(ComboState& state, int newMoveID);
+	void TransionTo(ComboState& state, uint32_t newMoveID);
 
 	void ResetCombo(ComboState& state);
 
 	void ClearInput(ComboInput& input);
 
-	int GetNextMoveID(const std::string& name, AttackInputType type, const std::vector<int>& possibles);
+	uint32_t GetNextMoveID(const std::string& name, InputKey input, const std::vector<uint32_t>& possibles);
 
 private:
 	void Update(World& world) override;

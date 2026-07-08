@@ -36,6 +36,7 @@
 #include <chrono>                           // 時間
 #include <algorithm>                        // アルゴリズム
 #include <typeindex>						// タイプインデックス
+#include <variant>
 
 // DirectX グラフィックスコンポーネント
 #include <d3d12.h>                          // Direct3D12コアライブラリ
@@ -168,6 +169,8 @@ class InputManager;
 enum class KeyCode;
 class ButtonControl;
 class Keyboard;
+enum class InputKey;
+enum class GamepadButton;
 
 //-----------------------------------------------------------------------------------------------------
 // 自作ヘッダーファイル
@@ -256,6 +259,9 @@ class Keyboard;
 // Enum
 #include "DamageType.h"
 
+// Character
+#include "MoveData.h"
+
 // Component
 #include "IComponentData.h"
 #include "Layer.h"
@@ -274,7 +280,6 @@ class Keyboard;
 #include "ComboState.h"
 #include "CharacterStatus.h"
 #include "ComboInput.h"
-#include "ComboMove.h"
 #include "DebugRenderer.h"
 #include "BoneSocket.h"
 #include "MeshFilter.h"
@@ -342,4 +347,6 @@ class Keyboard;
 #include "KeyCode.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "Gamepad.h"
 #include "InputManager.h"
+#include "InputBind.h"

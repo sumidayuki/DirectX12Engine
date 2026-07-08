@@ -4,8 +4,8 @@
             {
                 "type": "play-se",
                 "name": "Warrok/se-punch",
-                "pos": "mixamorig:LeftHand",
-                "time": 17
+                "bone": "mixamorig:LeftHand",
+                "frame": 17
             }
         ]
     },
@@ -14,8 +14,8 @@
             {
                 "type": "play-se",
                 "name": "Warrok/se-punch",
-                "pos": "mixamorig:RightHand",
-                "time": 17
+                "bone": "mixamorig:RightHand",
+                "frame": 17
             }
         ]
     },
@@ -24,7 +24,7 @@
             {
                 "type": "play-se",
                 "name": "Warrok/se-jump",
-                "time": 100
+                "frame": 100
             }
         ]
     }

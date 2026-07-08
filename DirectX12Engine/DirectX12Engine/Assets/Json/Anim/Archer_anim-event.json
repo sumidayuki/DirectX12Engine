@@ -4,14 +4,14 @@
             {
                 "type": "play-se",
                 "name": "Archer/se-foot",
-                "pos": "mixamorig:LeftFoot",
-                "time": 13
+                "bone": "mixamorig:LeftFoot",
+                "frame": 13
             },
             {
                 "type": "play-se",
                 "name": "Archer/se-foot",
-                "pos": "mixamorig:RightFoot",
-                "time": 26
+                "bone": "mixamorig:RightFoot",
+                "frame": 26
             }
         ]
     },
@@ -20,8 +20,8 @@
             {
                 "type": "play-se",
                 "name": "Archer/se-shageki",
-                "pos": "mixamorig:Left_arch2",
-                "time": 6
+                "bone": "mixamorig:Left_arch2",
+                "frame": 6
             }
         ]
     },
@@ -30,8 +30,8 @@
             {
                 "type": "play-se",
                 "name": "Archer/se-shageki",
-                "pos": "mixamorig:Left_arch2",
-                "time": 36
+                "bone": "mixamorig:Left_arch2",
+                "frame": 36
             }
         ]
     },
@@ -40,8 +40,8 @@
             {
                 "type": "play-se",
                 "name": "Archer/se-kick",
-                "pos": "mixamorig:RightFoot",
-                "time": 17
+                "bone": "mixamorig:RightFoot",
+                "frame": 17
             }
         ]
     },
@@ -50,8 +50,8 @@
             {
                 "type": "play-se",
                 "name": "Archer/se-guard",
-                "pos": "mixamorig:Left_arch2",
-                "time": 1
+                "bone": "mixamorig:Left_arch2",
+                "frame": 1
             }
         ]
     },
@@ -60,7 +60,7 @@
             {
                 "type": "play-se",
                 "name": "Archer/se-damage",
-                "time": 3
+                "frame": 3
             }
         ]
     }

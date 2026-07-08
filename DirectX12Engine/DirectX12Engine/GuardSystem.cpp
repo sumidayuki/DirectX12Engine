@@ -47,6 +47,8 @@ void GuardSystem::Update(World& world)
 					AnimationSystem::Play(animator, "Hit_00");
 				}
 
+				guardState.shieldBreakTimer = 3.0f;
+
 				// ダメージはシールドで防いだため、HPには影響しない
 				damageable.damageQueue.pop();
 			}
@@ -68,14 +70,14 @@ void GuardSystem::Update(World& world)
 				}
 			}
 		}
-		else
+
+		// シールドが破壊されている場合、徐々に回復させる
+		if (guardState.shieldBreakTimer <= 0 && guardState.shieldHealth < guardState.shieldMaxHealth)
 		{
-			// シールドが破壊されている場合、徐々に回復させる
-			if (guardState.shieldHealth < guardState.shieldMaxHealth)
-			{
-				guardState.shieldHealth += 2 * Time::GetDeltaTime();
-				guardState.shieldHealth = std::min(guardState.shieldHealth, guardState.shieldMaxHealth);
-			}
+			guardState.shieldHealth += 2 * Time::GetDeltaTime();
+			guardState.shieldHealth = std::min(guardState.shieldHealth, guardState.shieldMaxHealth);
 		}
+
+		guardState.shieldBreakTimer -= Time::GetDeltaTime();
 	}
 }

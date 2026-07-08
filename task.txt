@@ -1,0 +1,4 @@
+・Character情報をImportした後、Registryに保存するようにする。
+・Moveを汎用的にする。
+・ComboSystemをComboだけでなくすべての行動に対応したMoveSystemに変更する。
+・入力をバインド制に変えて、どんな入力にも対応できるようにする。

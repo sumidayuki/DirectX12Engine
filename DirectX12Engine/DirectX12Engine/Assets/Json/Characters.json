@@ -12,13 +12,13 @@
         },
         "moves": [
             {
-                "moveId": 1,
+                "moveId": "attack-normal-1",
                 "textName": "text_shageki",
-                "attackType": 1,
+                "inputKey": "Attack1",
                 "isStarter": true,
-                "requiredInput": 1,
+                "isAttack": true,
                 "animationName": "Attack_00",
-                "nextPossibleMoves": [ 4 ],
+                "nextPossibleMoves": [ "attack-normal-2" ],
                 "damage": 10,
                 "duration": 0.6,
                 "inputStart": 0.7,
@@ -27,13 +27,21 @@
                 "hitEndTime": 0.3
             },
             {
-                "moveId": 2,
-                "textName": "text_guard-attack",
-                "attackType": 2,
+                "moveId": "guard",
+                "textName": "text_guard",
+                "inputKey": "Guard",
                 "isStarter": true,
-                "requiredInput": 3,
+                "isAttack": false,
+                "nextPossibleMoves": [ "attack-guard" ]
+            },
+            {
+                "moveId": "attack-guard",
+                "textName": "text_guard-attack",
+                "inputKey": "Attack1",
+                "isStarter": false,
+                "isAttack": true,
                 "animationName": "Attack_03",
-                "nextPossibleMoves": [ 1 ],
+                "nextPossibleMoves": [ "attack-normal-1" ],
                 "damage": 20,
                 "duration": 1.5,
                 "inputStart": 0.5,
@@ -42,13 +50,13 @@
                 "hitEndTime": 0.4
             },
             {
-                "moveId": 4,
+                "moveId": "attack-normal-2",
                 "textName": "text_shageki",
-                "attackType": 1,
+                "inputKey": "Attack1",
                 "isStarter": false,
-                "requiredInput": 1,
+                "isAttack": true,
                 "animationName": "Attack_00",
-                "nextPossibleMoves": [ 5 ],
+                "nextPossibleMoves": [ "attack-normal-3" ],
                 "damage": 10,
                 "duration": 0.6,
                 "inputStart": 0.7,
@@ -57,11 +65,11 @@
                 "hitEndTime": 0.3
             },
             {
-                "moveId": 5,
+                "moveId": "attack-normal-3",
                 "textName": "text_shageki-finish",
-                "attackType": 1,
+                "inputKey": "Attack1",
                 "isStarter": false,
-                "requiredInput": 1,
+                "isAttack": true,
                 "animationName": "Attack_01",
                 "nextPossibleMoves": [],
                 "damage": 20,
@@ -72,18 +80,11 @@
                 "hitEndTime": 0.8
             },
             {
-                "moveId": 10,
-                "attackType": 1,
-                "isStarter": false,
-                "requiredInput": 1,
-                "animationName": "Attack_02",
-                "nextPossibleMoves": [],
-                "damage": 30,
-                "duration": 2.4,
-                "inputStart": 0.0,
-                "inputEnd": 0.0,
-                "hitStartTime": 0.8,
-                "hitEndTime": 0.9
+                "moveId": "rolling",
+                "textName": "text_rolling",
+                "inputKey": "Rolling",
+                "isStarter": true,
+                "isAttack": false
             }
         ]
     },
@@ -108,12 +109,11 @@
         },
         "moves": [
             {
-                "moveId": 1,
-                "attackType": 1,
+                "moveId": "attack-1-left",
+                "inputKey": "Attack1",
                 "isStarter": true,
-                "requiredInput": 1,
                 "animationName": "Attack1_Left",
-                "nextPossibleMoves": [ 2 ],
+                "nextPossibleMoves": [ "attack-1-right" ],
                 "damage": 10,
                 "duration": 1.0,
                 "inputStart": 0.8,
@@ -122,12 +122,11 @@
                 "hitEndTime": 0.5
             },
             {
-                "moveId": 2,
-                "attackType": 1,
+                "moveId": "attack-1-right",
+                "inputKey": "Attack1",
                 "isStarter": false,
-                "requiredInput": 1,
                 "animationName": "Attack1_Right",
-                "nextPossibleMoves": [ 1 ],
+                "nextPossibleMoves": [ "attack-1-left" ],
                 "damage": 15,
                 "duration": 1.0,
                 "inputStart": 0.8,
@@ -136,12 +135,11 @@
                 "hitEndTime": 0.5
             },
             {
-                "moveId": 3,
-                "attackType": 2,
+                "moveId": "attack-jump",
+                "inputKey": "Attack2",
                 "isStarter": true,
-                "requiredInput": 3,
                 "animationName": "Attack_02",
-                "nextPossibleMoves": [ 3 ],
+                "nextPossibleMoves": [ "attack-jump" ],
                 "damage": 30,
                 "duration": 3,
                 "inputStart": 0.8,

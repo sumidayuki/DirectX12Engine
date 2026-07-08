@@ -1,6 +1,13 @@
 #include "Precompiled.h"
 #include "CharacterImporter.h"
 #include "GuardState.h"
+#include "CharacterInfoRegistry.h"
+
+std::map<std::string, MoveType> StringToMoveType = {
+	{"Attack", MoveType::Attack},
+	{"Guard", MoveType::Guard},
+	{"Rolling", MoveType::Rolling}
+};
 
 void CharacterImporter::Import()
 {
@@ -26,73 +33,15 @@ void CharacterImporter::Import()
 	}
 	catch (const Json::exception& e)
 	{
+#if _DEBUG
 		std::ostringstream oss;
 		oss << "JSON要素の解析中にエラーが発生: " << e.what() << "\n";
 		OutputDebugStringA(oss.str().c_str());
+#endif
 		assert(0);
 	}
 }
 
-bool CharacterImporter::CharcterInitialize(const std::string& name, Entity entity, World& world)
-{
-	const CharacterInfo& info = m_characterInfos.at(name);
-
-	// CharacterStatus コンポーネントを付与
-	world.AddComponent<CharacterStatus>(entity, info.status);
-
-	world.AddComponent<Velocity>(entity, Velocity{});
-	HP playerHP;
-	playerHP.maxHP = StatusAPI::GetFloat(info.status, "maxHealth", 100.0f);
-	world.AddComponent<HP>(entity, playerHP);
-	world.AddComponent<Damageable>(entity, Damageable{});
-	world.AddComponent<Rigidbody>(entity, Rigidbody{});
-	Collider bColl;
-	bColl.type = ColliderType::AABB;
-	float hitBoxX = StatusAPI::GetFloat(info.status, "hitBoxX", 40.0f);
-	float hitBoxY = StatusAPI::GetFloat(info.status, "hitBoxY", 180.0f);
-	float hitBoxZ = StatusAPI::GetFloat(info.status, "hitBoxZ", 40.0f);
-	bColl.size = Vector3(hitBoxX, hitBoxY, hitBoxZ);
-	bColl.offset = Vector3(0, hitBoxY * 0.5f, 0);
-	world.AddComponent<Collider>(entity, bColl);
-	ComboState comboState;
-	comboState.name = name;
-	world.AddComponent<ComboState>(entity, comboState);
-	ComboInput comboInput;
-	world.AddComponent<ComboInput>(entity, comboInput);
-	GuardState guardState;
-	float shieldMax = StatusAPI::GetFloat(info.status, "shieldMaxHealth", 100.0f);
-	guardState.shieldMaxHealth = shieldMax;
-	guardState.shieldHealth = shieldMax;
-	world.AddComponent<GuardState>(entity, guardState);
-	Attackable attackable;
-	world.AddComponent<Attackable>(entity, attackable);
-
-	return true;
-}
-
-const CharacterInfo* CharacterImporter::GetCharacterInfo(const std::string& name) const
-{
-	// キャラクター情報が存在するか確認
-	auto it = m_characterInfos.find(name);
-	if (it != m_characterInfos.end())
-	{
-		return &it->second;
-	}
-
-	return nullptr;
-}
-
-const ComboMove& CharacterImporter::GetMoveById(const std::string& name, int id) const
-{
-	for (const auto& move : m_characterInfos.at(name).moves)
-	{
-		if (move.moveId == id)
-		{
-			return move;
-		}
-	}
-	throw std::runtime_error("Move ID not found");
-}
 
 void CharacterImporter::ProcessCharacterInfo(const Json& json)
 {
@@ -104,7 +53,11 @@ void CharacterImporter::ProcessCharacterInfo(const Json& json)
 		ProcessStatus(data, info);
 		ProcessMoves(data, info);
 
-		m_characterInfos[characterName] = info;
+		CharacterInfoRegistry::GetInstance()->RegisterCharacterInfo(info);
+
+#if _DEBUG
+		OutputDebugStringW((L"Characterの読み込みに成功: " + std::wstring(characterName.begin(), characterName.end()) + L"\n").c_str());
+#endif
 	}
 }
 
@@ -131,7 +84,7 @@ void CharacterImporter::ProcessStatus(const Json& json, CharacterInfo& info)
 		}
 		else if (value.is_object())
 		{
-			// Vector3 として解釈 { "x": ..., "y": ..., "z": ... }
+			// Vector3 として変換
 			if (value.contains("x") && value.contains("y") && value.contains("z"))
 			{
 				Vector3 v;
@@ -154,7 +107,7 @@ void CharacterImporter::ProcessMoves(const Json& json, CharacterInfo& info)
 
 	for (const auto& moveJson : moves)
 	{
-		ComboMove move;
+		MoveData move;
 		ProcessMove(moveJson, move);
 		info.moves.push_back(move);
 	}
@@ -164,23 +117,74 @@ void CharacterImporter::ProcessMoves(const Json& json, CharacterInfo& info)
 #endif
 }
 
-void CharacterImporter::ProcessMove(const Json& json, ComboMove& move)
+void CharacterImporter::ProcessMove(const Json& json, MoveData& move)
 {
-	move.moveId = json.at("moveId").get<int>();
+	move.moveId = FNV1a_Hash<uint32_t>(json.value("moveId", ""));
 	move.textName = json.value("textName", "");
-	move.attackType = json.at("attackType").get<int>();
-	move.isStarter = json.at("isStarter").get<bool>();
-	move.requiredInput = (AttackInputType)json.at("requiredInput").get<int>();
-	move.duration = json.at("duration").get<float>();
-	move.inputStart = json.at("inputStart").get<float>();
-	move.inputEnd = json.at("inputEnd").get<float>();
-	move.hitStartTime = json.at("hitStartTime").get<float>();
-	move.hitEndTime = json.at("hitEndTime").get<float>();
-	move.damage = json.at("damage").get<float>();
-	move.animationName = json.at("animationName").get<std::string>();
-	move.nextPossibleMoves = json.at("nextPossibleMoves").get<std::vector<int>>();
+	std::string inputKeyStr = json.value("inputKey", "");
+	move.inputKey = StringToInputKey[inputKeyStr];
+	move.isStarter = json.value("isStarter", false);
+	std::vector<std::string> nextMoves = json.value("nextPossibleMoves", std::vector<std::string>());
+	for (const auto& nextMove : nextMoves)
+	{
+		move.nextPossibleMoves.push_back(FNV1a_Hash<uint32_t>(nextMove));
+	}
+	move.duration = json.value("duration", 0.0f);
+	move.animationName = json.value("animationName", "");
+	move.type = StringToMoveType[json.value("type", "")];
+
+	switch (move.type)
+	{
+		case MoveType::Attack:
+		{
+			AttackParams params;
+			ProcessAttackParams(json, params);
+			move.params = params;
+			break;
+		}
+
+		case MoveType::Guard:
+		{
+			GuardParams params;
+			ProcessGuardParams(json, params);
+			move.params = params;
+			break;
+		}
+
+		case MoveType::Rolling:
+		{
+			RollingParams params;
+			ProcessRollingParams(json, params);
+			move.params = params;
+			break;
+		}
+	}
 
 #if _DEBUG
 	OutputDebugStringW((L"CharacterのMove読み込みに成功: MoveID = " + std::to_wstring(move.moveId) + L"\n").c_str());
 #endif
+}
+
+void CharacterImporter::ProcessAttackParams(const Json& json, AttackParams& params)
+{
+	const Json& attackParams = json.value("params", Json::object());
+	params.allowCancel = attackParams.value("allowCancel", false);
+	params.damage = attackParams.value("damage", 0.0f);
+	params.inputStart = attackParams.value("inputStart", 0.0f);
+	params.inputEnd = attackParams.value("inputEnd", 0.0f);
+	params.hitStartTime = attackParams.value("hitStartTime", 0.0f);
+	params.hitEndTime = attackParams.value("hitEndTime", 0.0f);
+	params.colliderNames = attackParams.value("colliderNames", std::vector<std::string>());
+}
+
+void CharacterImporter::ProcessGuardParams(const Json& json, GuardParams& params)
+{
+}
+
+void CharacterImporter::ProcessRollingParams(const Json& json, RollingParams& params)
+{
+	const Json& rollingParams = json.value("params", Json::object());
+	params.invincibleStart = rollingParams.value("invincibleStart", 0.0f);
+	params.invincibleEnd = rollingParams.value("invincibleEnd", 0.0f);
+	params.moveSpeed = rollingParams.value("moveSpeed", 0.0f);
 }

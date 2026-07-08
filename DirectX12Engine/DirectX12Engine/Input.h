@@ -13,10 +13,10 @@ struct Input : IComponentData
 	bool dash;
 	bool attack1;
 	bool attack2;
-	bool guard1;
-	bool guard2;
-	bool isGuard;
-	bool isRolling;
+	bool guard1;		// ガード1
+	bool guard2;		// ガード2
+	bool isGuard;		// ガード中かどうか
+	bool isRolling;		// ローリング中かどうか
 
 	float horizontal;
 	float vartical;

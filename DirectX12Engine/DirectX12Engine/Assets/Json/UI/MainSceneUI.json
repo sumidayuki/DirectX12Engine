@@ -57,7 +57,7 @@
                 "initialValue": 100.0,
                 "leftToRight": true,
                 "rect": {
-                    "pos": [ -910, -420 ],
+                    "pos": [ -910, -435 ],
                     "size": [ 500, 20 ],
                     "anchorMin": [ 0.5, 0.5 ],
                     "anchorMax": [ 0.5, 0.5 ],
@@ -79,7 +79,7 @@
                 "initialValue": 100.0,
                 "leftToRight": true,
                 "rect": {
-                    "pos": [ -910, -380 ],
+                    "pos": [ -910, -410 ],
                     "size": [ 500, 20 ],
                     "anchorMin": [ 0.5, 0.5 ],
                     "anchorMax": [ 0.5, 0.5 ],

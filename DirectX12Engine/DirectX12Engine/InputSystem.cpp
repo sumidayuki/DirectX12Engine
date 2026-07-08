@@ -15,33 +15,22 @@ void InputSystem::Update(World& world)
         input.moveLeft = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::A).IsPressed() : gamepad->LeftStick().Left().IsPressed();
         input.moveRight = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::D).IsPressed() : gamepad->LeftStick().Right().IsPressed();
 
-        if (combo.attackInputType != AttackInputType::Attack3)
-        {
-            input.guard1 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasPressedThisFrame();
-        }
-        else
-        {
-            input.guard1 = false;
-        }
+        //if (input.isGuard)
+        //{
+        //    input.guard2 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).WasReleasedThisFrame() : gamepad-//>GetButton(GamepadButton::LeftShoulder).WasReleasedThisFrame();
+        //    input.isGuard = !input.guard2;
+        //}
+        //else
+        //{
+		//	input.guard1 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).WasPressedThisFrame() : gamepad-/>GetButton/(GamepadButton::LeftShoulder).WasPressedThisFrame();
+        //    input.guard2 = false;
+        //}
 
-        if (input.isGuard)
-        {
-            input.guard2 = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).WasReleasedThisFrame() : gamepad->GetButton(GamepadButton::LeftShoulder).WasReleasedThisFrame();
-            input.isGuard = !input.guard2;
-        }
-        else
-        {
-            input.guard2 = false;
-        }
+		input.isGuard = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).IsPressed() : gamepad->GetButton(GamepadButton::LeftShoulder).IsPressed();
 
         input.dash = true;
         input.attack1 = !gamepad->IsConnected() ? Mouse::GetButtonState(MouseButton::Left).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::RightShoulder).WasPressedThisFrame();
         input.attack2 = Mouse::GetButtonState(MouseButton::Right).WasPressedThisFrame();
-
-        if (input.guard1)
-        {
-            input.isGuard = true;
-        }
 
 		input.isRolling = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::Space).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::LeftTrigger).WasPressedThisFrame();
 
@@ -74,16 +63,21 @@ void InputSystem::Update(World& world)
         input.vartical = vertical;
         input.horizontal = horizontal;
 
-        if (input.attack1)
+        if (input.isRolling)
         {
-            combo.attackInputType = AttackInputType::Attack1;
-            combo.timer = 0.0f;
+            combo.inputKey = InputKey::Rolling;
+			combo.timer = 0.0f;
         }
 
-        if (input.isGuard && input.attack1)
+        if(input.isGuard)
         {
-            input.isGuard = false;
-            combo.attackInputType = AttackInputType::Attack3;
+            combo.inputKey = InputKey::Guard;
+            combo.timer = 0.0f;
+		}
+
+        if (input.attack1)
+        {
+            combo.inputKey = InputKey::Attack1;
             combo.timer = 0.0f;
         }
 
@@ -91,7 +85,7 @@ void InputSystem::Update(World& world)
 
         if (combo.timer > 0.2f)
         {
-            combo.attackInputType = AttackInputType::Idle;
+            combo.inputKey = InputKey::None;
         }
     }
 }

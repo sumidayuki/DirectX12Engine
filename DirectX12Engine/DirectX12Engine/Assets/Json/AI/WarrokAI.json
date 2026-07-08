@@ -14,7 +14,7 @@
         {
             "Trigger": "OnUpdate",
             "To": "Attack_JumpAttack",
-            "Input": "Attack3",
+            "Input": "Attack2",
             "Conditions": [
                 {
                     "Type": "CoolDownReady",
@@ -75,7 +75,7 @@
         {
             "Trigger": "OnComboWindow",
             "To": "Attack_JumpAttack",
-            "Input": "Attack3",
+            "Input": "Attack2",
             "Conditions": [
                 {
                     "Type": "UnderJumpComboCount",

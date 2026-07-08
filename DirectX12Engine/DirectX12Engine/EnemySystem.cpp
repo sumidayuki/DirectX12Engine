@@ -368,7 +368,7 @@ void EnemySystem::Update(World& world)
 		case 0:
 			Move(world, enemy, aiAgent, transform, animator, loco);
 			break;
-		case 3:
+		case "attack-jump"_h:
 			JumpAttack(entity, enemy, aiAgent, transform, state, animator, world);
 			break;
 
@@ -393,17 +393,22 @@ void EnemySystem::Update(World& world)
 			// ヒット判定期間（canHit）の処理
 			if (state.canHit && !state.hitConfirm)
 			{
-				if (state.currentMoveId == 1)
+				switch (state.currentMoveId)
 				{
-					m_leftHandColl->isEnable = true;
-				}
-				if (state.currentMoveId == 2)
-				{
-					m_rightHandColl->isEnable = true;
-				}
-				if (state.currentMoveId == 3)
-				{
-					m_jumpAttackColl->isEnable = true;
+					case "attack-jump"_h:
+						m_jumpAttackColl->isEnable = true;
+						break;
+
+					case "attack-left"_h:
+						m_leftHandColl->isEnable = true;
+						break;
+
+					case "attack-right"_h:
+						m_rightHandColl->isEnable = true;
+						break;
+
+					default:
+						break;
 				}
 
 				// 衝突検知
@@ -439,11 +444,11 @@ void EnemySystem::Update(World& world)
 			{
 				switch (state.currentMoveId)
 				{
-				case 1:
+				case "attack-left"_h:
 					StatusAPI::SetFloat(status, "AttackCoolDownTimer", StatusAPI::GetFloat(status, "AttackCoolDownTime"));
 					break;
 
-				case 3:
+				case "attack-jump"_h:
 					StatusAPI::SetFloat(status, "JumpAttackCoolDownTimer", StatusAPI::GetFloat(status, "JumpAttackCoolDownTime"));
 					break;
 
