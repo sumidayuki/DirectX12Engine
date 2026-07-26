@@ -4,7 +4,7 @@
         "sortingOrder": 0,
         "elements": [
             {
-                "name": "PlayerHPBar",
+                "name": "Player_hp_bar",
                 "type": "Slider",
                 "background": "Assets/White.png",
                 "backgroundColor": [ 1.0, 0.0, 0.0, 1 ],
@@ -26,7 +26,7 @@
                 }
             },
             {
-                "name": "EnemyHPBar",
+                "name": "Enemy_hp_bar",
                 "type": "Slider",
                 "background": "Assets/White.png",
                 "backgroundColor": [ 1.0, 0.0, 0.0, 1 ],
@@ -70,7 +70,7 @@
                 }
             },
             {
-                "name": "PlayerGuardBar",
+                "name": "Player_guard_bar",
                 "type": "Slider",
                 "background": "Assets/White.png",
                 "backgroundColor": [ 1.0, 0.0, 0.0, 1 ],

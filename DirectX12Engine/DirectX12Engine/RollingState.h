@@ -8,6 +8,5 @@ struct RollingState : IComponentData
 	float timer;			// 経過時間
 	float invincibleStart;	// 無敵時間の開始時間
 	float invincibleEnd;	// 無敵時間の終了時間
-	bool isInvincible = false;		// 無敵状態かどうか
 	bool isRolling = false;			// ローリング状態かどうか
 };

@@ -4,10 +4,6 @@
 class EnemySystem : public System
 {
 private:
-	bool m_isInvincivle;
-	Slider* m_hpBar;
-
-private:
 	bool ProcessTurn(World& world, Transform& transform, Animator& animator, LocomotionData& loco);
 	void Move(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, LocomotionData& loco);
 	void Miai(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status);	

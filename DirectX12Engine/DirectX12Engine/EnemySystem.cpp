@@ -146,7 +146,6 @@ void EnemySystem::Miai(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& 
 
 void EnemySystem::Approach(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status)
 {
-	m_isInvincivle = true;
 	Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
 	aiAgent.speed = StatusAPI::GetFloat(status, "approachMoveSpeed");
 	AIAgentSystem::GetInstance()->SetDestination(aiAgent, targetTrans->position);
@@ -168,7 +167,6 @@ void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Tra
 		const AttackParams& params = std::get<AttackParams>(move.params);
 		AnimationSystem::Play(animator, params.animationName, true);
 		state.isAnimed = true;
-		m_isInvincivle = true;
 	}
 
 	float currentTime = state.timer;
@@ -213,8 +211,6 @@ void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Tra
 
 void EnemySystem::Start(World& world)
 {
-	m_isInvincivle = false;
-	m_hpBar = nullptr;
 }
 
 void EnemySystem::Update(World& world)
@@ -223,14 +219,6 @@ void EnemySystem::Update(World& world)
 
 	for (auto [entity, enemy, aiAgent, transform, collider, animator, hp, state, damageable, attackable, loco, status, aiState] : view)
 	{
-		if (!m_hpBar)
-		{
-			m_hpBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("EnemyHPBar")));
-			m_hpBar->maxValue = hp.maxHP;
-			m_hpBar->minValue = 0;
-			m_hpBar->value = hp.maxHP;
-		}
-
 		Transform* targetTrans = world.GetComponent<Transform>(enemy.target);
 		Vector3 toTarget = targetTrans->position - transform.position;
 		float distance = toTarget.Magnitude();
@@ -250,19 +238,6 @@ void EnemySystem::Update(World& world)
 				SceneManager::ChangeScene("Title");
 			}
 			continue;
-		}
-
-		// ƒ_ƒ[ƒWˆ—
-		if (!damageable.damageQueue.empty())
-		{
-			while (!damageable.damageQueue.empty())
-			{
-
-				hp.currentHP -= damageable.damageQueue.front().damage;
-				m_hpBar->value = hp.currentHP;
-
-				damageable.damageQueue.pop();
-			}
 		}
 
 		switch (aiState.currentStateID)

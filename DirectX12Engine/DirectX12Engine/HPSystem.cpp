@@ -1,5 +1,6 @@
 #include "Precompiled.h"
 #include "HPSystem.h"
+#include "PlayerTag.h"
 
 void HPSystem::Update(World& world)
 {
@@ -11,7 +12,15 @@ void HPSystem::Update(World& world)
 
 		if (!hp.isInit)
 		{
+			bool isPlayer = world.HasComponent<PlayerTag>(entity);
+			std::string name = isPlayer ? "Player" : "Enemy";
+
+			hp.hpBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString((name + "_hp_bar").c_str())));
+			hp.isSuperArmor = !isPlayer;
 			hp.currentHP = hp.maxHP;
+			hp.hpBar->minValue = 0;
+			hp.hpBar->maxValue = hp.maxHP;
+			hp.hpBar->value = hp.currentHP;
 			hp.isInit = true;
 		}
 
@@ -20,21 +29,26 @@ void HPSystem::Update(World& world)
 			hp.isDeath = true;
 		}
 
-		// 被ダメージ処理（Hitアニメーション再生）
 		if (!damageable.damageQueue.empty())
 		{
-			Damage damage = damageable.damageQueue.front();
-			if (damage.type == DamageType::Normal)
+			for (int i = 0; i < damageable.damageQueue.size(); i++)
 			{
-				if (!hp.isInvincible)
+				if (!hp.isSuperInvincible)
 				{
-					animator.isLoop = false;
-					AnimationSystem::Play(animator, "Hit_00", true);
-					hp.currentHP -= damage.damage;
-					hp.hpBar->value = hp.currentHP;
-				}
+					Damage damage = damageable.damageQueue.front();
+					if (!hp.isInvincible)
+					{
+						if (!hp.isSuperArmor)
+						{
+							animator.isLoop = false;
+							AnimationSystem::Play(animator, "Hit_00", true);
+						}
+						hp.currentHP -= damage.damage;
+						hp.hpBar->value = hp.currentHP;
+					}
 
-				damageable.damageQueue.pop();
+					damageable.damageQueue.pop();
+				}
 			}
 		}
 	}

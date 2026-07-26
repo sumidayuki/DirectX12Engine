@@ -141,7 +141,6 @@ void PlayerSystem::Start(World& world)
 	m_stateTimer = 0.0f;
 	m_currentState = PlayerState::Move;
 	m_bowTransform = nullptr;
-	m_hpBar = nullptr;
 }
 
 // システムのメインループ
@@ -163,12 +162,6 @@ void PlayerSystem::Update(World& world)
 			continue;
 		}
 
-		// ガードバー更新（常時）
-		{
-			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
-			guardBar->value = guard.shieldHealth;
-		}
-
 		if (guard.isGuarding)
 		{
 			continue;
@@ -187,25 +180,12 @@ void PlayerSystem::Update(World& world)
 			m_bowTransform = world.GetComponent<Transform>(right);
 		}
 
-		if (!m_hpBar)
-		{
-			m_hpBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerHPBar")));
-			m_hpBar->maxValue = hp.maxHP;
-			m_hpBar->minValue = 0;
-			m_hpBar->value = hp.maxHP;
-
-			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
-			guardBar->maxValue = guard.shieldMaxHealth;
-			guardBar->minValue = 0;
-			guardBar->value = guard.shieldHealth;
-		}
-
 		// MoveState による行動分岐
 		if (state.currentMoveId == 0)
 		{
 			// ニュートラル状態 → 移動
 			rolling.isRolling = false;
-			rolling.isInvincible = false;
+			hp.isInvincible = false;
 			Move(world, transform, input, animator, loco, rolling, stamina);
 			continue;
 		}
@@ -246,7 +226,7 @@ void PlayerSystem::Update(World& world)
 				rolling.invincibleEnd = params.invincibleEnd;
 				rolling.timer = 0.0f;
 				rolling.isRolling = true;
-				rolling.isInvincible = false;
+				hp.isInvincible = false;
 				loco.currentVelocity = Vector3(0, 0, 0);
 				AnimationSystem::Play(animator, params.animationName, false);
 				animator.isLoop = false;
@@ -256,7 +236,7 @@ void PlayerSystem::Update(World& world)
 			rolling.timer += Time::GetDeltaTime();
 			float progress = rolling.timer / rolling.duration;
 
-			rolling.isInvincible = (progress >= rolling.invincibleStart && progress <= rolling.invincibleEnd);
+			hp.isInvincible = (progress >= rolling.invincibleStart && progress <= rolling.invincibleEnd);
 
 			float easedSpeed = rolling.speed * Mathf::Max(0.0f, 1.0f - progress * progress);
 			TransformSystem::GetInstance()->Translate(transform, rolling.direction * easedSpeed * Time::GetDeltaTime());
@@ -264,7 +244,7 @@ void PlayerSystem::Update(World& world)
 			if (progress >= 1.0f || !animator.isPlaying)
 			{
 				rolling.isRolling = false;
-				rolling.isInvincible = false;
+				hp.isInvincible = false;
 				loco.state = LocomotionState::Idle;
 			}
 			continue;

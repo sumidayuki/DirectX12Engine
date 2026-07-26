@@ -1,18 +1,32 @@
 #include "GuardSystem.h"
 #include "GuardState.h"
+#include "PlayerTag.h"
 
 void GuardSystem::Update(World& world)
 {
-	View<Transform, GuardState, Damageable, Animator, Input> view(world);
-	for (auto [entity, transform, guardState, damageable, animator, input] : view)
+	View<Transform, GuardState, Damageable, Animator, Input, HP> view(world);
+	for (auto [entity, transform, guardState, damageable, animator, input, hp] : view)
 	{
+		if (!guardState.isInit)
+		{
+			bool isPlayer = world.HasComponent<PlayerTag>(entity);
+			std::string name = isPlayer ? "Player" : "Enemy";
+			guardState.bar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString((name + "_guard_bar").c_str())));
+			guardState.bar->minValue = 0;
+			guardState.bar->maxValue = guardState.shieldMaxHealth;
+			guardState.bar->value = guardState.shieldHealth;
+		}
+
+		guardState.bar->value = guardState.shieldHealth;
+
 		guardState.isGuarding = input.isGuard;
 
 		if (guardState.isBroken)
 		{
-			guardState.shieldHealth += 2 * Time::GetDeltaTime();
+			guardState.shieldHealth += 30 * Time::GetDeltaTime();
 			guardState.shieldHealth = std::min(guardState.shieldHealth, guardState.shieldMaxHealth);
 			guardState.isGuarding = true;
+			hp.isSuperInvincible = false;
 
 			if (guardState.shieldHealth >= guardState.shieldMaxHealth)
 			{
@@ -23,8 +37,11 @@ void GuardSystem::Update(World& world)
 			continue;
 		}
 
+		hp.isSuperInvincible = guardState.isGuarding;
+
 		if (guardState.isGuarding)
 		{
+
 			// ガードのスタートアニメーションを再生して、再生が終わっていたらループアニメーションに切り替える
 			if (animator.currentClipName != "Guard_Start" && animator.currentClipName != "Guard_Idle" && animator.currentClipName != "Guard_Impact")
 			{

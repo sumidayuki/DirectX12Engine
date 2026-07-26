@@ -8,6 +8,7 @@ struct HP : IComponentData
 	Slider* hpBar;
 	bool isDeath = false;
 	bool isInit = false;
-	bool isInvincible = false;			// ダメージを受けるがHPを減らさない
-	bool isSuperInvincible = false;		// ダメージを受けない
+	bool isSuperArmor = false;			// ダメージを受けた際にリアクションがあるか
+	bool isInvincible = false;			// ダメージを受けるがHPを減らすか
+	bool isSuperInvincible = false;		// ダメージをそもそも受けないか
 };

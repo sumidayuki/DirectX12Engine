@@ -20,8 +20,6 @@ private:
 
 	Transform* m_bowTransform;
 
-	Slider* m_hpBar;
-
 	float m_attackRange;
 
 	float m_stateTimer;
