@@ -46,6 +46,22 @@ constexpr T FNV1a_Hash(std::string_view str) noexcept
     return hash;
 }
 
+/// <summary>
+/// FNV-1aハッシュ関数（constexpr対応）
+/// 型名を64bit整数に変換します。
+/// 文字列で型を比較すると重くなるので数値化(ハッシュ)
+/// して整数比較を行うための関数です。
+/// </summary>
+constexpr uint64_t HashString(const char* str)
+{
+    return 	FNV1a_Hash<uint64_t>(str);
+}
+
+constexpr uint32_t HashString32(const char* str)
+{
+    return 	FNV1a_Hash<uint32_t>(str);
+}
+
 constexpr std::uint32_t operator ""_h(const char* str, std::size_t len) noexcept
 {
     return FNV1a_Hash<std::uint32_t>(std::string_view(str, len));

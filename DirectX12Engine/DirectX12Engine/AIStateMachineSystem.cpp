@@ -5,9 +5,9 @@
 
 void AIStateMachineSystem::Update(World& world)
 {
-	View<AIState, CharacterStatus, ComboInput, AITrigger> view(world);
+	View<AIState, CharacterStatus, MoveInput, AITrigger> view(world);
 
-	for (auto [entity, aiState, characterStatus, comboInput, trigger] : view)
+	for (auto [entity, aiState, characterStatus, moveInput, trigger] : view)
 	{
 		uint32_t aiFileName = FNV1a_Hash<uint32_t>(StatusAPI::GetString(characterStatus, "aiFileName").c_str());
 
@@ -61,7 +61,7 @@ void AIStateMachineSystem::Update(World& world)
 					}
 
 					aiState.currentStateID = transition.nextState;
-					comboInput.inputKey = transition.input;
+					moveInput.inputKey = transition.input;
 					break; // Å‰‚ÉğŒ‚ğ–‚½‚·‘JˆÚ‚ªŒ©‚Â‚©‚Á‚½‚çó‘Ô‘JˆÚ‚ğŠm’è‚³‚¹‚Äƒ‹[ƒv‚ğ”²‚¯‚é
 				}
 			}

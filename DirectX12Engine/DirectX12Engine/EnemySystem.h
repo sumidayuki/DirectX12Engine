@@ -5,10 +5,6 @@ class EnemySystem : public System
 {
 private:
 	bool m_isInvincivle;
-	Transform* m_hitBox;
-	Collider* m_leftHandColl;
-	Collider* m_rightHandColl;
-	Collider* m_jumpAttackColl;
 	Slider* m_hpBar;
 
 private:
@@ -16,8 +12,7 @@ private:
 	void Move(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, Animator& animator, LocomotionData& loco);
 	void Miai(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status);	
 	void Approach(World& world, Enemy& enemy, AIAgent& aiAgent, Transform& transform, CharacterStatus& status);
-	void JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world);
-	bool ProcessCollision(World& world, Collider* coll, ComboState& state, Attackable& attackable);
+	void JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, MoveState& state, Animator& animator, World& world);
 
 private:
 	void Start(World& world) override;

@@ -152,7 +152,7 @@ void EnemySystem::Approach(World& world, Enemy& enemy, AIAgent& aiAgent, Transfo
 	AIAgentSystem::GetInstance()->SetDestination(aiAgent, targetTrans->position);
 }
 
-void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, ComboState& state, Animator& animator, World& world)
+void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Transform& transform, MoveState& state, Animator& animator, World& world)
 {
 	// 設定値
 	const float startTime = 0.51f; // 移動開始秒
@@ -164,8 +164,9 @@ void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Tra
 	{
 		aiAgent.updatePosition = false;
 
-		const auto& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
-		AnimationSystem::Play(animator, move.animationName, true);
+		const MoveData& move = CharacterInfoRegistry::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+		const AttackParams& params = std::get<AttackParams>(move.params);
+		AnimationSystem::Play(animator, params.animationName, true);
 		state.isAnimed = true;
 		m_isInvincivle = true;
 	}
@@ -210,101 +211,20 @@ void EnemySystem::JumpAttack(Entity& entity, Enemy& enemy, AIAgent& aiAgent, Tra
 	}
 }
 
-bool EnemySystem::ProcessCollision(World& world, Collider* coll, ComboState& state, Attackable& attackable)
-{
-	if (coll->info.state == CollisionState::Enter || coll->info.state == CollisionState::Stay)
-	{
-		if (world.GetComponent<PlayerTag>(coll->info.other))
-		{
-			// 重複ヒットチェック
-			for (auto targetEntity : attackable.entities)
-			{
-				if (targetEntity == coll->info.other)
-				{
-					return false;
-				}
-			}
-
-			const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
-			Damageable* damageable = world.GetComponent<Damageable>(coll->info.other);
-
-			if (damageable)
-			{
-				Damage dmg;
-				dmg.damage = move.damage;
-				dmg.type = DamageType::Normal;
-				damageable->damageQueue.push(dmg);
-				attackable.entities.push_back(coll->info.other);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
 void EnemySystem::Start(World& world)
 {
 	m_isInvincivle = false;
-	m_hitBox = nullptr;
-	m_leftHandColl = nullptr;
-	m_rightHandColl = nullptr;
-	m_jumpAttackColl = nullptr;
 	m_hpBar = nullptr;
 }
 
 void EnemySystem::Update(World& world)
 {
-	View<Enemy, AIAgent, Transform, Collider, Animator, HP, ComboState, Damageable, Attackable, LocomotionData, CharacterStatus, AIState> view(world);
+	View<Enemy, AIAgent, Transform, Collider, Animator, HP, MoveState, Damageable, Attackable, LocomotionData, CharacterStatus, AIState> view(world);
 
 	for (auto [entity, enemy, aiAgent, transform, collider, animator, hp, state, damageable, attackable, loco, status, aiState] : view)
 	{
-		// コライダーが設定されていないなら
-		if (!m_leftHandColl && !m_rightHandColl)
+		if (!m_hpBar)
 		{
-			// 左手のコライダーを設定
-			Entity left = world.CreateEntity();
-			Collider leftColl;
-			leftColl.type = ColliderType::Sphere;
-			leftColl.radius = 30.0f;
-			leftColl.isTrigger = true;
-			leftColl.collisionMask = Layers::Player;
-			BoneSocket socket;
-			socket.targetEntity = entity;
-			socket.targetBoneName = "mixamorig:LeftHand";
-			world.AddComponent<BoneSocket>(left, socket);
-			world.AddComponent<Attackable>(left, Attackable{});
-			m_leftHandColl = world.AddComponent<Collider>(left, leftColl);
-			m_leftHandColl->isEnable = false;
-
-			// 右手のコライダーを設定
-			Entity right = world.CreateEntity();
-			Collider rightColl;
-			rightColl.type = ColliderType::Sphere;
-			rightColl.radius = 30.0f;
-			rightColl.isTrigger = true;
-			rightColl.collisionMask = Layers::Player;
-			BoneSocket socket2;
-			socket2.targetEntity = entity;
-			socket2.targetBoneName = "mixamorig:RightHand";
-			world.AddComponent<BoneSocket>(right, socket2);
-			world.AddComponent<Attackable>(right, Attackable{});
-			m_rightHandColl = world.AddComponent<Collider>(right, rightColl);
-			m_rightHandColl->isEnable = false;
-
-			Entity jump = world.CreateEntity();
-			Collider jumpColl;
-			jumpColl.type = ColliderType::Sphere;
-			jumpColl.radius = 100.0f;
-			jumpColl.isTrigger = true;
-			jumpColl.collisionMask = Layers::Player;
-			BoneSocket socket3;
-			socket3.targetEntity = entity;
-			socket3.targetBoneName = "mixamorig:Hips";
-			world.AddComponent<BoneSocket>(jump, socket3);
-			world.AddComponent<Attackable>(jump, Attackable{});
-			m_jumpAttackColl = world.AddComponent<Collider>(jump, jumpColl);
-			m_jumpAttackColl->isEnable = false;
-
 			m_hpBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("EnemyHPBar")));
 			m_hpBar->maxValue = hp.maxHP;
 			m_hpBar->minValue = 0;
@@ -379,68 +299,20 @@ void EnemySystem::Update(World& world)
 
 		if (state.currentMoveId != 0)
 		{
-			const ComboMove& move = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+			const MoveData& move = CharacterInfoRegistry::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+			const AttackParams& params = std::get<AttackParams>(move.params);
+
 			// アニメーション再生（一度だけ）
 			if (!state.isAnimed)
 			{
-				AnimationSystem::Play(animator, move.animationName);
+				AnimationSystem::Play(animator, params.animationName);
 				AIAgentSystem::GetInstance()->ResetAI(aiAgent);
 				state.isAnimed = true;
 				aiAgent.updatePosition = false; // 攻撃中は移動停止
 				loco.state = LocomotionState::Idle;
 			}
 
-			// ヒット判定期間（canHit）の処理
-			if (state.canHit && !state.hitConfirm)
-			{
-				switch (state.currentMoveId)
-				{
-					case "attack-jump"_h:
-						m_jumpAttackColl->isEnable = true;
-						break;
-
-					case "attack-left"_h:
-						m_leftHandColl->isEnable = true;
-						break;
-
-					case "attack-right"_h:
-						m_rightHandColl->isEnable = true;
-						break;
-
-					default:
-						break;
-				}
-
-				// 衝突検知
-				bool hitSomething = false;
-				if (m_leftHandColl->isEnable && ProcessCollision(world, m_leftHandColl, state, attackable))
-				{
-					hitSomething = true;
-				}
-				if (m_rightHandColl->isEnable && ProcessCollision(world, m_rightHandColl, state, attackable))
-				{
-					hitSomething = true;
-				}
-				if (m_jumpAttackColl->isEnable && ProcessCollision(world, m_jumpAttackColl, state, attackable))
-				{
-					hitSomething = true;
-				}
-
-				if (hitSomething)
-				{
-					state.hitConfirm = true;
-				}
-			}
-			else
-			{
-				m_leftHandColl->isEnable = false;
-				m_rightHandColl->isEnable = false;
-				m_jumpAttackColl->isEnable = false;
-				attackable.entities.clear();
-				attackable.isAttacking = false;
-			}
-
-			if (move.hitEndTime <= state.timer / move.duration)
+			if (params.hitEndTime <= state.timer / move.duration)
 			{
 				switch (state.currentMoveId)
 				{
@@ -458,16 +330,6 @@ void EnemySystem::Update(World& world)
 
 				StatusAPI::SetFloat(status, "RecoveryTimer", StatusAPI::GetFloat(status, "RecoveryTime"));
 			}
-		}
-		else
-		{
-			// MoveId == 0 (Idle/Move中) は確実にコライダーを消す
-			m_leftHandColl->isEnable = false;
-			m_rightHandColl->isEnable = false;
-			m_jumpAttackColl->isEnable = false;
-			attackable.entities.clear();
-			attackable.isAttacking = false;
-			m_isInvincivle = false;
 		}
 
 		StatusAPI::SetFloat(status, "AttackCoolDownTimer", StatusAPI::GetFloat(status, "AttackCoolDownTimer") - Time::GetDeltaTime());

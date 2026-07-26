@@ -1,11 +1,11 @@
 #include "InputSystem.h"
-#include "ComboInput.h"
+#include "MoveInput.h"
 
 void InputSystem::Update(World& world)
 {
-    View<Input, ComboInput> view(world);
+    View<Input, MoveInput> view(world);
 
-    for (auto [entity, input, combo] : view)
+    for (auto [entity, input, moveInput] : view)
     {
         const Gamepad* gamepad = InputManager::GetGamepad(0);
 
@@ -26,13 +26,18 @@ void InputSystem::Update(World& world)
         //    input.guard2 = false;
         //}
 
-		input.isGuard = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::LeftShift).IsPressed() : gamepad->GetButton(GamepadButton::LeftShoulder).IsPressed();
+        const InputBind& inputBind = InputManager::GetInputBind();
+
+		input.isGuard = !gamepad->IsConnected() ? Keyboard::GetKeyState(inputBind.GetKeyBindMap().at(InputKey::Guard)).IsPressed() : gamepad->GetButton(inputBind.GetButtonMap().at(InputKey::Guard)).IsPressed();
 
         input.dash = true;
-        input.attack1 = !gamepad->IsConnected() ? Mouse::GetButtonState(MouseButton::Left).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::RightShoulder).WasPressedThisFrame();
-        input.attack2 = Mouse::GetButtonState(MouseButton::Right).WasPressedThisFrame();
 
-		input.isRolling = !gamepad->IsConnected() ? Keyboard::GetKeyState(KeyCode::Space).WasPressedThisFrame() : gamepad->GetButton(GamepadButton::LeftTrigger).WasPressedThisFrame();
+		MouseButton mouseButton = inputBind.GetKeyBindMap().at(InputKey::Attack1) == KeyCode::Mouse0 ? MouseButton::Left : MouseButton::Right;
+
+        input.attack1 = !gamepad->IsConnected() ? Mouse::GetButtonState(mouseButton).WasPressedThisFrame() : gamepad->GetButton(inputBind.GetButtonMap().at(InputKey::Attack1)).WasPressedThisFrame();
+        input.attack2 = !gamepad->IsConnected() ? Mouse::GetButtonState(mouseButton).WasPressedThisFrame() : gamepad->GetButton(inputBind.GetButtonMap().at(InputKey::Attack2)).WasPressedThisFrame();
+
+		input.isRolling = !gamepad->IsConnected() ? Keyboard::GetKeyState(inputBind.GetKeyBindMap().at(InputKey::Rolling)).WasPressedThisFrame() : gamepad->GetButton(inputBind.GetButtonMap().at(InputKey::Rolling)).WasPressedThisFrame();
 
         // 垂直方向の入力を計算
         // Wキーが押されている場合は1.0f、Sキーが押されている場合は-1.0f、両方またはどちらも押されていない場合は0.0f
@@ -65,27 +70,26 @@ void InputSystem::Update(World& world)
 
         if (input.isRolling)
         {
-            combo.inputKey = InputKey::Rolling;
-			combo.timer = 0.0f;
+            moveInput.inputKey = InputKey::Rolling;
+			moveInput.timer = 0.0f;
         }
 
         if(input.isGuard)
         {
-            combo.inputKey = InputKey::Guard;
-            combo.timer = 0.0f;
+            moveInput.inputKey = InputKey::Guard;
+            moveInput.timer = 0.0f;
 		}
 
         if (input.attack1)
         {
-            combo.inputKey = InputKey::Attack1;
-            combo.timer = 0.0f;
+            moveInput.inputKey = InputKey::Attack1;
+            moveInput.timer = 0.0f;
         }
 
-        combo.timer += Time::GetDeltaTime();
-
-        if (combo.timer > 0.2f)
+        moveInput.timer += Time::GetDeltaTime();
+        if (moveInput.timer > 0.2f)
         {
-            combo.inputKey = InputKey::None;
+            moveInput.inputKey = InputKey::None;
         }
     }
 }

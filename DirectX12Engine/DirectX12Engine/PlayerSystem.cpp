@@ -4,7 +4,6 @@
 #include "PlayerCamera.h"
 #include "ScopedProfiler.h"
 #include "Arrow.h"
-#include "ComboInput.h"
 #include "BattleCamera.h"
 #include "GuardState.h"
 #include "CharacterImporter.h"
@@ -49,25 +48,6 @@ void PlayerSystem::Move(World& world, Transform& transform, Input& input, Animat
 	
 	Vector3 targetDirection = moveDirection;
 	loco.currentVelocity = Vector3::Lerp(loco.currentVelocity, targetDirection, Time::GetDeltaTime() * 15.0f);
-
-	if (input.isRolling && stamina.value >= 25.0f)
-	{
-		stamina.value -= 25.0f;
-		stamina.timer = 0.0f;
-
-		Vector3 rollDir = transform.rotation * Vector3::forward;
-		rollDir.y = 0;
-		rollDir = rollDir.Normalized();
-		transform.rotation = Quaternion::LookRotation(rollDir, Vector3::up);
-		rolling.direction = rollDir;
-		rolling.timer = 0.0f;
-		rolling.isRolling = true;
-		rolling.isInvincible = false;
-		loco.currentVelocity = Vector3(0, 0, 0);
-		AnimationSystem::Play(anim, "Rolling");
-		anim.isLoop = false;
-		return;
-	}
 
 	if (loco.currentVelocity.SqrMagnitude() > 0.05f)
 	{
@@ -151,34 +131,6 @@ void PlayerSystem::DrawArrow(Transform& transform, float speed, float damage, An
 	world.AddComponent<Arrow>(a, Arrow{});
 }
 
-// 近接攻撃（脚）の当たり判定処理
-void PlayerSystem::LegAttack(Transform& transform, ComboState& state, Animator& anim, Attackable& attackable, World& world)
-{
-	m_legAttackColl->isEnable = true;
-	attackable.isAttacking = true;
-	if (m_legAttackColl->info.state == CollisionState::Enter || m_legAttackColl->info.state == CollisionState::Stay)
-	{
-		Entity target = m_legAttackColl->info.other;
-		if (world.HasComponent<Enemy>(target))
-		{
-			auto it = std::find(attackable.entities.begin(), attackable.entities.end(), target);
-			if (it == attackable.entities.end())
-			{
-				Damageable* damageable = world.GetComponent<Damageable>(target);
-				if (damageable)
-				{
-					Damage damage;
-					damage.type = DamageType::Normal;
-					damage.damage = 30;
-					damageable->damageQueue.push(damage);
-						attackable.entities.push_back(target);
-				}
-				state.hitConfirm = true;
-			}
-		}
-	}
-}
-
 void PlayerSystem::Start(World& world)
 {
 	Entity camera = world.FindEntityOfType<PlayerCamera>();
@@ -189,14 +141,13 @@ void PlayerSystem::Start(World& world)
 	m_stateTimer = 0.0f;
 	m_currentState = PlayerState::Move;
 	m_bowTransform = nullptr;
-	m_legAttackColl = nullptr;
 	m_hpBar = nullptr;
 }
 
 // システムのメインループ
 void PlayerSystem::Update(World& world)
 {
-	View<PlayerTag, Transform, Input, Animator, ComboState, Attackable, HP, Damageable, GuardState, LocomotionData, RollingState, Stamina> view(world);
+	View<PlayerTag, Transform, Input, Animator, MoveState, Attackable, HP, Damageable, GuardState, LocomotionData, RollingState, Stamina> view(world);
 
 	for (auto [entity, playerTag, transform, input, animator, state, attackable, hp, damageable, guard, loco, rolling, stamina] : view)
 	{
@@ -212,41 +163,17 @@ void PlayerSystem::Update(World& world)
 			continue;
 		}
 
-		// ガード状態の反映
+		// ガードバー更新（常時）
+		{
+			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
+			guardBar->value = guard.shieldHealth;
+		}
+
 		if (guard.isGuarding)
 		{
-			loco.currentVelocity = Vector3(0, 0, 0);
-
-			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
-			guardBar->value = guard.shieldHealth;
-
 			continue;
 		}
-		else
-		{
-			Slider* guardBar = world.GetComponent<Slider>(UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString("PlayerGuardBar")));
-			guardBar->value = guard.shieldHealth;
-		}
 
-		// 被ダメージ処理（Hitアニメーション再生）
-		if (!damageable.damageQueue.empty())
-		{
-			Damage damage = damageable.damageQueue.front();
-			if (damage.type == DamageType::Normal)
-			{
-				if (!rolling.isInvincible)
-				{
-					animator.isLoop = false;
-					AnimationSystem::Play(animator, "Hit_00", true);
-					hp.currentHP -= damage.damage;
-					m_hpBar->value = hp.currentHP;
-				}
-
-				damageable.damageQueue.pop();
-			}
-
-			loco.state = LocomotionState::Idle;
-		}
 		if (animator.currentClipName == "Hit_00" && animator.isPlaying) continue;
 
 		if (!m_bowTransform)
@@ -258,23 +185,6 @@ void PlayerSystem::Update(World& world)
 			world.AddComponent<BoneSocket>(right, socket2);
 
 			m_bowTransform = world.GetComponent<Transform>(right);
-		}
-
-		if (!m_legAttackColl)
-		{
-			Entity leg = world.CreateEntity();
-			Collider legColl;
-			legColl.type = ColliderType::Sphere;
-			legColl.radius = 30.0f;
-			legColl.isTrigger = true;
-			legColl.collisionMask = Layers::Enemy;
-			BoneSocket socket;
-			socket.targetEntity = entity;
-			socket.targetBoneName = "mixamorig:RightToeBase";
-			world.AddComponent<BoneSocket>(leg, socket);
-			world.AddComponent<Attackable>(leg, Attackable{});
-			m_legAttackColl = world.AddComponent<Collider>(leg, legColl);
-			m_legAttackColl->isEnable = false;
 		}
 
 		if (!m_hpBar)
@@ -290,17 +200,67 @@ void PlayerSystem::Update(World& world)
 			guardBar->value = guard.shieldHealth;
 		}
 
-		if (rolling.isRolling)
+		// MoveState による行動分岐
+		if (state.currentMoveId == 0)
 		{
+			// ニュートラル状態 → 移動
+			rolling.isRolling = false;
+			rolling.isInvincible = false;
+			Move(world, transform, input, animator, loco, rolling, stamina);
+			continue;
+		}
+
+		const MoveData& currentMove = CharacterInfoRegistry::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+
+		switch (currentMove.type)
+		{
+		case MoveType::Rolling:
+		{
+			// 初回: ローリング開始のセットアップ
+			if (!rolling.isRolling)
+			{
+				// スタミナチェック
+				if (stamina.value < currentMove.staminaCost)
+				{
+					// スタミナ不足 → Move をリセットして移動へ
+					state.currentMoveId = 0;
+					state.timer = 0.0f;
+					Move(world, transform, input, animator, loco, rolling, stamina);
+					continue;
+				}
+
+				stamina.value -= currentMove.staminaCost;
+				stamina.timer = 0.0f;
+
+				Vector3 rollDir = transform.rotation * Vector3::forward;
+				rollDir.y = 0;
+				rollDir = rollDir.Normalized();
+				transform.rotation = Quaternion::LookRotation(rollDir, Vector3::up);
+
+				const RollingParams& params = std::get<RollingParams>(currentMove.params);
+
+				rolling.direction = rollDir;
+				rolling.speed = params.moveSpeed;
+				rolling.duration = currentMove.duration;
+				rolling.invincibleStart = params.invincibleStart;
+				rolling.invincibleEnd = params.invincibleEnd;
+				rolling.timer = 0.0f;
+				rolling.isRolling = true;
+				rolling.isInvincible = false;
+				loco.currentVelocity = Vector3(0, 0, 0);
+				AnimationSystem::Play(animator, params.animationName, false);
+				animator.isLoop = false;
+			}
+
+			// 実行中: 物理移動と無敵判定
 			rolling.timer += Time::GetDeltaTime();
 			float progress = rolling.timer / rolling.duration;
 
 			rolling.isInvincible = (progress >= rolling.invincibleStart && progress <= rolling.invincibleEnd);
-			
+
 			float easedSpeed = rolling.speed * Mathf::Max(0.0f, 1.0f - progress * progress);
-			
 			TransformSystem::GetInstance()->Translate(transform, rolling.direction * easedSpeed * Time::GetDeltaTime());
-			
+
 			if (progress >= 1.0f || !animator.isPlaying)
 			{
 				rolling.isRolling = false;
@@ -310,111 +270,98 @@ void PlayerSystem::Update(World& world)
 			continue;
 		}
 
-		// 移動または攻撃への分岐
-		if (state.currentMoveId == 0)
+		// ガード
+		case MoveType::Guard:
 		{
-			Move(world, transform, input, animator, loco, rolling, stamina);
+			loco.currentVelocity = Vector3(0, 0, 0);
 			continue;
 		}
 
-		const ComboMove& currentMove = CharacterImporter::GetInstance()->GetMoveById(state.name, state.currentMoveId);
+		// 攻撃
+		case MoveType::Attack:
+			const AttackParams& params = std::get<AttackParams>(currentMove.params);
 
-		if (!currentMove.isAttack)
-		{
-			Move(world, transform, input, animator, loco, rolling, stamina);
-			continue;
-		}
+			loco.currentVelocity = Vector3(0, 0, 0);
 
-		loco.currentVelocity = Vector3(0, 0, 0);
+			// コンボ攻撃中の回転・攻撃実行
+			animator.isLoop = false;
 
-		// コンボ攻撃中の回転・攻撃実行
-		animator.isLoop = false;
-
-		// 敵の情報を取得
-		if (!m_gameManager)
-		{
-			m_gameManager = world.GetSystem<GameManagerSystem>();
-		}
-
-		Entity enemy = m_gameManager->GetEnemy();
-		Transform* enemyTransform = world.GetComponent<Transform>(enemy);
-
-		if (enemyTransform)
-		{
-			// 敵への方向を計算（高さYは無視）
-			Vector3 toEnemy = enemyTransform->position - transform.position;
-			toEnemy.y = 0;
-
-			if (toEnemy.SqrMagnitude() > 0.001f)
+			// 敵の情報を取得
+			if (!m_gameManager)
 			{
-				Vector3 targetDir = toEnemy.Normalized();
-				Quaternion targetRot = Quaternion::LookRotation(targetDir, Vector3::up);
-
-				// 技の開始直後（timerが非常に小さい時）は瞬時に向かせる
-				if (state.timer < 0.05f)
-				{
-					transform.rotation = targetRot;
-				}
-				else
-				{
-					// それ以外は高速で補間（AIAgentの回転より速い値を設定）
-					transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 20.0f);
-				}
+				m_gameManager = world.GetSystem<GameManagerSystem>();
 			}
-		}
 
-		if (!state.isAnimed)
-		{
-			AnimationSystem::Play(animator, currentMove.animationName, true);
-			state.isAnimed = true;
-		}
-
-		if (state.canHit && !state.hitConfirm)
-		{
-			bool canFire = true;
+			Entity enemy = m_gameManager->GetEnemy();
+			Transform* enemyTransform = world.GetComponent<Transform>(enemy);
 
 			if (enemyTransform)
 			{
-				Vector3 forward = transform.rotation * Vector3::forward;
-				Vector3 targetDir = (enemyTransform->position - transform.position);
-				targetDir.y = 0;
-				targetDir.Normalized();
+				// 敵への方向を計算（高さYは無視）
+				Vector3 toEnemy = enemyTransform->position - transform.position;
+				toEnemy.y = 0;
 
-				transform.dirty = true;
-
-				// 敵との角度差をドット積でチェック（0.95 は約18度以内）
-				float dot = Vector3::Dot(forward.Normalized(), targetDir.Normalized());
-				if (dot < 0.95f)
+				if (toEnemy.SqrMagnitude() > 0.001f)
 				{
-					canFire = false; // まだ向いていないので撃たない
+					Vector3 targetDir = toEnemy.Normalized();
+					Quaternion targetRot = Quaternion::LookRotation(targetDir, Vector3::up);
+
+					// 技の開始直後（timerが非常に小さい時）は瞬時に向かせる
+					if (state.timer < 0.05f)
+					{
+						transform.rotation = targetRot;
+					}
+					else
+					{
+						// それ以外は高速で補間（AIAgentの回転より速い値を設定）
+						transform.rotation = Quaternion::Slerp(transform.rotation, targetRot, Time::GetDeltaTime() * 20.0f);
+					}
 				}
 			}
 
-			if (canFire)
+			if (!state.isAnimed)
 			{
-				switch (currentMove.moveId)
+				AnimationSystem::Play(animator, params.animationName, true);
+				state.isAnimed = true;
+			}
+
+			if (state.canHit && !state.hitConfirm)
+			{
+				bool canFire = true;
+
+				if (enemyTransform)
 				{
-				case "attack-normal-1"_h:
-				case "attack-normal-2"_h:
-				case "attack-normal-3"_h:
-					DrawArrow(transform, 2000, currentMove.damage, animator, world);
-					state.hitConfirm = true;
-					break;
+					Vector3 forward = transform.rotation * Vector3::forward;
+					Vector3 targetDir = (enemyTransform->position - transform.position);
+					targetDir.y = 0;
+					targetDir.Normalized();
 
-				case "attack-guard"_h:
-					LegAttack(transform, state, animator, attackable, world);
-					break;
+					transform.dirty = true;
 
-				default:
-					break;
+					// 敵との角度差をドット積でチェック（0.95 は約18度以内）
+					float dot = Vector3::Dot(forward.Normalized(), targetDir.Normalized());
+					if (dot < 0.95f)
+					{
+						canFire = false; // まだ向いていないので撃たない
+					}
+				}
+
+				if (canFire)
+				{
+					switch (currentMove.moveId)
+					{
+					case "attack-normal-1"_h:
+					case "attack-normal-2"_h:
+					case "attack-normal-3"_h:
+						DrawArrow(transform, 2000, params.damage, animator, world);
+						state.hitConfirm = true;
+						break;
+
+					default:
+						break;
+					}
 				}
 			}
-		}
-		else
-		{
-			m_legAttackColl->isEnable = false;
-			attackable.isAttacking = false;
-			attackable.entities.clear();
 		}
 	}
 }

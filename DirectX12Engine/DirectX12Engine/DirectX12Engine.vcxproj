@@ -187,7 +187,6 @@
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Color.cpp" />
-    <ClCompile Include="ComboSystem.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="DebugLineRenderer.cpp" />
     <ClCompile Include="DebugManager.cpp" />
@@ -217,6 +216,7 @@
     <ClCompile Include="MeshRendererSystem.cpp" />
     <ClCompile Include="ModelImporter.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="MoveSystem.cpp" />
     <ClCompile Include="Path.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="PhysicsSystem.cpp" />
@@ -322,6 +322,7 @@
     <ClInclude Include="ButtonFunctionRegistry.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraSystem.h" />
+    <ClInclude Include="CharacterHitboxes.h" />
     <ClInclude Include="CharacterImporter.h" />
     <ClInclude Include="CharacterInfoRegistry.h" />
     <ClInclude Include="CharacterStatus.h" />
@@ -332,10 +333,9 @@
     <ClInclude Include="CollisionQuery.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Color.h" />
-    <ClInclude Include="ComboInput.h" />
+    <ClInclude Include="MoveInput.h" />
     <ClInclude Include="ComboMove.h" />
-    <ClInclude Include="ComboState.h" />
-    <ClInclude Include="ComboSystem.h" />
+    <ClInclude Include="MoveState.h" />
     <ClInclude Include="CommandBuffer.h" />
     <ClInclude Include="Damageable.h" />
     <ClInclude Include="DamageType.h" />
@@ -393,6 +393,7 @@
     <ClInclude Include="ModelImporterSettings.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="MoveData.h" />
+    <ClInclude Include="MoveSystem.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="PhysicsSystem.h" />

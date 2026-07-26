@@ -19,3 +19,15 @@ namespace Layers
 	// ‘SƒŒƒCƒ„[
 	constexpr LayerMask Everything = 0xFFFFFFFF;
 }
+
+inline std::map<std::string, LayerMask> StringToLayerMask = {
+	{"Default", Layers::Default},
+	{"TransparentFX", Layers::TransparentFX},
+	{"IgnoreRaycast", Layers::IgnoreRaycast},
+	{"Water", Layers::Water},
+	{"UI", Layers::UI},
+	{"Environment", Layers::Environment},
+	{"Player", Layers::Player},
+	{"Enemy", Layers::Enemy},
+	{"Everything", Layers::Everything}
+};

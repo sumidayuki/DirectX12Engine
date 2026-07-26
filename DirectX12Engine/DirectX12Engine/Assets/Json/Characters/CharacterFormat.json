@@ -1,0 +1,60 @@
+{
+    "status": {
+    },
+    "colliders": [
+        {
+            "name": "mixamorig:LeftHand",
+            "type": "Sphere",
+            "params": {
+                "radius": 30.0,
+                "offsetX": 0.0,
+                "offsetY": 0.0,
+                "offsetZ": 0.0,
+                "isTrigger": true,
+                "isEnabled": false,
+                "collisionMask": "Player"
+            }
+        }
+    ],
+    "moves": [
+        {
+            "moveId": "attack-normal-1",
+            "textName": "text_shageki",
+            "inputKey": "Attack1",
+            "isStarter": true,
+            "nextPossibleMoves": [ "attack-normal-2" ],
+            "type": "Attack",
+            "params": {
+                "duration": 0.6,
+                "animationName": "Attack_00",
+                "damage": 10,
+                "inputStart": 0.7,
+                "inputEnd": 1,
+                "hitStartTime": 0.2,
+                "hitEndTime": 0.3
+            }
+        },
+        {
+            "moveId": "guard",
+            "textName": "text_guard",
+            "inputKey": "Guard",
+            "isStarter": true,
+            "nextPossibleMoves": [ "attack-guard" ],
+            "type": "Guard"
+        },
+        {
+            "moveId": "rolling",
+            "textName": "text_rolling",
+            "inputKey": "Rolling",
+            "isStarter": true,
+            "staminaCost": 25,
+            "nextPossibleMoves": [],
+            "type": "Rolling",
+            "params": {
+                "invincibleStart": 0.2,
+                "invincibleEnd": 0.8,
+                "moveSpeed": 300
+            }
+        }
+    ]
+}

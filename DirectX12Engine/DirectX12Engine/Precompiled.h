@@ -245,12 +245,6 @@ enum class GamepadButton;
 // Utils
 #include "Utils.h"
 
-// Behaviour Tree
-#include "BehaviourTreeNode.h"
-#include "BTComposites.h"
-#include "BTActions.h"
-#include "BTDecorators.h"
-
 // Archetype
 #include "Archetype.h"
 #include "ArchetypeManager.h"
@@ -261,6 +255,7 @@ enum class GamepadButton;
 
 // Character
 #include "MoveData.h"
+#include "InputBind.h"
 
 // Component
 #include "IComponentData.h"
@@ -277,9 +272,9 @@ enum class GamepadButton;
 #include "WFMeshRenderer.h"
 #include "Collider.h"
 #include "CollisionEvents.h"
-#include "ComboState.h"
+#include "MoveState.h"
 #include "CharacterStatus.h"
-#include "ComboInput.h"
+#include "MoveInput.h"
 #include "DebugRenderer.h"
 #include "BoneSocket.h"
 #include "MeshFilter.h"
@@ -309,6 +304,7 @@ enum class GamepadButton;
 #include "GuardState.h"
 #include "AIState.h"
 #include "AITrigger.h"
+#include "CharacterHitboxes.h"
 
 #include "Physics.h"
 #include "GeometryUtility.h"
@@ -349,4 +345,3 @@ enum class GamepadButton;
 #include "Mouse.h"
 #include "Gamepad.h"
 #include "InputManager.h"
-#include "InputBind.h"

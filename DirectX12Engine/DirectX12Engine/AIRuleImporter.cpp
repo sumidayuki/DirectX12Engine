@@ -149,7 +149,7 @@ void AIRuleImporter::ProcessCondition(const Json& json, Transition& transition)
 	{
 		transition.conditions.push_back([invert](Entity entity, World& world) {
 			Enemy* enemy = world.GetComponent<Enemy>(entity);
-			ComboState* state = world.GetComponent<ComboState>(entity);
+			MoveState* state = world.GetComponent<MoveState>(entity);
 			GuardState* targetGuard = world.GetComponent<GuardState>(enemy->target);
 			Animator* targetAnimator = world.GetComponent<Animator>(enemy->target);
 
@@ -166,7 +166,7 @@ void AIRuleImporter::ProcessCondition(const Json& json, Transition& transition)
 		int maxCount = json.at("Max").get<int>();
 
 		transition.conditions.push_back([maxCount, invert](Entity entity, World& world) {
-			ComboState* state = world.GetComponent<ComboState>(entity);
+			MoveState* state = world.GetComponent<MoveState>(entity);
 
 			// 現在のジャンプコンボ回数を取得し、上限と比較する
 			bool result = state->comboIndex < maxCount;

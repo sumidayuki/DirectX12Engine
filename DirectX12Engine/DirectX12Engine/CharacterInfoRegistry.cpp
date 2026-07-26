@@ -14,9 +14,6 @@ const CharacterInfo* CharacterInfoRegistry::GetCharacterInfo(const std::string& 
 	auto it = m_characterInfos.find(name);
 	if (it != m_characterInfos.end())
 	{
-#if _DEBUG
-		OutputDebugStringW((L"CharacterInfo‚ªŒ©‚Â‚©‚è‚Ü‚µ‚½: " + std::wstring(name.begin(), name.end()) + L"\n").c_str());
-#endif
 		return &it->second;
 	}
 
@@ -47,11 +44,11 @@ bool CharacterInfoRegistry::CharcterInitialize(const std::string& name, Entity e
 	bColl.size = Vector3(hitBoxX, hitBoxY, hitBoxZ);
 	bColl.offset = Vector3(0, hitBoxY * 0.5f, 0);
 	world.AddComponent<Collider>(entity, bColl);
-	ComboState comboState;
-	comboState.name = name;
-	world.AddComponent<ComboState>(entity, comboState);
-	ComboInput comboInput;
-	world.AddComponent<ComboInput>(entity, comboInput);
+	MoveState moveState;
+	moveState.name = name;
+	world.AddComponent<MoveState>(entity, moveState);
+	MoveInput comboInput;
+	world.AddComponent<MoveInput>(entity, comboInput);
 	GuardState guardState;
 	float shieldMax = StatusAPI::GetFloat(info.status, "shieldMaxHealth", 100.0f);
 	guardState.shieldMaxHealth = shieldMax;
@@ -59,6 +56,27 @@ bool CharacterInfoRegistry::CharcterInitialize(const std::string& name, Entity e
 	world.AddComponent<GuardState>(entity, guardState);
 	Attackable attackable;
 	world.AddComponent<Attackable>(entity, attackable);
+	
+	if (!info.colliders.empty())
+	{
+		CharacterHitboxes hitboxes;
+		for (const auto& colliderData : info.colliders)
+		{
+			Entity colliderE = world.CreateEntity((colliderData.name + "_collider"));
+			BoneSocket socket;
+			socket.targetEntity = entity;
+			socket.targetBoneName = colliderData.name;
+			world.AddComponent<BoneSocket>(colliderE, socket);
+			Collider* collider = world.AddComponent<Collider>(colliderE, colliderData.collider);
+			collider->isEnable = false;
+			
+			hitboxes.entities[HashString32(colliderData.name.c_str())] = colliderE;
+#if _DEBUG
+			OutputDebugStringW((L"Character‚ÌCollider‚ğì¬: " + std::wstring(colliderE.name.begin(), colliderE.name.end()) + L"\n").c_str());
+#endif
+		}
+		world.AddComponent<CharacterHitboxes>(entity, hitboxes);
+	}
 
 #if _DEBUG
 	OutputDebugStringW((L"Character‚Ì‰Šú‰»‚É¬Œ÷: " + std::wstring(name.begin(), name.end()) + L"\n").c_str());
@@ -73,9 +91,6 @@ const MoveData& CharacterInfoRegistry::GetMoveById(const std::string& name, int 
 	{
 		if (move.moveId == id)
 		{
-#if _DEBUG
-			OutputDebugStringW((L"Character‚ÌMove‚ªŒ©‚Â‚©‚è‚Ü‚µ‚½: MoveID = " + std::to_wstring(id) + L"\n").c_str());
-#endif
 			return move;
 		}
 	}

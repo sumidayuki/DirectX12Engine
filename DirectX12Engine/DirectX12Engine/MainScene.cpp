@@ -8,8 +8,9 @@
 
 bool MainScene::Load()
 {
-	CharacterImporter::CreateSingleton();
-	CharacterImporter::GetInstance()->Import();
+	CharacterInfoRegistry::CreateSingleton();
+	CharacterImporter characterImporter;
+	characterImporter.Import();
 
 	AIRuleImporter aiImporter;
 	aiImporter.Import();
@@ -44,7 +45,7 @@ bool MainScene::Load()
 	m_world.AddSystem(std::make_unique<GameManagerSystem>());
 	m_world.AddSystem(std::make_unique<StaminaSystem>());
 	m_world.AddSystem(std::make_unique<GuardSystem>());
-	m_world.AddSystem(std::make_unique<ComboSystem>());
+	m_world.AddSystem(std::make_unique<MoveSystem>());
 	m_world.AddSystem(std::make_unique<PlayerActionGuideSystem>());
 	m_world.AddSystem(std::make_unique<PlayerSystem>());
 	m_world.AddSystem(std::make_unique<PlayerCameraSystem>());

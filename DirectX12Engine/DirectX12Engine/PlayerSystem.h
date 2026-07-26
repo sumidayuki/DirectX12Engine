@@ -20,10 +20,6 @@ private:
 
 	Transform* m_bowTransform;
 
-	Transform* m_coll;
-
-	Collider* m_legAttackColl;
-
 	Slider* m_hpBar;
 
 	float m_attackRange;
@@ -38,7 +34,7 @@ private:
 	bool ProcessTurn(World& world, Transform& transform, Animator& animator, LocomotionData& loco);
 	void Move(World& world, Transform& transform, Input& input, Animator& anim, LocomotionData& loco, RollingState& rolling, Stamina& stamina);
 	void DrawArrow(Transform& transform, float speed, float damage, Animator& anim, World& world);
-	void LegAttack(Transform& transform, ComboState& state, Animator& anim, Attackable& attackable, World& world);
+	void LegAttack(Transform& transform, MoveState& state, Animator& anim, Attackable& attackable, World& world);
 
 private:
 	void Start(World& world) override;

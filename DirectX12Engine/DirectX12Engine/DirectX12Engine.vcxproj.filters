@@ -675,9 +675,6 @@
     <ClCompile Include="PhysicsSystem.cpp">
       <Filter>Engine\ECS\System\PhysicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="ComboSystem.cpp">
-      <Filter>Game\Character\Combo\System</Filter>
-    </ClCompile>
     <ClCompile Include="BattleCameraSystem.cpp">
       <Filter>Game\BattleCamera</Filter>
     </ClCompile>
@@ -761,6 +758,9 @@
     </ClCompile>
     <ClCompile Include="CharacterInfoRegistry.cpp">
       <Filter>Game\Character\Registry</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveSystem.cpp">
+      <Filter>Game\Character\Combo\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1160,14 +1160,11 @@
     <ClInclude Include="ComboMove.h">
       <Filter>Game\Character\Combo</Filter>
     </ClInclude>
-    <ClInclude Include="ComboState.h">
+    <ClInclude Include="MoveState.h">
       <Filter>Game\Character\Combo</Filter>
     </ClInclude>
-    <ClInclude Include="ComboInput.h">
+    <ClInclude Include="MoveInput.h">
       <Filter>Game\Character\Combo</Filter>
-    </ClInclude>
-    <ClInclude Include="ComboSystem.h">
-      <Filter>Game\Character\Combo\System</Filter>
     </ClInclude>
     <ClInclude Include="DamageType.h">
       <Filter>Engine\ECS\Component\Damageable\Enum</Filter>
@@ -1357,6 +1354,12 @@
     </ClInclude>
     <ClInclude Include="CharacterInfoRegistry.h">
       <Filter>Game\Character\Registry</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterHitboxes.h">
+      <Filter>Game\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveSystem.h">
+      <Filter>Game\Character\Combo\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

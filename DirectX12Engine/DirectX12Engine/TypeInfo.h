@@ -46,17 +46,6 @@ struct TypeInfo
 };
 
 /// <summary>
-/// FNV-1aハッシュ関数（constexpr対応）
-/// 型名を64bit整数に変換します。
-/// 文字列で型を比較すると重くなるので数値化(ハッシュ)
-/// して整数比較を行うための関数です。
-/// </summary>
-constexpr uint64_t HashString(const char* str)
-{
-	return 	FNV1a_Hash<uint64_t>(str);
-}
-
-/// <summary>
 /// コンパイル時に型名を取得するユーティリティ
 /// RTTIを使用せずに関数名を取得するためのマクロを使用し
 /// 多様なコンパイル化に対応しています。

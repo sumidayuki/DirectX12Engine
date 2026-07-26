@@ -14,6 +14,8 @@ bool TitleScene::Load()
 
 void TitleScene::Start()
 {
+	m_time = 0.0f;
+
 	// ƒJƒƒ‰‚Ìì¬
 	float fov = 60.0f;
 	float aspect = (float)Screen::GetWidth() / (float)Screen::GetHeight();

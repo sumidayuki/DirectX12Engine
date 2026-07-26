@@ -1,13 +1,18 @@
 #pragma once
 
+struct ColliderData
+{
+	std::string name;
+	Collider collider;
+};
+
 struct CharacterInfo
 {
 	std::string name;
-
 	std::string aiFileName;
-
+	bool isPlayer = false;
 	CharacterStatus status;
-
+	std::vector<ColliderData> colliders;
 	std::vector<MoveData> moves;
 };
 

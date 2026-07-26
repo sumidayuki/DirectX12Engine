@@ -8,13 +8,23 @@ void GuardSystem::Update(World& world)
 	{
 		guardState.isGuarding = input.isGuard;
 
-		if (guardState.isGuarding)
+		if (guardState.isBroken)
 		{
-			if (animator.currentClipName == "Hit_00" && animator.isPlaying)
+			guardState.shieldHealth += 2 * Time::GetDeltaTime();
+			guardState.shieldHealth = std::min(guardState.shieldHealth, guardState.shieldMaxHealth);
+			guardState.isGuarding = true;
+
+			if (guardState.shieldHealth >= guardState.shieldMaxHealth)
 			{
-				continue;
+				guardState.shieldHealth = guardState.shieldMaxHealth;
+				guardState.isBroken = false;
 			}
 
+			continue;
+		}
+
+		if (guardState.isGuarding)
+		{
 			// ガードのスタートアニメーションを再生して、再生が終わっていたらループアニメーションに切り替える
 			if (animator.currentClipName != "Guard_Start" && animator.currentClipName != "Guard_Idle" && animator.currentClipName != "Guard_Impact")
 			{
@@ -32,7 +42,7 @@ void GuardSystem::Update(World& world)
 			{
 				Damage damage = damageable.damageQueue.front();
 				// シールドの耐久値を減少させる
-				guardState.shieldHealth -= damage.damage; // ダメージの50%をシールドに吸収させる
+				guardState.shieldHealth -= damage.damage;
 
 				animator.isLoop = false;
 				AnimationSystem::Play(animator, "Guard_Impact", true);
@@ -40,8 +50,9 @@ void GuardSystem::Update(World& world)
 				// シールドが破壊された場合の処理
 				if (guardState.shieldHealth <= 0)
 				{
-					guardState.shieldHealth = guardState.shieldMaxHealth;
+					guardState.shieldHealth = 0;
 					input.isGuard = false;
+					guardState.isBroken = true;
 					// シールド破壊アニメーションを再生
 					animator.isLoop = false;
 					AnimationSystem::Play(animator, "Hit_00");

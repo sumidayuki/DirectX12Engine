@@ -32,7 +32,7 @@ void GameManagerSystem::Start(World& world)
 	stamina.maxValue = 100.0f;
 	stamina.value = stamina.maxValue;
 	world.AddComponent<Stamina>(player, stamina);
-	CharacterImporter::GetInstance()->CharcterInitialize("Archer", player, world);
+	CharacterInfoRegistry::GetInstance()->CharcterInitialize("Archer", player, world);
 
 	m_player = player;
 
@@ -49,7 +49,7 @@ void GameManagerSystem::Start(World& world)
 	world.AddComponent<AIAgent>(warrok, agent);
 	world.AddComponent<LocomotionData>(warrok, LocomotionData{});
 	AIState aiState;
-	std::string stateName = StatusAPI::GetString(CharacterImporter::GetInstance()->GetCharacterInfo("Warrok")->status, "aiCurrentState");
+	std::string stateName = StatusAPI::GetString(CharacterInfoRegistry::GetInstance()->GetCharacterInfo("Warrok")->status, "aiCurrentState");
 	aiState.currentStateID = FNV1a_Hash<uint32_t>(stateName);
 	aiState.nextStateID = aiState.currentStateID;
 	aiState.stateTime = 0;
@@ -57,7 +57,7 @@ void GameManagerSystem::Start(World& world)
 	AITrigger trigger;
 	trigger.triggers = {};
 	world.AddComponent<AITrigger>(warrok, trigger);
-	CharacterImporter::GetInstance()->CharcterInitialize("Warrok", warrok, world);
+	CharacterInfoRegistry::GetInstance()->CharcterInitialize("Warrok", warrok, world);
 	world.GetComponent<Collider>(warrok)->offset = Vector3(0, 180.0f, 0);
 
 	m_enemy = warrok;
