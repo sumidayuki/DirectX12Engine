@@ -84,4 +84,3 @@ enum class KeyCode
     Mouse3 = VK_XBUTTON1,
     Mouse4 = VK_XBUTTON2,
 };
-

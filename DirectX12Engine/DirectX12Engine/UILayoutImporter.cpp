@@ -143,6 +143,12 @@ void UILayoutImporter::ProcessElement(const Json& json, Entity parent, World& wo
 		oss << "不明なUI要素のタイプ: " << type << "\n";
 		OutputDebugStringA(oss.str().c_str());
 	}
+
+	const Json& children = json.value("children", Json::array());
+	for (const auto& childJson : children)
+	{
+		ProcessElement(childJson, parent, world);
+	}
 }
 
 void UILayoutImporter::ProcessImage(const Json& json, Entity parent, World& world)
@@ -270,7 +276,7 @@ void UILayoutImporter::ProcessSlider(const Json& json, Entity parent, World& wor
 
 void UILayoutImporter::ProcessVerticalLayout(const Json& json, Entity parent, World& world)
 {
-	const std::string& name = json.value("name", "UIVarticalLayoutGroup");
+	const std::string& name = json.value("name", "UIVerticalLayoutGroup");
 
 	const Json& rectJson = json.value("rect", Json::object());
 	RectTransform rect;
@@ -282,7 +288,7 @@ void UILayoutImporter::ProcessVerticalLayout(const Json& json, Entity parent, Wo
 	RectOffset rectOffset;
 	ProcessRectOffset(rectOffsetJson, rectOffset);
 
-	TextAnchor childAlignment;
+	TextAnchor childAlignment = TextAnchor::UpperLeft;
 	if (json.contains("textAnchor"))
 	{
 		std::string textAnchorStr = json.value("textAnchor", "UpperLeft");
