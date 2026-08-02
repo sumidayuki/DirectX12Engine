@@ -394,6 +394,7 @@ bool World::Load(World& world)
 	m_transformSystem = TransformSystem::GetInstance();
 
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/White.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/white.png");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/DefaultNormalMap.jpg");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/DefaultMetallicRoughnessMap.jpg");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/DefaultAOMap.jpg");

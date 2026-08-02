@@ -143,12 +143,6 @@ void UILayoutImporter::ProcessElement(const Json& json, Entity parent, World& wo
 		oss << "不明なUI要素のタイプ: " << type << "\n";
 		OutputDebugStringA(oss.str().c_str());
 	}
-
-	const Json& children = json.value("children", Json::array());
-	for (const auto& childJson : children)
-	{
-		ProcessElement(childJson, parent, world);
-	}
 }
 
 void UILayoutImporter::ProcessImage(const Json& json, Entity parent, World& world)
@@ -180,6 +174,12 @@ void UILayoutImporter::ProcessImage(const Json& json, Entity parent, World& worl
 
 	Entity imageEntity = UIAPI::CreateImage(world, name, parent, rectT, graphic, image);
 	UIManager::GetInstance()->AddUIObject(imageEntity, HashString(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()).c_str()), HashString(name.c_str()));
+
+	const Json& children = json.value("children", Json::array());
+	for (const auto& childJson : children)
+	{
+		ProcessElement(childJson, imageEntity, world);
+	}
 }
 
 void UILayoutImporter::ProcessPanel(const Json& json, Entity parent, World& world)
@@ -196,6 +196,12 @@ void UILayoutImporter::ProcessPanel(const Json& json, Entity parent, World& worl
 	
 	Entity panelEntity = UIAPI::CreatePanel(world, name, parent, Color::white, rect, graphic);
 	UIManager::GetInstance()->AddUIObject(panelEntity, HashString(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()).c_str()), HashString(name.c_str()));
+
+	const Json& children = json.value("children", Json::array());
+	for (const auto& childJson : children)
+	{
+		ProcessElement(childJson, panelEntity, world);
+	}
 }
 
 void UILayoutImporter::ProcessButton(const Json& json, Entity parent, World& world)
@@ -232,6 +238,12 @@ void UILayoutImporter::ProcessButton(const Json& json, Entity parent, World& wor
 
 	Entity buttonEntity = UIAPI::CreateButton(world, name, parent, rect, graphic, button);
 	UIManager::GetInstance()->AddUIObject(buttonEntity, HashString(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()).c_str()), HashString(name.c_str()));
+
+	const Json& children = json.value("children", Json::array());
+	for (const auto& childJson : children)
+	{
+		ProcessElement(childJson, buttonEntity, world);
+	}
 }
 
 void UILayoutImporter::ProcessSlider(const Json& json, Entity parent, World& world)
@@ -272,6 +284,12 @@ void UILayoutImporter::ProcessSlider(const Json& json, Entity parent, World& wor
 
 	Entity sliderEntity = UIAPI::CreateSlider(world, name, parent, rect, graphic, slider);
 	UIManager::GetInstance()->AddUIObject(sliderEntity, HashString(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()).c_str()), HashString(name.c_str()));
+
+	const Json& children = json.value("children", Json::array());
+	for (const auto& childJson : children)
+	{
+		ProcessElement(childJson, sliderEntity, world);
+	}
 }
 
 void UILayoutImporter::ProcessVerticalLayout(const Json& json, Entity parent, World& world)

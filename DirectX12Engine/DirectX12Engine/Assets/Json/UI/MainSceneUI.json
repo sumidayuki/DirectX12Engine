@@ -131,11 +131,11 @@
                             {
                                 "name": "text_shageki_icon",
                                 "type": "Image",
-                                "source": "Assets/Images/white.png",
+                                "source": "Assets/white.png",
                                 "rect": [ 0, 370, 850, 110 ],
                                 "rectT": {
-                                    "pos": [ 100, 100 ],
-                                    "size": [ 435, 55 ],
+                                    "pos": [ 0, 0 ],
+                                    "size": [ 50, 50 ],
                                     "anchorMin": [ 0.5, 0.5 ],
                                     "anchorMax": [ 0.5, 0.5 ],
                                     "pivot": [ 0.5, 0.5 ]
@@ -169,11 +169,11 @@
                             {
                                 "name": "text_shageki-finish_icon",
                                 "type": "Image",
-                                "source": "Assets/Images/white.png",
+                                "source": "Assets/white.png",
                                 "rect": [ 0, 370, 850, 110 ],
                                 "rectT": {
-                                    "pos": [ 100, 100 ],
-                                    "size": [ 435, 55 ],
+                                    "pos": [ 150, 0 ],
+                                    "size": [ 50, 50 ],
                                     "anchorMin": [ 0.5, 0.5 ],
                                     "anchorMax": [ 0.5, 0.5 ],
                                     "pivot": [ 0.5, 0.5 ]
@@ -207,11 +207,11 @@
                             {
                                 "name": "text_guard-attack_icon",
                                 "type": "Image",
-                                "source": "Assets/Images/white.png",
+                                "source": "Assets/white.png",
                                 "rect": [ 0, 370, 850, 110 ],
                                 "rectT": {
-                                    "pos": [ 100, 100 ],
-                                    "size": [ 435, 55 ],
+                                    "pos": [ 200, 0 ],
+                                    "size": [ 50, 50 ],
                                     "anchorMin": [ 0.5, 0.5 ],
                                     "anchorMax": [ 0.5, 0.5 ],
                                     "pivot": [ 0.5, 0.5 ]
@@ -245,11 +245,11 @@
                             {
                                 "name": "text_guard_icon",
                                 "type": "Image",
-                                "source": "Assets/Images/white.png",
+                                "source": "Assets/white.png",
                                 "rect": [ 0, 370, 850, 110 ],
                                 "rectT": {
-                                    "pos": [ 100, 100 ],
-                                    "size": [ 435, 55 ],
+                                    "pos": [ 0, 0 ],
+                                    "size": [ 50, 50 ],
                                     "anchorMin": [ 0.5, 0.5 ],
                                     "anchorMax": [ 0.5, 0.5 ],
                                     "pivot": [ 0.5, 0.5 ]
@@ -283,11 +283,11 @@
                             {
                                 "name": "text_rolling_icon",
                                 "type": "Image",
-                                "source": "Assets/Images/white.png",
+                                "source": "Assets/white.png",
                                 "rect": [ 0, 370, 850, 110 ],
                                 "rectT": {
-                                    "pos": [ 100, 100 ],
-                                    "size": [ 435, 55 ],
+                                    "pos": [ 0, 0 ],
+                                    "size": [ 50, 50 ],
                                     "anchorMin": [ 0.5, 0.5 ],
                                     "anchorMax": [ 0.5, 0.5 ],
                                     "pivot": [ 0.5, 0.5 ]

@@ -1,11 +1,12 @@
 #include "GuardSystem.h"
 #include "GuardState.h"
 #include "PlayerTag.h"
+#include "CharacterInfoRegistry.h"
 
 void GuardSystem::Update(World& world)
 {
-	View<Transform, GuardState, Damageable, Animator, Input, HP> view(world);
-	for (auto [entity, transform, guardState, damageable, animator, input, hp] : view)
+	View<Transform, GuardState, Damageable, Animator, Input, HP, MoveState> view(world);
+	for (auto [entity, transform, guardState, damageable, animator, input, hp, moveState] : view)
 	{
 		if (!guardState.isInit)
 		{
@@ -19,12 +20,24 @@ void GuardSystem::Update(World& world)
 
 		guardState.bar->value = guardState.shieldHealth;
 
-		guardState.isGuarding = input.isGuard;
+		bool isGuardMove = false;
+
+		if (moveState.currentMoveId != 0)
+		{
+			const MoveData& currentMove =
+				CharacterInfoRegistry::GetInstance()->GetMoveById(
+					moveState.name,
+					moveState.currentMoveId
+				);
+
+			isGuardMove = currentMove.type == MoveType::Guard;
+		}
+
+		guardState.isGuarding = input.isGuard && isGuardMove;
 
 		if (guardState.isBroken)
 		{
 			guardState.shieldHealth += 30 * Time::GetDeltaTime();
-			guardState.shieldHealth = std::min(guardState.shieldHealth, guardState.shieldMaxHealth);
 			guardState.isGuarding = true;
 			hp.isSuperInvincible = false;
 

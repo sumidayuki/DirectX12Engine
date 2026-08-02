@@ -333,6 +333,7 @@
     <ClInclude Include="CollisionQuery.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="KeyToStrMap.h" />
     <ClInclude Include="MoveInput.h" />
     <ClInclude Include="ComboMove.h" />
     <ClInclude Include="MoveState.h" />

@@ -28,6 +28,8 @@ static float GetNormalizedValue(short value, unsigned short deadZone)
 
 void Gamepad::Update()
 {
+	m_isAnyButtonPressed = false;
+
     // i番目のゲームパッドの入力状態を読み取る
     XINPUT_STATE state;
     memset(&state, 0, sizeof(state));

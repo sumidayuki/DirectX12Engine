@@ -1,5 +1,6 @@
 #include "InputManager.h"
 #include "Mouse.h"
+#include "KeyToStrMap.h"
 
 // ライブラリをリンクする
 #pragma comment(lib, "xinput.lib")
@@ -113,6 +114,55 @@ void InputManager::Update()
 
         m_gamepads[i]->Update();
     }
+}
+
+void InputManager::UpdateSpriteBindMap()
+{
+	for (int i = 0; i < (int)InputDeviceType::Touch + 1; i++)
+	{
+		InputDeviceType deviceType = (InputDeviceType)i;
+		switch (deviceType)
+		{
+		case InputDeviceType::Keyboard_Mouse:
+			for (auto& [inputKey, keyCode] : m_inputBind.GetKeyBindMap())
+			{
+				if (m_inputBind.GetSpriteBindMap().at(inputKey).at(deviceType) == nullptr)
+				{
+					std::string keyName = KeyCodeToString.at(keyCode);
+
+					if (keyName.find("mouse") != std::string::npos)
+					{
+						keyName = "Mouse_Icons/" + keyName;
+					}
+					else
+					{
+						keyName = "Key_Icons/keyboard_" + keyName;
+					}
+
+					keyName = "Assets/Images/InputDevice_Icons/" + keyName + ".png";
+
+					// キーコードに対応するスプライトを取得してバインド
+					Texture2D* texture = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, UTF8toUTF16LE::Convert(keyName));
+					m_inputBind.BindSprite(inputKey, deviceType, texture);
+				}
+			}
+			break;
+
+		case InputDeviceType::Gamepad:
+			for (auto& [inputKey, button] : m_inputBind.GetButtonMap())
+			{
+				if (m_inputBind.GetSpriteBindMap().at(inputKey).at(deviceType) == nullptr)
+				{
+					std::string buttonName = "Gamepad_Icons/xbox/" + GamepadButtonToString.at(button);
+					buttonName = "Assets/Images/InputDevice_Icons/" + buttonName + ".png";
+					// ボタンに対応するスプライトを取得してバインド
+					Texture2D* texture = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, UTF8toUTF16LE::Convert(buttonName));
+					m_inputBind.BindSprite(inputKey, deviceType, texture);
+				}
+			}
+			break;
+		}
+	}
 }
 
 bool InputManager::IsAnyKeyPressed()

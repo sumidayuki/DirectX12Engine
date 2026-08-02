@@ -4,7 +4,7 @@ enum class AssetType
 {
 	Texture,
 	Model,
-	Audio
+	Audio,
 };
 
 // aiNodeの代替。エンティティ階層を表します。
@@ -51,6 +51,13 @@ public:
 	/// <param name="type"></param>
 	/// <param name="path"></param>
 	void LoadAsset(AssetType type, const std::wstring& path);
+
+	/// <summary>
+	/// 指定したディレクトリ内のすべてのアセットを指定したタイプでロードします。
+	/// </summary>
+	/// <param name="type"></param>
+	/// <param name="directoryPath"></param>
+	void LoadAssetsFromDirectory(AssetType type, const std::wstring& directoryPath);
 
 	/// <summary>
 	/// 指定したタイプのアセットをキャッシュから取得します。

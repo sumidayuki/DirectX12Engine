@@ -230,6 +230,7 @@ enum class GamepadButton;
 #include "Skeleton.h"
 #include "Animation.h"
 #include "AudioClip.h"
+#include "Sprite.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"
@@ -261,7 +262,6 @@ enum class GamepadButton;
 #include "IComponentData.h"
 #include "Layer.h"
 #include "Input.h"
-#include "Sprite.h"
 #include "Velocity.h"
 #include "Target.h"
 #include "Transform.h"

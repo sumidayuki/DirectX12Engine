@@ -1361,6 +1361,9 @@
     <ClInclude Include="MoveSystem.h">
       <Filter>Game\Character\Combo\System</Filter>
     </ClInclude>
+    <ClInclude Include="KeyToStrMap.h">
+      <Filter>Engine\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">

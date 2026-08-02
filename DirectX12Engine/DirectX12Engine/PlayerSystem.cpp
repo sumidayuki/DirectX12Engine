@@ -162,11 +162,6 @@ void PlayerSystem::Update(World& world)
 			continue;
 		}
 
-		if (guard.isGuarding)
-		{
-			continue;
-		}
-
 		if (animator.currentClipName == "Hit_00" && animator.isPlaying) continue;
 
 		if (!m_bowTransform)

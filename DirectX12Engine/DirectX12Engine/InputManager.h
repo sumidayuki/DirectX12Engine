@@ -66,6 +66,8 @@ public:
 
     static const Gamepad* GetGamepad(int index) { return m_gamepads[index]; }
 
+	static void UpdateSpriteBindMap();
+
 	// 何か一つでもキーが押されているかを確認します。
 	static bool IsAnyKeyPressed();
 

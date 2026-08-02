@@ -58,6 +58,34 @@ void AssetManager::LoadAsset(AssetType type, const std::wstring& path)
             break;
 		}
     }
+
+#if _DEBUG
+	std::wostringstream oss;
+	oss << L"Loaded asset: " << path << L" (Type: " << static_cast<int>(type) << L")\n";
+	OutputDebugStringW(oss.str().c_str());
+#endif
+}
+
+void AssetManager::LoadAssetsFromDirectory(AssetType type, const std::wstring& directoryPath)
+{
+	for (const auto& entry : std::filesystem::directory_iterator(directoryPath))
+	{
+		if (!entry.is_regular_file())
+		{
+			continue;
+		}
+
+		switch (type)
+		{
+		case AssetType::Texture:
+			if (entry.path().extension() == L".png" || entry.path().extension() == L".jpg" || entry.path().extension() == L".jpeg" || entry.path().extension() == L".bmp")
+			{
+				// テクスチャファイルをロード（wstringだと末尾に\がつくためgeneric_wstring()を使用）
+				LoadAsset(AssetType::Texture, entry.path().generic_wstring());
+			}
+			break;
+		}
+	}
 }
 
 Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, const Vector3& localPosition, const Quaternion& localRotation, LayerMask layer)

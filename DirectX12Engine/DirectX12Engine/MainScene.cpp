@@ -24,14 +24,10 @@ bool MainScene::Load()
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/TextureNormal-00.jpg");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/T_Wall_C.png");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/T_Wall_N.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_guard.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_guard-attack.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_shageki.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_shageki-finish.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/Text/text_rolling.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/KeyIcons/keyboard_space_icon.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/KeyIcons/keyboard_shift_icon.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Images/MouseIcons/mouse_left.png");
+	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Texture, L"Assets/Images/InputDevice_Icons/Key_Icons");
+	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Texture, L"Assets/Images/InputDevice_Icons/Gamepad_Icons/xbox");
+	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Texture, L"Assets/Images/InputDevice_Icons/Mouse_Icons");
+	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Texture, L"Assets/Images/Text");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-foot.wav");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-guard.wav");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-kick.wav");
