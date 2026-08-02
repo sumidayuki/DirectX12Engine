@@ -56,7 +56,7 @@ void PlayerCameraSystem::Draw(World& world)
 					const StickControl& rightStick = gamepad->RightStick();
 
 					const float x = rightStick.X().GetValue();
-					const float y = rightStick.Y().GetValue();
+					const float y = -rightStick.Y().GetValue();
 
 					constexpr float gamepadCameraSpeed = 120.0f;
 

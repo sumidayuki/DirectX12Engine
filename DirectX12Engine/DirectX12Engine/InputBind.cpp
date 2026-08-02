@@ -6,9 +6,9 @@ InputBind::InputBind()
 	m_keyBindMap[InputKey::Rolling] = KeyCode::Space;
 	m_keyBindMap[InputKey::Guard] = KeyCode::LeftShift;
 
-	m_buttonBindMap[InputKey::Attack1] = GamepadButton::RightTrigger;
+	m_buttonBindMap[InputKey::Attack1] = GamepadButton::RightShoulder;
 	m_buttonBindMap[InputKey::Rolling] = GamepadButton::South;
-	m_buttonBindMap[InputKey::Guard] = GamepadButton::LeftTrigger;
+	m_buttonBindMap[InputKey::Guard] = GamepadButton::LeftShoulder;
 	m_buttonBindMap[InputKey::Attack2] = GamepadButton::East;
 
 	for (int i = 0; i < (int)InputDeviceType::Touch; i++)

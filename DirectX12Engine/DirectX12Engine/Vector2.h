@@ -47,6 +47,8 @@ public:
 
 	float Magnitude() const;
 
+	float SqrMagnitude() const;
+
 	Vector2 Normalized() const;
 
 	Vector2& operator +() const;

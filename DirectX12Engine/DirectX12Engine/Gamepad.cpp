@@ -120,3 +120,24 @@ const ButtonControl& Gamepad::GetButton(GamepadButton gamepadButton) const
     return m_buttons[(int)gamepadButton];
 }
 
+bool Gamepad::IsAnyInput() const
+{
+	if (m_isAnyButtonPressed)
+	{
+		return true;
+	}
+
+	const float leftX = m_leftStick.X().GetValue();
+	const float leftY = m_leftStick.Y().GetValue();
+	const float rightX = m_rightStick.X().GetValue();
+	const float rightY = m_rightStick.Y().GetValue();
+
+	constexpr float threshold = 0.1f;
+
+	return
+		std::abs(leftX) > threshold ||
+		std::abs(leftY) > threshold ||
+		std::abs(rightX) > threshold ||
+		std::abs(rightY) > threshold;
+}
+

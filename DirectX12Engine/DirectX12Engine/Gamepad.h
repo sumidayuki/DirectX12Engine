@@ -123,5 +123,7 @@ public:
     // 指定したボタンの状態を取得します。
     const ButtonControl& GetButton(GamepadButton gamepadButton) const;
 
+	bool IsAnyInput() const;
+
 	static bool IsAnyButtonPressed() { return m_isAnyButtonPressed; }
 };

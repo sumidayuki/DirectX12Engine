@@ -21,6 +21,11 @@ float Vector2::Magnitude() const
     return Mathf::Sqrt(x * x + y * y);
 }
 
+float Vector2::SqrMagnitude() const
+{
+	return x * x + y * y;
+}
+
 Vector2 Vector2::Normalized() const
 {
     const float reciprocal = 1.0f / Magnitude();

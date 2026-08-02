@@ -102,18 +102,49 @@ void InputManager::Update()
     // キーボードの入力状態を更新
     Keyboard::Update();
 
-	m_currentInputDeviceType = InputDeviceType::Keyboard_Mouse;
+	// キーボードマウスの入力があったかどうかを判定するフラグ
+	bool keyboardMouseInput = false;
 
-    // ゲームパッドの入力状態を更新
-    for (int i = 0; i < MaxGamepadCount; i++)
-    {
-        if (i == 0 && m_gamepads[i]->IsConnected())
-        {
-			m_currentInputDeviceType = InputDeviceType::Gamepad;
-        }
+	// ゲームパッドの入力があったかどうかを判定するフラグ
+	bool gamepadInput = false;
 
-        m_gamepads[i]->Update();
-    }
+	// キーボード入力
+	if (Keyboard::IsPressedAnyKey())
+	{
+		keyboardMouseInput = true;
+	}
+
+	// マウス入力
+	if (Mouse::GetButtonState(MouseButton::Left).IsPressed() ||
+		Mouse::GetButtonState(MouseButton::Right).IsPressed() ||
+		Mouse::GetVelocity().SqrMagnitude() > 0.01f)
+	{
+		keyboardMouseInput = true;
+	}
+
+	// ゲームパッドの更新
+	for (int i = 0; i < MaxGamepadCount; i++)
+	{
+		m_gamepads[i]->Update();
+
+		if (m_gamepads[i]->IsConnected())
+		{
+			if (m_gamepads[i]->IsAnyInput())
+			{
+				gamepadInput = true;
+			}
+		}
+	}
+
+	if (keyboardMouseInput)
+	{
+		m_currentInputDeviceType = InputDeviceType::Keyboard_Mouse;
+	}
+
+	if (gamepadInput)
+	{
+		m_currentInputDeviceType = InputDeviceType::Gamepad;
+	}
 }
 
 void InputManager::UpdateSpriteBindMap()
@@ -172,11 +203,17 @@ bool InputManager::IsAnyKeyPressed()
         return true;
 	}
 
+	if (Mouse::GetButtonState(MouseButton::Left).IsPressed() || Mouse::GetButtonState(MouseButton::Right).IsPressed())
+	{
+		return true;
+	}
+	
+
 	for (int i = 0; i < MaxGamepadCount; i++)
 	{
 		if (m_gamepads[i]->IsConnected())
 		{
-			if(m_gamepads[i]->IsAnyButtonPressed())
+			if(m_gamepads[i]->IsAnyInput())
             {
                 return true;
 			}
