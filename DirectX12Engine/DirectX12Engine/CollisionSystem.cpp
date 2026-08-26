@@ -690,10 +690,10 @@ void CollisionSystem::Update(World& world)
                             transA->dirty = true; 
                         }
                         float vel = Vector3::Dot(rbA->velocity, normal);
-                        if (vel < 0.0f)
-                        {
-                            rbA->velocity -= normal * (vel * 1.5f);
-                        }
+						if (vel < 0.0f)
+						{
+							rbA->velocity -= normal * vel;
+						}
                     }
                     else if (bHasRb)
                     {
@@ -704,10 +704,10 @@ void CollisionSystem::Update(World& world)
                             transB2->dirty = true; 
                         }
                         float vel = Vector3::Dot(rbB->velocity, -normal);
-                        if (vel < 0.0f)
-                        {
-                            rbB->velocity += normal * (vel * 1.5f);
-                        }
+						if (vel < 0.0f)
+						{
+							rbB->velocity -= normal * vel;
+						}
                     }
                 }
             }

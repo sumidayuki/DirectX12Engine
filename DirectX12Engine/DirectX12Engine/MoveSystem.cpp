@@ -5,253 +5,370 @@
 #include "CharacterStatus.h"
 #include "CharacterImporter.h"
 
-void MoveSystem::TransitionTo(MoveState& state, uint32_t newMoveID)
+const MoveData* MoveSystem::GetTransitionTarget(const std::string& name, const MoveTransition& transition, const Stamina& stamina) const
 {
-    state.currentMoveId = newMoveID;
-    state.comboIndex++;
-    state.hitConfirm = false;
-    state.canHit = false;
-    state.isAnimed = false;
-    state.timer = 0.0f; // 次の技の経過時間をリセット
+	const MoveData& targetMove = CharacterInfoRegistry::GetInstance()->GetMoveById(name, transition.targetMoveId);
+
+	if (targetMove.staminaCost > 0.0f)
+	{
+		if (stamina.value < targetMove.staminaCost)
+		{
+			return nullptr;
+		}
+	}
+
+	return &targetMove;
 }
 
-void MoveSystem::ResetMove(MoveState& state)
+void MoveSystem::TransitionTo(MoveState& state, const MoveData& targetMove, Stamina& stamina)
 {
-    state.currentMoveId = 0;
-    state.comboIndex = 0;
-    state.canHit = false;
-    state.hitConfirm = false;
-    state.isAnimed = false;
-    state.timer = 0.0f;
+	if (targetMove.staminaCost > 0.0f)
+	{
+		stamina.value -= targetMove.staminaCost;
+		stamina.timer = 0.0f;
+	}
+
+	if (targetMove.type == MoveType::Idle)
+	{
+		state.comboIndex = 0;
+	}
+	else
+	{
+		state.comboIndex++;
+	}
+
+	state.currentMoveId = targetMove.moveId;
+	state.hitConfirm = false;
+	state.canHit = false;
+	state.isAnimed = false;
+	state.timer = 0.0f;
 }
 
-void MoveSystem::ClearInput(MoveInput& input)
+void MoveSystem::ClearPressedInput(MoveInput& input)
 {
-    input.inputKey = InputKey::None;
-    input.timer = 0.0f;
+	input.inputKey = InputKey::None;
+	input.timer = 0.0f;
 }
 
-uint32_t MoveSystem::GetNextMoveID(const std::string& name, InputKey input, const std::vector<uint32_t>& possibles)
+bool MoveSystem::IsTransitionMatched(const MoveTransition& transition, const MoveInput& input, float progress) const
 {
-    for (uint32_t id : possibles)
-    {
-        // 遷移先候補のMoveデータを取得
-        const MoveData& move = CharacterInfoRegistry::GetInstance()->GetMoveById(name, id);
+	switch (transition.type)
+	{
+		case MoveTransitionType::InputPressed:
+			return input.inputKey == transition.inputKey &&
+				progress >= transition.start &&
+				progress <= transition.end;
 
-        // プレイヤーの入力(type)が、その技の必要入力(requiredInput)と一致するか判定
-        if (move.inputKey == input)
-        {
-            return id; // 条件に一致する技のIDを返す
-        }
-    }
+		case MoveTransitionType::InputReleased:
+			return input.releasedKey == transition.inputKey &&
+				progress >= transition.start &&
+				progress <= transition.end;
 
-    return -1; // 一致する派生先がない場合
+		case MoveTransitionType::MoveEnd:
+			return progress >= 1.0f;
+	}
+
+	return false;
+}
+
+bool MoveSystem::TryInputTransition(MoveState& state, MoveInput& input, Stamina& stamina, const MoveData& currentMove, float progress)
+{
+	for (const auto& transition : currentMove.transitions)
+	{
+		if (transition.type == MoveTransitionType::MoveEnd)
+		{
+			continue;
+		}
+
+		if (!IsTransitionMatched(transition, input, progress))
+		{
+			continue;
+		}
+
+		const MoveData* targetMove = GetTransitionTarget(state.name, transition, stamina);
+
+		// スタミナ不足などで遷移先を取得できなかった場合
+		if (!targetMove)
+		{
+			continue;
+		}
+
+		TransitionTo(state, *targetMove, stamina);
+
+		if (transition.type == MoveTransitionType::InputPressed)
+		{
+			ClearPressedInput(input);
+		}
+		else if (transition.type == MoveTransitionType::InputReleased)
+		{
+			input.releasedKey = InputKey::None;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool MoveSystem::TryEndTransition(Entity entity, World& world, MoveState& state, MoveInput& input, Stamina& stamina, const MoveData& currentMove, float progress)
+{
+	if (currentMove.duration <= 0.0f)
+	{
+		return false;
+	}
+
+	for (const auto& transition : currentMove.transitions)
+	{
+		if (transition.type != MoveTransitionType::MoveEnd)
+		{
+			continue;
+		}
+
+		if (!IsTransitionMatched(transition, input, progress))
+		{
+			continue;
+		}
+
+		const MoveData* targetMove = GetTransitionTarget(state.name, transition, stamina);
+
+		if (!targetMove)
+		{
+			continue;
+		}
+
+		if (currentMove.type == MoveType::Attack)
+		{
+			AITrigger* trigger = world.GetComponent<AITrigger>(entity);
+
+			if (trigger)
+			{
+				trigger->triggers.push_back("OnComboFinished"_h);
+			}
+		}
+
+		TransitionTo(state, *targetMove, stamina);
+		return true;
+	}
+
+	return false;
+}
+
+void MoveSystem::SetAttackHitboxesEnabled(Entity entity, World& world, const AttackParams& params, bool enabled)
+{
+	if (params.colliderNames.empty())
+	{
+		return;
+	}
+
+	CharacterHitboxes* hitboxes = world.GetComponent<CharacterHitboxes>(entity);
+
+	if (!hitboxes)
+	{
+		return;
+	}
+
+	for (const auto& colliderName : params.colliderNames)
+	{
+		auto it = hitboxes->entities.find(HashString32(colliderName.c_str()));
+
+		if (it == hitboxes->entities.end())
+		{
+			continue;
+		}
+
+		Collider* collider = world.GetComponent<Collider>(it->second);
+
+		if (collider)
+		{
+			collider->isEnable = enabled;
+		}
+	}
+}
+
+void MoveSystem::ProcessAttack(Entity entity, World& world, MoveState& state, const MoveData& currentMove, float progress)
+{
+	const AttackParams& params = std::get<AttackParams>(currentMove.params);
+
+	if (!state.canHit)
+	{
+		if (progress >= params.hitStartTime)
+		{
+			Attackable* attackable = world.GetComponent<Attackable>(entity);
+
+			if (attackable)
+			{
+				attackable->entities.clear();
+				attackable->isAttacking = true;
+			}
+
+			state.canHit = true;
+
+			SetAttackHitboxesEnabled(entity, world, params, true);
+		}
+
+		return;
+	}
+
+	Attackable* attackable = world.GetComponent<Attackable>(entity);
+
+	if (!attackable)
+	{
+		return;
+	}
+
+	if (progress < params.hitEndTime)
+	{
+		if (params.colliderNames.empty())
+		{
+			return;
+		}
+
+		CharacterHitboxes* hitboxes = world.GetComponent<CharacterHitboxes>(entity);
+
+		if (!hitboxes)
+		{
+			return;
+		}
+
+		for (const auto& colliderName : params.colliderNames)
+		{
+			auto colliderIt = hitboxes->entities.find(HashString32(colliderName.c_str()));
+
+			if (colliderIt == hitboxes->entities.end())
+			{
+				continue;
+			}
+
+			Collider* collider = world.GetComponent<Collider>(colliderIt->second);
+
+			if (!collider)
+			{
+				continue;
+			}
+
+			if (collider->info.state != CollisionState::Enter &&
+				collider->info.state != CollisionState::Stay)
+			{
+				continue;
+			}
+
+			Entity target = collider->info.other;
+
+			auto alreadyHit = std::find(
+				attackable->entities.begin(),
+				attackable->entities.end(),
+				target
+			);
+
+			if (alreadyHit != attackable->entities.end())
+			{
+				continue;
+			}
+
+			Damageable* damageable = world.GetComponent<Damageable>(target);
+
+			if (!damageable)
+			{
+				continue;
+			}
+
+			Damage damage;
+			damage.type = DamageType::Normal;
+			damage.damage = params.damage;
+
+			damageable->damageQueue.push(damage);
+			attackable->entities.push_back(target);
+
+			state.hitConfirm = true;
+		}
+
+		return;
+	}
+
+	attackable->isAttacking = false;
+	SetAttackHitboxesEnabled(entity, world, params, false);
 }
 
 void MoveSystem::Update(World& world)
 {
-    View<MoveState, MoveInput> view(world);
+	View<MoveState, MoveInput, HP, Stamina> view(world);
 
-    for (auto [entity, state, input] : view)
-    {
-        const auto* charInfo = CharacterInfoRegistry::GetInstance()->GetCharacterInfo(state.name);
-        if (!charInfo) continue;
+	for (auto [entity, state, input, hp, stamina] : view)
+	{
+		if (hp.isDeath)
+		{
+			continue;
+		}
 
-        state.timer += Time::GetDeltaTime();
+		const CharacterInfo* charInfo = CharacterInfoRegistry::GetInstance()->GetCharacterInfo(state.name);
 
-        if (state.currentMoveId == 0)
-        {
-            if (input.inputKey != InputKey::None)
-            {
-                for (const auto& move : charInfo->moves)
-                {
-                    if (move.isStarter && move.inputKey == input.inputKey)
-                    {
-                        TransitionTo(state, move.moveId);
-                        ClearInput(input);
-                        break;
-                    }
-                }
-            }
-            continue;
-        }
+		if (!charInfo)
+		{
+			continue;
+		}
 
-        const MoveData& currentMove = CharacterInfoRegistry::GetInstance()->GetMoveById(state.name, state.currentMoveId);
-        float progress = (currentMove.duration > 0.0f) ? state.timer / currentMove.duration : 1.0f;
+		const MoveData& currentMove = CharacterInfoRegistry::GetInstance()->GetMoveById(
+			state.name,
+			state.currentMoveId
+		);
 
-        AITrigger* trigger = world.GetComponent<AITrigger>(entity);
+		state.timer += Time::GetDeltaTime();
 
-        switch (currentMove.type)
-        {
-            // ガード
-            case MoveType::Guard:
-            {
-                // ガード中に別の入力があれば派生を試みる
-                if (input.inputKey != InputKey::None && input.inputKey != InputKey::Guard)
-                {
-                    uint32_t nextID = GetNextMoveID(state.name, input.inputKey, currentMove.nextPossibleMoves);
-                    if (nextID != -1)
-                    {
-                        TransitionTo(state, nextID);
-                        ClearInput(input);
-                        break;
-                    }
-                }
+		float progress = 0.0f;
 
-                // ガード入力がなくなったらリセット
-                if (input.inputKey != InputKey::Guard)
-                {
-                    ResetMove(state);
-                    ClearInput(input);
-                }
-                break;
-            }
+		if (currentMove.duration > 0.0f)
+		{
+			progress = state.timer / currentMove.duration;
+		}
 
-            // ローリング
-            case MoveType::Rolling:
-            {
-                if (progress >= 1.0f)
-                {
-                    ResetMove(state);
-                    ClearInput(input);
-                }
-                break;
-            }
+		if (currentMove.type == MoveType::Attack)
+		{
+			for (const auto& transition : currentMove.transitions)
+			{
+				if (transition.type != MoveTransitionType::InputPressed)
+				{
+					continue;
+				}
 
-            // 攻撃
-            case MoveType::Attack:
-            {
-                const AttackParams& params = std::get<AttackParams>(currentMove.params);
+				if (progress < transition.start || progress > transition.end)
+				{
+					continue;
+				}
 
-                bool canInput = (progress >= params.inputStart && progress <= params.inputEnd);
+				// スタミナ不足の技はコンボ受付可能な遷移としても扱わない
+				const MoveData* targetMove = GetTransitionTarget(state.name, transition, stamina);
 
-                // 攻撃が開始したことを発信
-                if (trigger && canInput)
-                {
-                    trigger->triggers.push_back("OnComboWindow"_h);
-                }
+				if (!targetMove)
+				{
+					continue;
+				}
 
-                // コンボ入力の判定
-                if (input.inputKey != InputKey::None)
-                {
-                    if (canInput)
-                    {
-                        uint32_t nextID = GetNextMoveID(state.name, input.inputKey, currentMove.nextPossibleMoves);
-                        if (nextID != -1)
-                        {
-                            TransitionTo(state, nextID);
-                            ClearInput(input);
-                            break;
-                        }
-                    }
-                }
+				AITrigger* trigger = world.GetComponent<AITrigger>(entity);
 
-                if (!state.canHit)
-                {
-                    // ヒット開始時間になったら、攻撃開始処理を行う
-                    if (progress >= params.hitStartTime)
-                    {
-                        Attackable* attackable = world.GetComponent<Attackable>(entity);
-                        attackable->entities.clear();
-                        attackable->isAttacking = true;
-                        state.canHit = true;
+				if (trigger)
+				{
+					trigger->triggers.push_back("OnComboWindow"_h);
+				}
 
-                        if (params.colliderNames.size() > 0)
-                        {
-                            CharacterHitboxes* hitboxes = world.GetComponent<CharacterHitboxes>(entity);
-                            for (auto& colliderName : params.colliderNames)
-                            {
-                                auto it = hitboxes->entities.find(HashString32(colliderName.c_str()));
-                                if (it != hitboxes->entities.end())
-                                {
-                                    Entity colliderEntity = it->second;
-                                    Collider* collider = world.GetComponent<Collider>(colliderEntity);
-                                    if (collider)
-                                    {
-                                        collider->isEnable = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Attackable* attackable = world.GetComponent<Attackable>(entity);
+				break;
+			}
+		}
 
-                    // ヒット終了時間前なら、衝突判定とダメージ処理を行う
-                    if (progress < params.hitEndTime)
-                    {
-                        if (params.colliderNames.size() > 0)
-                        {
-                            CharacterHitboxes* hitboxes = world.GetComponent<CharacterHitboxes>(entity);
-                            for (auto& colliderName : params.colliderNames)
-                            {
-                                auto it = hitboxes->entities.find(HashString32(colliderName.c_str()));
-                                if (it != hitboxes->entities.end())
-                                {
-                                    Entity colliderEntity = it->second;
-                                    Collider* collider = world.GetComponent<Collider>(colliderEntity);
-                                    if (collider->info.state == CollisionState::Enter || collider->info.state == CollisionState::Stay)
-                                    {
-                                        Entity target = collider->info.other;
-                                        auto it = std::find(attackable->entities.begin(), attackable->entities.end(), target);
-                                        if (it == attackable->entities.end())
-                                        {
-                                            Damageable* damageable = world.GetComponent<Damageable>(target);
-                                            if (damageable)
-                                            {
-                                                Damage damage;
-                                                damage.type = DamageType::Normal;
-                                                damage.damage = params.damage;
-                                                damageable->damageQueue.push(damage);
-                                                attackable->entities.push_back(target);
-                                            }
-                                            state.hitConfirm = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // ヒット終了時間を過ぎたら、攻撃終了処理を行う
-                    else
-                    {
-                        attackable->isAttacking = false;
+		if (TryInputTransition(state, input, stamina, currentMove, progress))
+		{
+			continue;
+		}
 
-                        if (params.colliderNames.size() > 0)
-                        {
-                            CharacterHitboxes* hitboxes = world.GetComponent<CharacterHitboxes>(entity);
-                            for (auto& colliderName : params.colliderNames)
-                            {
-                                auto it = hitboxes->entities.find(HashString32(colliderName.c_str()));
-                                if (it != hitboxes->entities.end())
-                                {
-                                    Entity colliderEntity = it->second;
-                                    Collider* collider = world.GetComponent<Collider>(colliderEntity);
-                                    if (collider && collider->isEnable)
-                                    {
-                                        collider->isEnable = false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+		if (currentMove.type == MoveType::Attack)
+		{
+			ProcessAttack(entity, world, state, currentMove, progress);
+		}
 
-                if (progress >= 1.0f)
-                {
-                    if (trigger)
-                    {
-                        trigger->triggers.push_back("OnComboFinished"_h);
-                    }
+		if (TryEndTransition(entity, world, state, input, stamina, currentMove, progress))
+		{
+			continue;
+		}
 
-                    ResetMove(state);
-                    ClearInput(input);
-                }
-                break;
-            }
-        }
-    }
+		input.releasedKey = InputKey::None;
+	}
 }
-

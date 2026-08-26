@@ -10,9 +10,9 @@ void UILayoutSystem::Update(World& world)
         if (!parentTransform) continue;
 
         std::vector<RectTransform*> children;
-        for (int i = 0; i < TransformSystem::GetInstance()->GetChildCount(parentTransform); i++)
+        for (int i = 0; i < TransformAPI::GetChildCount(parentTransform); i++)
         {
-            Transform* childT = TransformSystem::GetInstance()->GetChild(parentTransform, i);
+            Transform* childT = TransformAPI::GetChild(parentTransform, i);
 
             UIGraphic* childUI = world.GetComponent<UIGraphic>(childT->entity);
             if (childUI && childUI->isEnabled)
@@ -43,9 +43,9 @@ void UILayoutSystem::Update(World& world)
         if (!parentTransform) continue;
 
         std::vector<RectTransform*> children;
-        for (int i = 0; i < TransformSystem::GetInstance()->GetChildCount(parentTransform); i++)
+        for (int i = 0; i < TransformAPI::GetChildCount(parentTransform); i++)
         {
-            Transform* childT = TransformSystem::GetInstance()->GetChild(parentTransform, i);
+            Transform* childT = TransformAPI::GetChild(parentTransform, i);
             
             UIGraphic* childUI = world.GetComponent<UIGraphic>(childT->entity);
             if (childUI && childUI->isEnabled)

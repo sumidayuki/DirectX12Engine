@@ -9,4 +9,6 @@ struct GuardState : IComponentData
 	bool isInit = false;
 	Slider* bar = nullptr;
 	bool isBroken = false;
+
+	Entity effectEntity = INVALID_ENTITY;
 };

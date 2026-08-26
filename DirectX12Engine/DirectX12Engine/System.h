@@ -11,6 +11,8 @@ class System
 public:
 	virtual bool Load(World& world) { return true; }
 
+	virtual bool UnLoad(World& world) { return true; }
+
 	virtual void Start(World& world) {}
 
 	/// <summary>

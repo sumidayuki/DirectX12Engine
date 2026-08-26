@@ -6,7 +6,7 @@ void StaminaSystem::Update(World& world)
 
 	for(auto [entity, stamina, input] : view)
 	{
-		Entity staminaBarEntity = UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString(stamina.barName));
+		Entity staminaBarEntity = UIManager::GetInstance()->GetUIObject(HashString("MainSceneUI"), HashString(stamina.barName.c_str()));
 		Slider* staminaBar = world.GetComponent<Slider>(staminaBarEntity);
 
 		// スタミナが最大値未満のとき、スタミナバーを減少させる

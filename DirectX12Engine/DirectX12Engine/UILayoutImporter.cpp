@@ -330,7 +330,7 @@ void UILayoutImporter::ProcessVerticalLayout(const Json& json, Entity parent, Wo
 
 	Transform* vlgT = world.GetComponent<Transform>(vlgEntity);
 	Transform* parentT = world.GetComponent<Transform>(parent);
-	TransformSystem::GetInstance()->SetParent(*vlgT, parentT);
+	TransformAPI::SetParent(*vlgT, parentT);
 
 	UIManager::GetInstance()->AddUIObject(vlgEntity, HashString(UTF16LEtoUTF8::Convert(GetFileNameWithoutExtension()).c_str()), HashString(name.c_str()));
 

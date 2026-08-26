@@ -22,16 +22,7 @@ void GameManagerSystem::Start(World& world)
 	world.AddComponent<LocomotionData>(player, LocomotionData{});
 	RollingState rolling;
 	rolling.direction = Vector3::zero;
-	rolling.duration = 1.63f;
-	rolling.invincibleStart = 0.2f;
-	rolling.invincibleEnd = 0.8f;
-	rolling.speed = 350.0f;
 	world.AddComponent<RollingState>(player, rolling);
-	Stamina stamina;
-	stamina.barName = "PlayerStaminaBar";
-	stamina.maxValue = 100.0f;
-	stamina.value = stamina.maxValue;
-	world.AddComponent<Stamina>(player, stamina);
 	CharacterInfoRegistry::GetInstance()->CharcterInitialize("Archer", player, world);
 
 	m_player = player;
@@ -73,7 +64,7 @@ void GameManagerSystem::Start(World& world)
 
 	//Entity skybox = world.CreateSphere(1000.0f, 16, 16);
 	//Transform* skyboxT = world.GetComponent<Transform>(skybox);
-	//TransformSystem::GetInstance()->SetParent(*skyboxT, parentT);
+	//TransformAPI::SetParent(*skyboxT, parentT);
 
 	world.AddComponent<AudioListener>(cameraEntity, AudioListener{});
 

@@ -123,13 +123,14 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Precompiled.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\Assimp\include;$(SolutionDir)External;$(SolutionDir)External\include\directx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\Assimp\include;$(SolutionDir)External;$(SolutionDir)External\include\directx;$(SolutionDir)External\Effekseer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>"$(SolutionDir)External\Assimp\lib\Debug"</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\Assimp\lib\Debug;$(SolutionDir)External\Effekseer\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>LinkVerbose</ShowProgress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -140,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\Assimp\include;$(SolutionDir)External;$(SolutionDir)External\include\directx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\Assimp\include;$(SolutionDir)External;$(SolutionDir)External\include\directx;$(SolutionDir)External\Effekseer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -152,9 +153,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>"$(SolutionDir)External\Assimp\lib\Release"</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\Assimp\lib\Release;$(SolutionDir)External\Effekseer\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AIAgentSystem.cpp" />
@@ -185,12 +190,18 @@
     <ClCompile Include="CharacterImporter.cpp" />
     <ClCompile Include="CharacterInfoRegistry.cpp" />
     <ClCompile Include="Chunk.cpp" />
+    <ClCompile Include="CollisionSolver.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="DebugLineRenderer.cpp" />
     <ClCompile Include="DebugManager.cpp" />
     <ClCompile Include="DescriptorHeap.cpp" />
+    <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="EffectAPI.cpp" />
+    <ClCompile Include="EffectImporter.cpp" />
+    <ClCompile Include="EffectManager.cpp" />
+    <ClCompile Include="EffectSystem.cpp" />
     <ClCompile Include="EnemySystem.cpp" />
     <ClCompile Include="EntityManager.cpp" />
     <ClCompile Include="FrameResource.cpp" />
@@ -219,6 +230,8 @@
     <ClCompile Include="MoveSystem.cpp" />
     <ClCompile Include="Path.cpp" />
     <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="PhysicsIntegrator.cpp" />
+    <ClCompile Include="PhysicsSimulationSystem.cpp" />
     <ClCompile Include="PhysicsSystem.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlayerActionGuideSystem.cpp" />
@@ -236,6 +249,7 @@
     <ClCompile Include="ShaderRegistry.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="SkinnedMeshRendererSystem.cpp" />
+    <ClCompile Include="SpatialHashBroadPhase.cpp" />
     <ClCompile Include="SpatialHashGrid.cpp" />
     <ClCompile Include="SpatialHashGrid2D.cpp" />
     <ClCompile Include="Sprite.cpp" />
@@ -247,6 +261,7 @@
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="TextureImporter.cpp" />
     <ClCompile Include="TitleScene.cpp" />
+    <ClCompile Include="TransformAPI.cpp" />
     <ClCompile Include="TransformSystem.cpp" />
     <ClCompile Include="UIAPI.cpp" />
     <ClCompile Include="UIButtonSystem.cpp" />
@@ -330,9 +345,17 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionEvents.h" />
     <ClInclude Include="CollisionMatrix.h" />
+    <ClInclude Include="CollisionPair.h" />
     <ClInclude Include="CollisionQuery.h" />
+    <ClInclude Include="CollisionSolver.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Effect.h" />
+    <ClInclude Include="EffectAPI.h" />
+    <ClInclude Include="EffectManager.h" />
+    <ClInclude Include="EffectSource.h" />
+    <ClInclude Include="EffectImporter.h" />
+    <ClInclude Include="EffectSystem.h" />
     <ClInclude Include="KeyToStrMap.h" />
     <ClInclude Include="MoveInput.h" />
     <ClInclude Include="ComboMove.h" />
@@ -397,6 +420,8 @@
     <ClInclude Include="MoveSystem.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="Physics.h" />
+    <ClInclude Include="PhysicsIntegrator.h" />
+    <ClInclude Include="PhysicsSimulationSystem.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlayerActionGuideSystem.h" />
@@ -425,6 +450,7 @@
     <ClInclude Include="SkinnedMeshRenderer.h" />
     <ClInclude Include="SkinnedMeshRendererSystem.h" />
     <ClInclude Include="Slider.h" />
+    <ClInclude Include="SpatialHashBroadPhase.h" />
     <ClInclude Include="SpatialHashGrid.h" />
     <ClInclude Include="SpatialHashGrid2D.h" />
     <ClInclude Include="Sprite.h" />
@@ -444,6 +470,7 @@
     <ClInclude Include="TextureImporter.h" />
     <ClInclude Include="TextureWrapMode.h" />
     <ClInclude Include="TitleScene.h" />
+    <ClInclude Include="TransformAPI.h" />
     <ClInclude Include="TransformSystem.h" />
     <ClInclude Include="TypeInfo.h" />
     <ClInclude Include="UIAPI.h" />

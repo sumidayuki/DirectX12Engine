@@ -36,6 +36,11 @@ bool CharacterInfoRegistry::CharcterInitialize(const std::string& name, Entity e
 	world.AddComponent<HP>(entity, playerHP);
 	world.AddComponent<Damageable>(entity, Damageable{});
 	world.AddComponent<Rigidbody>(entity, Rigidbody{});
+	Stamina stamina;
+	stamina.barName = StatusAPI::GetString(info.status, "staminaBarName", "");
+	stamina.maxValue = StatusAPI::GetFloat(info.status, "staminaMaxValue", 100.0f);
+	stamina.value = stamina.maxValue;
+	world.AddComponent<Stamina>(entity, stamina);
 	Collider bColl;
 	bColl.type = ColliderType::AABB;
 	float hitBoxX = StatusAPI::GetFloat(info.status, "hitBoxX", 40.0f);
@@ -46,6 +51,7 @@ bool CharacterInfoRegistry::CharcterInitialize(const std::string& name, Entity e
 	world.AddComponent<Collider>(entity, bColl);
 	MoveState moveState;
 	moveState.name = name;
+	moveState.currentMoveId = "idle"_h;
 	world.AddComponent<MoveState>(entity, moveState);
 	MoveInput comboInput;
 	world.AddComponent<MoveInput>(entity, comboInput);
@@ -85,17 +91,26 @@ bool CharacterInfoRegistry::CharcterInitialize(const std::string& name, Entity e
 	return true;
 }
 
-const MoveData& CharacterInfoRegistry::GetMoveById(const std::string& name, int id) const
+const MoveData& CharacterInfoRegistry::GetMoveById(const std::string& name, uint32_t id) const
 {
-	for (const auto& move : m_characterInfos.at(name).moves)
+	const auto characterIt = m_characterInfos.find(name);
+
+	if (characterIt != m_characterInfos.end())
 	{
-		if (move.moveId == id)
+		for (const auto& move : characterIt->second.moves)
 		{
-			return move;
+			if (move.moveId == id)
+			{
+				return move;
+			}
 		}
 	}
 
 #if _DEBUG
 	OutputDebugStringW((L"Character‚ÌMove‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ: MoveID = " + std::to_wstring(id) + L"\n").c_str());
 #endif
+
+	assert(false);
+	static MoveData invalidMove;
+	return invalidMove;
 }

@@ -2,11 +2,9 @@
 
 struct RollingState : IComponentData
 {
-	Vector3 direction;		// 移動方向
-	float speed;			// 移動速度
-	float duration;			// 移動時間
-	float timer;			// 経過時間
-	float invincibleStart;	// 無敵時間の開始時間
-	float invincibleEnd;	// 無敵時間の終了時間
-	bool isRolling = false;			// ローリング状態かどうか
+	// ローリング開始時に確定した移動方向
+	Vector3 direction = Vector3(0, 0, 0);
+
+	// ローリング初期化済みか
+	bool isRolling = false;
 };

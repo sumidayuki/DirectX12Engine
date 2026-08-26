@@ -36,10 +36,10 @@ void UIEventSystem::RaycastPointer(World& world, EventSystem* eventState)
 
 		if(canvas.renderMode == RenderMode::ScreenSpaceOverlay)
 		{
-			int childCount = TransformSystem::GetInstance()->GetChildCount(canvasTransform);
+			int childCount = TransformAPI::GetChildCount(canvasTransform);
 			for(int i = 0; i < childCount; i++)
 			{
-				Entity childEntity = TransformSystem::GetInstance()->GetChild(canvasTransform, i)->entity;
+				Entity childEntity = TransformAPI::GetChild(canvasTransform, i)->entity;
 				
 				if(!world.IsAlive(childEntity))
 				{

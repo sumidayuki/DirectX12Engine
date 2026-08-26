@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include "AudioImporter.h"
+#include "EffectAPI.h"
 
 // ワイド文字列 (wstring) をUTF-8文字列 (std::string) に変換するヘルパー関数
 // WinAPIのWideCharToMultiByte関数を使用
@@ -638,7 +639,8 @@ void ModelImporter::ProcessAnimationEvent(const std::string& name, Animation& an
 
         for (auto event : events)
         {
-            uint32_t type = FNV1a_Hash<uint32_t>(event.value("type", ""));
+			std::string typeName = event.value("type", "");
+            uint32_t type = FNV1a_Hash<uint32_t>(typeName);
 
             std::function<void(World& world, Entity entity)> func;
             switch (type)
@@ -657,8 +659,8 @@ void ModelImporter::ProcessAnimationEvent(const std::string& name, Animation& an
                         Vector3 pos;
                         if (isSelectedPos)
                         {
-                            Transform* childT = TransformSystem::GetInstance()->FindChild(t, posName);
-                            pos = TransformSystem::GetInstance()->GetPosition(*childT);
+                            Transform* childT = TransformAPI::FindChild(t, posName);
+                            pos = TransformAPI::GetPosition(*childT);
                         }
                         else
                         {
@@ -666,15 +668,71 @@ void ModelImporter::ProcessAnimationEvent(const std::string& name, Animation& an
                         }
                         AudioAPI::PlayClipAtPoint(world, clip, pos, 100);
                     };
+					break;
                 }
+				case "play-effect"_h:
+				{
+					std::string name = event.value("name", "");
+					
+					bool isSelectedPos = event.contains("bone");
+					std::string boneName = event.value("bone", "");
+					
+					float lifeTime = event.value("lifeTime", anim.GetTotalTime());
+
+					std::vector<float> colorJ = event.value("color", std::vector<float>{ 1.0f, 1.0f, 1.0f, 1.0f });
+					Color color = Color(colorJ[0], colorJ[1], colorJ[2], colorJ[3]);
+
+					std::string spaceJ = event.value("socketSpace", "bone");
+					BoneSocketSpace space;
+					if (spaceJ == "bone")
+					{
+						space = BoneSocketSpace::Bone;
+					}
+					else if (spaceJ == "target")
+					{
+						space = BoneSocketSpace::Target;
+					}
+					
+					std::vector<float> posOffsetJ = event.value("posOffset", std::vector<float>{0.0f, 0.0f, 0.0f});
+					Vector3 posOffset = Vector3(posOffsetJ[0], posOffsetJ[1], posOffsetJ[2]);
+					
+					std::vector<float> rotOffsetJ = event.value("rotOffset", std::vector<float>{0.0f, 0.0f, 0.0f});
+					Quaternion rotOffset = Quaternion(rotOffsetJ[0], rotOffsetJ[1], rotOffsetJ[2], 1.0f);
+
+					float scaleFactor = event.value("scaleFactor", 1.0f);
+
+					func = [name, isSelectedPos, boneName, lifeTime, space, posOffset, rotOffset, color, scaleFactor](World& world, Entity entity)
+					{
+						std::string path = "Assets/Effects/" + name + ".efkefc";
+						Transform* t = world.GetComponent<Transform>(entity);
+						Effect* effect = AssetManager::GetInstance()->GetAsset<Effect>(AssetType::Effect, UTF8toUTF16LE::Convert(path));
+						if (isSelectedPos)
+						{
+							EffectAPI::PlayEffectAttachedToBone(world, effect, entity, boneName, lifeTime, space, posOffset, rotOffset, scaleFactor, color);
+						}
+						else
+						{
+							Vector3 pos = t->position;
+							EffectAPI::PlayEffectAtPoint(world, effect, pos, lifeTime, color, scaleFactor);
+						}
+					};
+					break;
+				}
 
                 default:
                     break;
             }
 
-            float time = event.value("frame", 0.0f);
+			if (func)
+			{
+				float time = event.value("frame", 0.0f);
 
-            anim.SetEvent(func, time);
+				anim.SetEvent(func, time);
+
+#if _DEBUG
+				OutputDebugStringA(("ModelImporter: アニメーションイベントを登録しました。\n 名前：" + name + "\n タイプ：" + typeName + "\n 再生フレーム：" + std::to_string(time)  + "\n").c_str());
+#endif
+			}
 
             OutputDebugStringA("AnimEvent");
         }

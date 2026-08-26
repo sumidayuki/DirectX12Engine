@@ -39,4 +39,6 @@ public:
 	Vector4(const Vector3& vector, float w);
 
 	Vector4(const Color& color);
+
+	static Vector4 Lerp(const Vector4& a, const Vector4& b, float t);
 };

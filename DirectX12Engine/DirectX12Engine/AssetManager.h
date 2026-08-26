@@ -5,6 +5,7 @@ enum class AssetType
 	Texture,
 	Model,
 	Audio,
+	Effect
 };
 
 // aiNodeの代替。エンティティ階層を表します。
@@ -35,10 +36,12 @@ private:
 	TextureImporter m_texImp;
 	ModelImporter m_modImp;
 	AudioImporter m_audImp;
+	EffectImporter m_effImp;
 
 	std::unordered_map<std::wstring, ComPtr<Texture2D>> m_textureCache;
 	std::unordered_map<std::wstring, ModelData*> m_modelCache;
 	std::unordered_map<std::wstring, AudioClip*> m_audioCache;
+	std::unordered_map<std::wstring, Effect*> m_effectCache;
 
 private:
 	AssetManager();
@@ -114,20 +117,27 @@ inline T* AssetManager::GetAsset(AssetType type, const std::wstring& path)
 		{
 			return (T*)m_textureCache[path].Get();
 		}
+		break;
 
 	case AssetType::Model:
 		if (m_modelCache.count(path))
 		{
 			return (T*)m_modelCache[path];
 		}
+		break;
 
 	case AssetType::Audio:
 		if (m_audioCache.count(path))
 		{
 			return (T*)m_audioCache[path];
 		}
+		break;
 
-	default:
+	case AssetType::Effect:
+		if (m_effectCache.count(path))
+		{
+			return (T*)m_effectCache[path];
+		}
 		break;
 	}
 

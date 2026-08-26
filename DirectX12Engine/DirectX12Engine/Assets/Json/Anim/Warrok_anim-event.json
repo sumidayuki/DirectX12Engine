@@ -21,11 +21,20 @@
     },
     "Attack_02": {
         "events": [
-            {
-                "type": "play-se",
-                "name": "Warrok/se-jump",
-                "frame": 100
-            }
+			{
+				"type": "play-se",
+				"name": "Warrok/se-jump",
+				"frame": 100
+			},
+			{
+				"type": "play-effect",
+				"name": "effect_warrok-attack_jump-impact-00",
+				"bone": "mixamorig:Hips",
+				"socketSpace": "target",
+				"posOffset": [ 0, -100, 0 ],
+				"scaleFactor": 100,
+				"frame":  100
+			}
         ]
     }
 

@@ -50,3 +50,14 @@ Vector4::Vector4(const Color& color)
 	, w(color.a)
 {
 }
+
+Vector4 Vector4::Lerp(const Vector4& a, const Vector4& b, float t)
+{
+    return Vector4
+	(
+		Mathf::Lerp(a.x, b.x, t),
+		Mathf::Lerp(a.y, b.y, t),
+		Mathf::Lerp(a.z, b.z, t),
+		Mathf::Lerp(a.w, b.w, t)
+	);
+}

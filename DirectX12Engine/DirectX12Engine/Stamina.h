@@ -2,7 +2,7 @@
 
 struct Stamina : IComponentData
 {
-	const char* barName;		// スタミナバーの名前
+	std::string barName;		// スタミナバーの名前
 	float value = 100;			// スタミナの現在値
 	float maxValue = 100;		// スタミナの最大値
 	float timer = 0.0f;			// スタミナが減少してからの経過時間

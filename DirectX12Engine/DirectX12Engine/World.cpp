@@ -24,7 +24,6 @@ void World::Clear()
 	m_allCameras.clear();
 	m_entityNames.clear();
 	m_systems.clear();
-	m_transformSystem = nullptr;
 	m_cameraSystem = nullptr;
 }
 
@@ -76,7 +75,7 @@ Entity World::CreateWithLight(const LightType& type, const Color& color, const f
 
 	// ライトの向きをTransformの回転で制御する
 	Transform* lightTransform = GetComponent<Transform>(entity);
-	TransformSystem::GetInstance()->SetParent(*lightTransform, parent);
+	TransformAPI::SetParent(*lightTransform, parent);
 	lightTransform->position = pos;
 	lightTransform->rotation = rot;
 
@@ -279,10 +278,9 @@ Entity World::CreateWithSprite(Sprite* sprite, Transform* parent, const Vector3&
 	SpriteAPI::SetSprite(renderer, sprite);
 	AddComponent<SpriteRenderer>(entity, *renderer);
 
-	TransformSystem* transformSystem = GetSystem<TransformSystem>();
 	Transform* transform = GetComponent<Transform>(entity);
-	transformSystem->SetLocalPosition(*transform, localPosition);
-	transformSystem->SetLocalRotation(*transform, localRotation);
+	TransformAPI::SetLocalPosition(*transform, localPosition);
+	TransformAPI::SetLocalRotation(*transform, localRotation);
 
 	return entity;
 }
@@ -302,10 +300,9 @@ Entity World::CreateCamera2D(float viewWidth, float viewHeight, const Vector3& l
 	camera->farClipPlane = 1000.0f;
 	camera->viewportRect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
 
-	TransformSystem* transformSystem = GetSystem<TransformSystem>();
 	Transform* transform = GetComponent<Transform>(entity);
-	transformSystem->SetLocalPosition(*transform, localPosition);
-	transformSystem->SetLocalRotation(*transform, localRotation);
+	TransformAPI::SetLocalPosition(*transform, localPosition);
+	TransformAPI::SetLocalRotation(*transform, localRotation);
 
 	m_allCameras.push_back(camera);
 	m_allCameraEntities.push_back(entity);
@@ -333,10 +330,9 @@ Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlan
 	camera->backgroundColor = color;		// 背景色
 	camera->viewportRect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
 
-	TransformSystem* transformSystem = GetSystem<TransformSystem>();
 	Transform* transform = GetComponent<Transform>(entity);
-	transformSystem->SetLocalPosition(*transform, localPosition);
-	transformSystem->SetLocalRotation(*transform, localRotation);
+	TransformAPI::SetLocalPosition(*transform, localPosition);
+	TransformAPI::SetLocalRotation(*transform, localRotation);
 
 	m_allCameras.push_back(camera);
 	m_allCameraEntities.push_back(entity);
@@ -344,15 +340,31 @@ Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlan
 	return entity;
 }
 
+void World::AddOneShotEntity(const std::string& name, Entity entity)
+{
+	m_oneShotEntities[HashString32(name.c_str())] = entity;
+}
+
+Entity World::GetOneShotEntity(const std::string& name) const
+{
+	uint32_t hash = HashString32(name.c_str());
+
+	if (m_oneShotEntities.contains(hash))
+	{
+		if (IsAlive(m_oneShotEntities.at(hash)))
+		{
+			return m_oneShotEntities.at(hash);
+		}
+	}
+	
+	return INVALID_ENTITY;
+}
+
 void World::DestroyEntity(Entity entity)
 {
 	if (entity == INVALID_ENTITY || !m_em.IsAlive(entity)) return;
 
-	// TransformSystemに通知して階層関係をクリーンアップ（子の再帰削除もここで行われる）
-	if (m_transformSystem)
-	{
-		m_transformSystem->OnEntityDestroyed(*this, entity);
-	}
+	TransformAPI::OnEntityDestroyed(*this, entity);
 
 	m_entityNames.erase(entity.name);
 	m_am.DestroyEntity(entity);
@@ -374,13 +386,13 @@ bool World::Load(World& world)
 	world.AddSystem(std::make_unique<AnimationSystem>());
 	world.AddSystem(std::make_unique<BoneSocketSystem>());
 	world.AddSystem(std::make_unique<TransformSystem>());
-	world.AddSystem(std::make_unique<CollisionSystem>());
+	world.AddSystem(std::make_unique<PhysicsSimulationSystem>());
 	world.AddSystem(std::make_unique<SkinnedMeshRendererSystem>());
+	world.AddSystem(std::make_unique<EffectSystem>());
 	world.AddSystem(std::make_unique<InputSystem>());
 	world.AddSystem(std::make_unique<ProjectileSystem>());
 	world.AddSystem(std::make_unique<AIAgentSystem>());
 	world.AddSystem(std::make_unique<HPSystem>());
-	world.AddSystem(std::make_unique<PhysicsSystem>());
 	world.AddSystem(std::make_unique<UILayoutSystem>());
 	world.AddSystem(std::make_unique<UICanvasSystem>());
 	world.AddSystem(std::make_unique<UIEventSystem>());
@@ -388,11 +400,8 @@ bool World::Load(World& world)
 	world.AddSystem(std::make_unique<UISliderSystem>());
 	world.AddSystem(std::make_unique<AudioSystem>());
 
-	TransformSystem::CreateSingleton();
 	AIAgentSystem::CreateSingleton();
 	UIManager::CreateSingleton();
-	m_transformSystem = TransformSystem::GetInstance();
-
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/White.png");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/white.png");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/DefaultNormalMap.jpg");
@@ -411,7 +420,6 @@ bool World::Load(World& world)
 
 bool World::Unload(World& world)
 {
-	TransformSystem::DestroySingleton();
 	AIAgentSystem::DestroySingleton();
 	UIManager::DestroySingleton();
 
@@ -421,11 +429,18 @@ bool World::Unload(World& world)
 	m_allRootEntities.clear();
 	m_entityNames.clear();
 	m_systems.clear();
-	m_transformSystem = nullptr;
 	m_cameraSystem = nullptr;
 
 	m_am.Clear();
 	m_em.Clear();
+
+	for (auto& sys : m_systems)
+	{
+		if (!sys->Load(world))
+		{
+			return false;
+		}
+	}
 
 	return true;
 }

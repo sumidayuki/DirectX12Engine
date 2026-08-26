@@ -8,50 +8,96 @@ void BoneSocketSystem::Start(World& world)
 
 void BoneSocketSystem::Update(World& world)
 {
-    View<BoneSocket, Transform> view(world);
+	View<BoneSocket, Transform> view(world);
 
-    for (auto [entity, socket, transform] : view)
-    {
-        if (socket.targetEntity == INVALID_ENTITY) continue;
+	for (auto [entity, socket, transform] : view)
+	{
+		if (socket.targetEntity == INVALID_ENTITY)
+		{
+			continue;
+		}
 
-        // 対象のAnimatorを取得
-        Animator* targetAnimator = world.GetComponent<Animator>(socket.targetEntity);
-        if (!targetAnimator || !targetAnimator->skeleton) continue;
+		// Animator
+		Animator* targetAnimator = world.GetComponent<Animator>(socket.targetEntity);
+		if (!targetAnimator || !targetAnimator->skeleton)
+		{
+			continue;
+		}
 
-        // ボーンIDを検索（キャッシュ推奨だがここでは検索）
-        const auto& boneInfoMap = targetAnimator->skeleton->GetBoneInfoMap();
-        auto it = boneInfoMap.find(socket.targetBoneName);
+		// Target Transform
+		Transform* targetTransform = world.GetComponent<Transform>(socket.targetEntity);
+		if (!targetTransform)
+		{
+			continue;
+		}
 
-        if (it != boneInfoMap.end())
-        {
-            int boneID = it->second.id;
+		// Bone検索
+		const auto& boneInfoMap = targetAnimator->skeleton->GetBoneInfoMap();
 
-            // AnimationSystemで計算済みの行列を取得！
-            if (boneID < targetAnimator->socketGlobalMatrices.size())
-            {
-                Matrix4x4 boneGlobalTransform = targetAnimator->socketGlobalMatrices[boneID];
+		auto it = boneInfoMap.find(socket.targetBoneName);
+		if (it == boneInfoMap.end())
+		{
+			continue;
+		}
 
-                // 親（キャラクター）のワールド行列を掛けてワールド座標にする
-                Transform* parentTransform = world.GetComponent<Transform>(socket.targetEntity);
-                Matrix4x4 parentWorldMatrix = parentTransform->localToWorldMatrix;
+		const int boneID = it->second.id;
+		if (boneID < 0 || boneID >= targetAnimator->socketGlobalMatrices.size())
+		{
+			continue;
+		}
 
-                // 最終的なワールド行列
-                Matrix4x4 finalWorldMatrix = boneGlobalTransform * parentWorldMatrix;
+		// BoneのWorld Matrixを作成
+		const Matrix4x4& boneGlobalTransform = targetAnimator->socketGlobalMatrices[boneID];
 
-                // Transformに適用（Decomposeして代入）
-                Vector3 scale, pos;
-                Quaternion rot;
-                finalWorldMatrix.Decompose(scale, rot, pos);
+		const Matrix4x4& targetWorldMatrix = targetTransform->localToWorldMatrix;
 
-                // オフセット適用（簡易実装）
-                transform.position = pos + socket.posOffset;
-                transform.rotation = rot * socket.rotOffset;
-                transform.scale = scale; // 必要なら
+		Matrix4x4 finalWorldMatrix = boneGlobalTransform * targetWorldMatrix;
 
-                // 変更フラグを立てる
-                transform.dirty = true;
-                transform.hasChanged = true;
-            }
-        }
-    }
+		// Bone World Matrixを分解
+		Vector3 boneScale;
+		Vector3 bonePosition;
+		Quaternion boneRotation;
+
+		finalWorldMatrix.Decompose(boneScale, boneRotation, bonePosition);
+
+		// Offsetの基準となるRotation
+		Quaternion baseRotation;
+
+		switch (socket.offsetSpace)
+		{
+		case BoneSocketSpace::Bone:
+			// ボーンの向きを基準にする
+			baseRotation = boneRotation;
+
+			break;
+
+		case BoneSocketSpace::Target:
+			// キャラクターなどtargetEntityの
+			// 向きを基準にする
+			baseRotation = targetTransform->rotation;
+
+			break;
+
+		default:
+			baseRotation = boneRotation;
+
+			break;
+		}
+
+		// Position
+		Vector3 worldOffset = baseRotation * socket.posOffset;
+		transform.position = bonePosition + worldOffset;
+
+		// Rotation
+		transform.rotation = baseRotation * socket.rotOffset;
+
+		// Scale
+		if (socket.followScale)
+		{
+			transform.scale = boneScale * socket.scaleOffset;
+		}
+
+		transform.dirty = true;
+		transform.hasChanged = true;
+	}
 }

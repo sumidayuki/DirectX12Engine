@@ -53,17 +53,26 @@ void AIStateMachineSystem::Update(World& world)
 					}
 				}
 
-				if (shouldTransition)
+				if (!shouldTransition)
 				{
-					if (aiState.currentStateID != transition.nextState)
-					{
-						aiState.stateTime = 0.0f;
-					}
-
-					aiState.currentStateID = transition.nextState;
-					moveInput.inputKey = transition.input;
-					break; // Å‰‚ÉğŒ‚ğ–‚½‚·‘JˆÚ‚ªŒ©‚Â‚©‚Á‚½‚çó‘Ô‘JˆÚ‚ğŠm’è‚³‚¹‚Äƒ‹[ƒv‚ğ”²‚¯‚é
+					continue;
 				}
+
+				if (aiState.currentStateID != transition.nextState)
+				{
+					aiState.stateTime = 0.0f;
+				}
+
+				aiState.currentStateID = transition.nextState;
+
+				if (transition.input != InputKey::None)
+				{
+					moveInput.inputKey = transition.input;
+
+					moveInput.timer = 0.0f;
+				}
+
+				break;
 			}
 		}
 

@@ -291,7 +291,7 @@ void SpriteRendererSystem::Draw(World& world)
 
 
 		// ワールド変換行列を取得
-		const Matrix4x4& localToWorldMatrix = world.GetSystem<TransformSystem>()->GetLocalToWorldMatrix(transform);
+		const Matrix4x4& localToWorldMatrix = TransformAPI::GetLocalToWorldMatrix(transform);
 
 		// 定数バッファに書き込む
 		ConstantBufferLayout* lockedPointer = (ConstantBufferLayout*)spriteRenderer.constantBuffer->LockBufferForWrite();

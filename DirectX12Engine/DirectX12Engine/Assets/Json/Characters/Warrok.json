@@ -1,115 +1,219 @@
 {
-    "status": {
-        "isPlayer": false,
-        "maxHealth": 500.0,
-        "miaiMoveSpeed": 100.0,
-        "approachMoveSpeed": 300.0,
-        "hitBoxX": 90.0,
-        "hitBoxY": 240.0,
-        "hitBoxZ": 90.0,
-        "shieldMaxHealth": 100.0,
-        "shieldRegenRate": 10.0,
-        "aiCurrentState": "Miai",
-        "aiFileName": "WarrokAI",
-        "AttackCoolDownTime": 15.0,
-        "AttackCoolDownTimer": 3.0,
-        "JumpAttackCoolDownTime": 30.0,
-        "JumpAttackCoolDownTimer": 15.0,
-        "RecoveryTime": 5.0,
-        "RecoveryTimer": 0.0
-    },
-    "colliders": [
-        {
-            "name": "mixamorig:LeftHand",
-            "type": "Sphere",
-            "params": {
-                "radius": 30.0,
-                "offsetX": 0.0,
-                "offsetY": 0.0,
-                "offsetZ": 0.0,
-                "isTrigger": true,
-                "isEnabled": false,
-                "collisionMask": "Player"
-            }
-        },
-        {
-            "name": "mixamorig:RightHand",
-            "type": "Sphere",
-            "params": {
-                "radius": 30.0,
-                "offsetX": 0.0,
-                "offsetY": 0.0,
-                "offsetZ": 0.0,
-                "isTrigger": true,
-                "isEnabled": false,
-                "collisionMask": "Player"
-            }
-        },
-        {
-            "name": "mixamorig:Hips",
-            "type": "Sphere",
-            "params": {
-                "radius": 100.0,
-                "offsetX": 0.0,
-                "offsetY": 0.0,
-                "offsetZ": 0.0,
-                "isTrigger": true,
-                "isEnabled": false,
-                "collisionMask": "Player"
-            }
-        }
-    ],
-    "moves": [
-        {
-            "moveId": "attack-1-left",
-            "inputKey": "Attack1",
-            "duration": 1.0,
-            "isStarter": true,
-            "nextPossibleMoves": [ "attack-1-right" ],
-            "type": "Attack",
-            "params": {
-                "animationName": "Attack1_Left",
-                "damage": 10,
-                "inputStart": 0.8,
-                "inputEnd": 1,
-                "hitStartTime": 0.25,
-                "hitEndTime": 0.5,
-                "colliderNames": [ "mixamorig:LeftHand" ]
-            }
-        },
-        {
-            "moveId": "attack-1-right",
-            "inputKey": "Attack1",
-            "duration": 1.0,
-            "isStarter": false,
-            "nextPossibleMoves": [ "attack-1-left" ],
-            "type": "Attack",
-            "params": {
-                "animationName": "Attack1_Right",
-                "damage": 15,
-                "inputStart": 0.8,
-                "inputEnd": 1,
-                "hitStartTime": 0.25,
-                "hitEndTime": 0.5,
-                "colliderNames": [ "mixamorig:RightHand" ]
-            }
-        },
-        {
-            "moveId": "attack-jump",
-            "inputKey": "Attack2",
-            "duration": 3,
-            "isStarter": true,
-            "nextPossibleMoves": [ "attack-jump" ],
-            "type": "Attack",
-            "params": {
-                "animationName": "Attack_02",
-                "damage": 30,
-                "inputStart": 0.8,
-                "inputEnd": 1,
-                "hitStartTime": 0.5,
-                "hitEndTime": 0.6,
-                "colliderNames": [ "mixamorig:LeftHand", "mixamorig:RightHand", "mixamorig:Hips" ]
-            }
-        }
-    ]
+	"status": {
+		"isPlayer": false,
+		"maxHealth": 1000.0,
+		"miaiMoveSpeed": 100.0,
+		"approachMoveSpeed": 400.0,
+		"hitBoxX": 90.0,
+		"hitBoxY": 240.0,
+		"hitBoxZ": 90.0,
+		"shieldMaxHealth": 100.0,
+		"shieldRegenRate": 10.0,
+		"aiCurrentState": "Miai",
+		"aiFileName": "WarrokAI",
+		"AttackCoolDownTime": 15.0,
+		"AttackCoolDownTimer": 3.0,
+		"JumpAttackCoolDownTime": 30.0,
+		"JumpAttackCoolDownTimer": 15.0,
+		"RecoveryTime": 5.0,
+		"RecoveryTimer": 0.0
+	},
+	"colliders": [
+		{
+			"name": "mixamorig:LeftHand",
+			"type": "Sphere",
+			"params": {
+				"radius": 30.0,
+				"offsetX": 0.0,
+				"offsetY": 0.0,
+				"offsetZ": 0.0,
+				"isTrigger": true,
+				"isEnabled": false,
+				"collisionMask": "Player"
+			}
+		},
+		{
+			"name": "mixamorig:LeftArm",
+			"type": "Sphere",
+			"params": {
+				"radius": 30.0,
+				"offsetX": 0.0,
+				"offsetY": 0.0,
+				"offsetZ": 0.0,
+				"isTrigger": true,
+				"isEnabled": false,
+				"collisionMask": "Player"
+			}
+		},
+		{
+			"name": "mixamorig:LeftForeArm",
+			"type": "Sphere",
+			"params": {
+				"radius": 30.0,
+				"offsetX": 0.0,
+				"offsetY": 0.0,
+				"offsetZ": 0.0,
+				"isTrigger": true,
+				"isEnabled": false,
+				"collisionMask": "Player"
+			}
+		},
+		{
+			"name": "mixamorig:RightHand",
+			"type": "Sphere",
+			"params": {
+				"radius": 30.0,
+				"offsetX": 0.0,
+				"offsetY": 0.0,
+				"offsetZ": 0.0,
+				"isTrigger": true,
+				"isEnabled": false,
+				"collisionMask": "Player"
+			}
+		},
+		{
+			"name": "mixamorig:RightArm",
+			"type": "Sphere",
+			"params": {
+				"radius": 30.0,
+				"offsetX": 0.0,
+				"offsetY": 0.0,
+				"offsetZ": 0.0,
+				"isTrigger": true,
+				"isEnabled": false,
+				"collisionMask": "Player"
+			}
+		},
+		{
+			"name": "mixamorig:RightForeArm",
+			"type": "Sphere",
+			"params": {
+				"radius": 30.0,
+				"offsetX": 0.0,
+				"offsetY": 0.0,
+				"offsetZ": 0.0,
+				"isTrigger": true,
+				"isEnabled": false,
+				"collisionMask": "Player"
+			}
+		},
+		{
+			"name": "mixamorig:Hips",
+			"type": "Sphere",
+			"params": {
+				"radius": 100.0,
+				"offsetX": 0.0,
+				"offsetY": 0.0,
+				"offsetZ": 0.0,
+				"isTrigger": true,
+				"isEnabled": false,
+				"collisionMask": "Player"
+			}
+		}
+	],
+	"moves": [
+		{
+			"moveId": "idle",
+			"type": "Idle",
+			"transitions": [
+				{
+					"target": "attack-1-left",
+					"type": "InputPressed",
+					"inputKey": "Attack1"
+				},
+				{
+					"target": "attack-jump",
+					"type": "InputPressed",
+					"inputKey": "Attack2"
+				}
+			]
+		},
+		{
+			"moveId": "attack-1-left",
+			"duration": 1.0,
+			"type": "Attack",
+			"params": {
+				"animationName": "Attack1_Left",
+				"damage": 10,
+				"hitStartTime": 0.25,
+				"hitEndTime": 0.5,
+				"colliderNames": [
+					"mixamorig:LeftHand",
+					"mixamorig:LeftArm",
+					"mixamorig:LeftForeArm"
+				]
+			},
+			"transitions": [
+				{
+					"target": "attack-1-right",
+					"type": "InputPressed",
+					"inputKey": "Attack1",
+					"start": 0.8,
+					"end": 1.0
+				},
+				{
+					"target": "idle",
+					"type": "MoveEnd"
+				}
+			]
+		},
+		{
+			"moveId": "attack-1-right",
+			"duration": 1.0,
+			"type": "Attack",
+			"params": {
+				"animationName": "Attack1_Right",
+				"damage": 15,
+				"hitStartTime": 0.25,
+				"hitEndTime": 0.5,
+				"colliderNames": [
+					"mixamorig:RightHand",
+					"mixamorig:RightArm",
+					"mixamorig:RightForeArm"
+				]
+			},
+			"transitions": [
+				{
+					"target": "attack-1-left",
+					"type": "InputPressed",
+					"inputKey": "Attack1",
+					"start": 0.8,
+					"end": 1.0
+				},
+				{
+					"target": "idle",
+					"type": "MoveEnd"
+				}
+			]
+		},
+		{
+			"moveId": "attack-jump",
+			"duration": 3.0,
+			"type": "Attack",
+			"params": {
+				"animationName": "Attack_02",
+				"damage": 30,
+				"hitStartTime": 0.5,
+				"hitEndTime": 0.6,
+				"colliderNames": [
+					"mixamorig:LeftHand",
+					"mixamorig:RightHand",
+					"mixamorig:Hips"
+				]
+			},
+			"transitions": [
+				{
+					"target": "attack-jump",
+					"type": "InputPressed",
+					"inputKey": "Attack2",
+					"start": 0.8,
+					"end": 1.0
+				},
+				{
+					"target": "idle",
+					"type": "MoveEnd"
+				}
+			]
+		}
+	]
 }

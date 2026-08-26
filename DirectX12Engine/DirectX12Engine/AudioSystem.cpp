@@ -66,22 +66,19 @@ void AudioSystem::Update(World& world)
 			}
 			else
 			{
-				Vector3 srcPos = transform.position;
-				if (transform.parent != INVALID_ENTITY)
-				{
-					srcPos = Vector3(
-						transform.localToWorldMatrix.m[3][0],
-						transform.localToWorldMatrix.m[3][1],
-						transform.localToWorldMatrix.m[3][2]);
-				}
+				Vector3 srcPos = TransformAPI::GetPosition(transform);
 
 				float dist = (listenerTf.position - srcPos).Magnitude();
 
 				float atten = 1.0f;
 				if (dist >= source.maxDistance)
+				{
 					atten = 0.0f;
+				}
 				else if (dist > source.minDistance)
+				{
 					atten = 1.0f - (dist - source.minDistance) / (source.maxDistance - source.minDistance);
+				}
 
 				float blended = Mathf::Lerp(1.0f, atten, source.spatialBlend);
 				float vol = source.mute ? 0.0f : source.volume * blended;

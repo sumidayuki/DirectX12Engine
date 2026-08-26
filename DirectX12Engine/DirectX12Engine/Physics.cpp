@@ -21,7 +21,7 @@ bool Physics::Raycast(World& world, const Ray& ray, RaycastHit& hit, float maxDi
         if (!mesh) continue;
     
         // ワールド行列を取得
-        const Matrix4x4& worldMatrix = TransformSystem::GetInstance()->GetLocalToWorldMatrix(transform);
+        const Matrix4x4& worldMatrix = TransformAPI::GetLocalToWorldMatrix(transform);
     
         // 頂点配列とインデックス配列を直接取得
         const std::vector<Mesh::Vertex>& vertices = mesh->GetMutableVertices();

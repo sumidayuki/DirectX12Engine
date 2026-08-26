@@ -1,48 +1,89 @@
 #pragma once
 #include "InputBind.h"
 
+// Moveの種類
 enum class MoveType
 {
-    Attack,
-    Guard,
-    Rolling
+	Idle,
+	Attack,
+	Guard,
+	Rolling
 };
 
+// Moveの遷移条件
+enum class MoveTransitionType
+{
+	InputPressed,
+	InputReleased,
+	MoveEnd
+};
+
+// Move間の遷移情報
+struct MoveTransition
+{
+	uint32_t targetMoveId = 0;
+
+	MoveTransitionType type = MoveTransitionType::InputPressed;
+
+	InputKey inputKey = InputKey::None;
+
+	// 現在Moveの進行度(0～1)に対する遷移可能範囲
+	float start = 0.0f;
+	float end = 1.0f;
+};
+
+// Idle
+struct IdleParams
+{
+};
+
+// Attack
 struct AttackParams
 {
-    std::string animationName;
-    float damage = 0.0f;
-    float inputStart = 0.0f;
-    float inputEnd = 0.0f;
-    float hitStartTime = 0.0f;
-    float hitEndTime = 0.0f;
-    std::vector<std::string> colliderNames;
+	std::string animationName;
+
+	float damage = 0.0f;
+
+	float hitStartTime = 0.0f;
+	float hitEndTime = 0.0f;
+
+	std::vector<std::string> colliderNames;
 };
 
+// Guard
 struct GuardParams
 {
 };
 
+// Rolling
 struct RollingParams
 {
-    std::string animationName;
-    float moveSpeed;                            // 移動速度
-    float invincibleStart;                      // 無敵開始時間（0~1正規化）
-    float invincibleEnd;                        // 無敵終了時間（0~1正規化）
+	std::string animationName;
+
+	float moveSpeed = 0.0f;
+
+	float invincibleStart = 0.0f;
+	float invincibleEnd = 0.0f;
 };
 
+// Moveデータ
 struct MoveData
 {
-	uint32_t moveId = 0;                                                // ユニークID
-	std::string textName;                                               // ガイドのテキストファイル名
-	InputKey inputKey = InputKey::None;                                 // 必要な入力キー
-	MoveType type = MoveType::Attack;                                   // ムーブの種類
+	uint32_t moveId = 0;
 
-    float duration = 0.0f;
-	bool isStarter = false;                                             // 始動技判定フラグ
-	float staminaCost = 0.0f;                                           // スタミナ消費量
+	std::string textName;
 
-	std::variant<AttackParams, GuardParams, RollingParams> params;      // ムーブの種類に応じたパラメータ
+	MoveType type = MoveType::Idle;
 
-	std::vector<uint32_t> nextPossibleMoves;                            // 次ムーブIDリスト
+	float duration = 0.0f;
+	float staminaCost = 0.0f;
+
+	std::variant<
+		IdleParams,
+		AttackParams,
+		GuardParams,
+		RollingParams
+	> params;
+
+	std::vector<MoveTransition> transitions;
 };

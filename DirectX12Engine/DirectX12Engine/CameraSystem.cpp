@@ -4,7 +4,7 @@
 
 const Matrix4x4& CameraSystem::GetWorldToCameraMatrix(Transform& transform, World& world) const
 {
-	return world.GetSystem<TransformSystem>()->GetWorldToLocalMatrix(transform);
+	return TransformAPI::GetWorldToLocalMatrix(transform);
 }
 
 const Matrix4x4& CameraSystem::GetProjectionMatrix(Camera& camera) const

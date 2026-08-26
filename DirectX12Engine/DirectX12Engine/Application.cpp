@@ -81,6 +81,9 @@ void Application::WorkerThreadEntryPoint()
 	AudioManager::CreateSingleton();
 	AudioManager::GetInstance()->Initialize();
 
+	EffectManager::CreateSingleton();
+	EffectManager::GetInstance()->Initialize();
+
 	AIRuleRegistry::CreateSingleton();
 
     // スプライトレンダラーの初期化
@@ -178,6 +181,12 @@ void Application::WorkerThreadEntryPoint()
     AssetManager::DestroySingleton();
 
 	BindlessHeap::DestroySingleton();
+
+	AudioManager::GetInstance()->Shutdown();
+	AudioManager::DestroySingleton();
+
+	EffectManager::GetInstance()->ShutDown();
+	EffectManager::DestroySingleton();
 
 	AIRuleRegistry::DestroySingleton();
 

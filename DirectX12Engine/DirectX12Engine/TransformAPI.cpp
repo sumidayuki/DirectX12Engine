@@ -1,0 +1,374 @@
+#include "TransformAPI.h"
+namespace TransformAPI
+{
+	const Matrix4x4& GetLocalToWorldMatrix(Transform& transform)
+	{
+		return transform.localToWorldMatrix;
+	}
+
+	const Matrix4x4& GetWorldToLocalMatrix(Transform& transform)
+	{
+		if (transform.inverseDirty)
+		{
+			transform.worldToLocalMatrix = transform.localToWorldMatrix.Inverse();
+			transform.inverseDirty = false;
+		}
+		return transform.worldToLocalMatrix;
+	}
+
+	Vector3 TransformDirection(Transform& transform, const Vector3& direction)
+	{
+		const Matrix4x4& m = GetLocalToWorldMatrix(transform);
+		Vector3 result
+		(
+			direction.x * m._11 + direction.y * m._21 + direction.z * m._31,
+			direction.x * m._12 + direction.y * m._22 + direction.z * m._32,
+			direction.x * m._13 + direction.y * m._23 + direction.z * m._33
+		);
+		return result * (direction.Magnitude() / result.Magnitude());
+	}
+
+	Vector3 TransformVector(Transform& transform, const Vector3& vector)
+	{
+		const Matrix4x4& m = GetLocalToWorldMatrix(transform);
+		return Vector3
+		(
+			vector.x * m._11 + vector.y * m._21 + vector.z * m._31,
+			vector.x * m._12 + vector.y * m._22 + vector.z * m._32,
+			vector.x * m._13 + vector.y * m._23 + vector.z * m._33
+		);
+	}
+
+	Vector3 TransformPoint(Transform& transform, const Vector3& position)
+	{
+		const Matrix4x4& m = GetLocalToWorldMatrix(transform);
+		return Vector3
+		(
+			position.x * m._11 + position.y * m._21 + position.z * m._31 + 1.0f * m._41,
+			position.x * m._12 + position.y * m._22 + position.z * m._32 + 1.0f * m._42,
+			position.x * m._13 + position.y * m._23 + position.z * m._33 + 1.0f * m._43
+		);
+	}
+
+	Vector3 InverseTransformDirection(Transform& transform, const Vector3& direction)
+	{
+		const Matrix4x4& m = GetWorldToLocalMatrix(transform);
+		Vector3 result
+		(
+			direction.x * m._11 + direction.y * m._21 + direction.z * m._31,
+			direction.x * m._12 + direction.y * m._22 + direction.z * m._32,
+			direction.x * m._13 + direction.y * m._23 + direction.z * m._33
+		);
+		return result * (direction.Magnitude() / result.Magnitude());
+	}
+
+	Vector3 InverseTransformVector(Transform& transform, const Vector3& vector)
+	{
+		const Matrix4x4& m = GetWorldToLocalMatrix(transform);
+		return Vector3
+		(
+			vector.x * m._11 + vector.y * m._21 + vector.z * m._31,
+			vector.x * m._12 + vector.y * m._22 + vector.z * m._32,
+			vector.x * m._13 + vector.y * m._23 + vector.z * m._33
+		);
+	}
+
+	Vector3 InverseTransformPoint(Transform& transform, const Vector3& position)
+	{
+		const Matrix4x4& m = GetWorldToLocalMatrix(transform);
+		return Vector3
+		(
+			position.x * m._11 + position.y * m._21 + position.z * m._31 + 1.0f * m._41,
+			position.x * m._12 + position.y * m._22 + position.z * m._32 + 1.0f * m._42,
+			position.x * m._13 + position.y * m._23 + position.z * m._33 + 1.0f * m._43
+		);
+	}
+
+	void SetParent(Transform& transform, Transform* parent)
+	{
+		if (transform.parent == (parent ? parent->entity : INVALID_ENTITY)) return;
+
+		// Unlink from old parent
+		UnsetParent(transform);
+
+		World& world = SceneManager::GetCurrentScene()->GetWorld();
+
+		if (parent)
+		{
+			// Add to new parent's list (insert at head)
+			transform.parent = parent->entity;
+			transform.nextSibling = parent->firstChild;
+			transform.prevSibling = INVALID_ENTITY;
+
+			if (parent->firstChild != INVALID_ENTITY)
+			{
+				Transform* oldFirst = world.GetComponent<Transform>(parent->firstChild);
+				if (oldFirst)
+				{
+					oldFirst->prevSibling = transform.entity;
+				}
+			}
+			parent->firstChild = transform.entity;
+
+			// Update Depth
+			transform.hierarchyDepth = parent->hierarchyDepth + 1;
+		}
+		else
+		{
+			transform.parent = INVALID_ENTITY;
+			transform.hierarchyDepth = 0;
+		}
+
+		transform.dirty = true;
+
+		// Note: We need to update children's depth too.
+		// This will be handled implicitly if we process dirty transforms correctly,
+		// or we should traverse here. For performance, we rely on Update.
+	}
+
+	void UnsetParent(Transform& transform)
+	{
+		if (transform.parent == INVALID_ENTITY) return;
+
+		World& world = SceneManager::GetCurrentScene()->GetWorld();
+		Transform* parent = world.GetComponent<Transform>(transform.parent);
+
+		if (parent)
+		{
+			// If head of list, move head
+			if (parent->firstChild == transform.entity)
+			{
+				parent->firstChild = transform.nextSibling;
+			}
+		}
+
+		// Relink siblings
+		if (transform.prevSibling != INVALID_ENTITY)
+		{
+			Transform* prev = world.GetComponent<Transform>(transform.prevSibling);
+			if (prev) prev->nextSibling = transform.nextSibling;
+		}
+		if (transform.nextSibling != INVALID_ENTITY)
+		{
+			Transform* next = world.GetComponent<Transform>(transform.nextSibling);
+			if (next) next->prevSibling = transform.prevSibling;
+		}
+
+		transform.parent = INVALID_ENTITY;
+		transform.nextSibling = INVALID_ENTITY;
+		transform.prevSibling = INVALID_ENTITY;
+		transform.hierarchyDepth = 0;
+
+		transform.dirty = true;
+	}
+
+	void OnEntityDestroyed(World& world, Entity entity)
+	{
+		Transform* transform = world.GetComponent<Transform>(entity);
+		if (!transform) return;
+
+		// 1. 子要素を収集（再帰削除のため）
+		// 直接リストを辿りながら削除すると構造が変化するため、先にIDを確保する
+		std::vector<Entity> children;
+		Entity current = transform->firstChild;
+		while (current != INVALID_ENTITY)
+		{
+			children.push_back(current);
+			Transform* childT = world.GetComponent<Transform>(current);
+			if (childT) current = childT->nextSibling;
+			else break;
+		}
+
+		// 2. 子要素を再帰的に削除
+		for (Entity child : children)
+		{
+			// World::DestroyEntityを呼ぶことで、再帰的にこの関数が呼ばれる
+			world.DestroyEntity(child);
+		}
+
+		// 3. 親子関係を解除（親から自分を取り除く）
+		UnsetParent(*transform);
+	}
+
+	Transform* GetRoot(Transform& transform)
+	{
+		World& world = SceneManager::GetCurrentScene()->GetWorld();
+		Transform* root = &transform;
+		while (root->parent != INVALID_ENTITY)
+		{
+			root = world.GetComponent<Transform>(root->parent);
+		}
+		return root;
+	}
+
+	int GetChildCount(Transform* transform)
+	{
+		int count = 0;
+		World& world = SceneManager::GetCurrentScene()->GetWorld();
+		Entity current = transform->firstChild;
+		while (current != INVALID_ENTITY)
+		{
+			count++;
+			Transform* t = world.GetComponent<Transform>(current);
+			if (!t) break; // Error check
+			current = t->nextSibling;
+		}
+		return count;
+	}
+
+	Transform* GetChild(Transform* transform, int index)
+	{
+		World& world = SceneManager::GetCurrentScene()->GetWorld();
+		Entity current = transform->firstChild;
+		int i = 0;
+		while (current != INVALID_ENTITY)
+		{
+			if (i == index)
+			{
+				return world.GetComponent<Transform>(current);
+			}
+			Transform* t = world.GetComponent<Transform>(current);
+			if (!t) break;
+			current = t->nextSibling;
+			i++;
+		}
+		return nullptr;
+	}
+
+	Transform* FindChild(Transform* transform, const std::string& name)
+	{
+		if (transform->entity.name == name) return transform;
+
+		World& world = SceneManager::GetCurrentScene()->GetWorld();
+		Entity current = transform->firstChild;
+
+		while (current != INVALID_ENTITY)
+		{
+			Transform* t = world.GetComponent<Transform>(current);
+			if (t)
+			{
+				Transform* found = FindChild(t, name);
+				if (found) return found;
+				current = t->nextSibling;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		return nullptr;
+	}
+
+	void SetLocalRotation(Transform& transform, const Quaternion& localRotation)
+	{
+		transform.rotation = localRotation;
+		transform.dirty = true;
+	}
+
+	void SetLocalPosition(Transform& transform, const Vector3& localPosition)
+	{
+		transform.position = localPosition;
+		transform.dirty = true;
+	}
+
+	void SetLocalPosition(Transform& transform, float x, float y, float z)
+	{
+		transform.position.x = x;
+		transform.position.y = y;
+		transform.position.z = z;
+		transform.dirty = true;
+	}
+
+	void RotateAround(Transform& transform, Vector3 point, Vector3 axis, float angle)
+	{
+		Quaternion rot = Quaternion::AngleAxis(angle, axis);
+		Vector3 dir = transform.position - point;
+		dir = rot * dir;
+		transform.position = point + dir;
+		transform.rotation = rot * transform.rotation;
+		transform.dirty = true;
+	}
+
+	Vector3 GetPosition(Transform& transform)
+	{
+		World& world = SceneManager::GetCurrentScene()->GetWorld();
+		if (transform.parent != INVALID_ENTITY)
+		{
+			return TransformPoint(*world.GetComponent<Transform>(transform.parent), transform.position);
+		}
+		else
+		{
+			return transform.position;
+		}
+	}
+
+	void Translate(Transform& transform, const Vector3& translation)
+	{
+		transform.position = transform.position + translation;
+		transform.dirty = true;
+	}
+
+	void Rotate(Transform& transform, const Vector3 axis, float angle)
+	{
+		const Quaternion q = Quaternion::AngleAxis(angle, axis);
+		transform.rotation = q * transform.rotation;
+		transform.dirty = true;
+	}
+
+	void UpdateLocalMatrix(Transform& transform)
+	{
+		transform.localMatrix.SetSRT(transform.scale, transform.rotation, transform.position);
+	}
+
+	void EvaluateImmediate(World& world, Transform& transform)
+	{
+		std::vector<Transform*> stack;
+		stack.reserve(16);
+		stack.push_back(&transform);
+
+		while (!stack.empty())
+		{
+			Transform* t = stack.back();
+			stack.pop_back();
+
+			UpdateLocalMatrix(*t);
+
+			if (t->parent != INVALID_ENTITY)
+			{
+				Transform* parent = world.GetComponent<Transform>(t->parent);
+				if (parent)
+				{
+					t->localToWorldMatrix = t->localMatrix * parent->localToWorldMatrix;
+					t->hierarchyDepth = parent->hierarchyDepth + 1;
+				}
+				else
+				{
+					t->localToWorldMatrix = t->localMatrix;
+					t->hierarchyDepth = 0;
+				}
+			}
+			else
+			{
+				t->localToWorldMatrix = t->localMatrix;
+				t->hierarchyDepth = 0;
+			}
+
+			t->dirty = false;
+			t->hasChanged = true;
+			t->inverseDirty = true;
+
+			// Add children to stack
+			Entity childEntity = t->firstChild;
+			while (childEntity != INVALID_ENTITY)
+			{
+				Transform* child = world.GetComponent<Transform>(childEntity);
+				if (child)
+				{
+					stack.push_back(child);
+				}
+				childEntity = child ? child->nextSibling : INVALID_ENTITY;
+			}
+		}
+	}
+}

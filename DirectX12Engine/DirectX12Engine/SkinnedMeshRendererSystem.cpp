@@ -85,7 +85,7 @@ void SkinnedMeshRendererSystem::Draw(World& world)
 
         if (!smr.animator)
         {
-            smr.animator = world.GetComponent<Animator>(TransformSystem::GetInstance()->GetRoot(transform)->entity);
+            smr.animator = world.GetComponent<Animator>(TransformAPI::GetRoot(transform)->entity);
         }
         if (!smr.animator) continue;
 

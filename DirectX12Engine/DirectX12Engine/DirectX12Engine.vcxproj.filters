@@ -28,15 +28,6 @@
     <Filter Include="Engine\ECS\System\CollisionSystem">
       <UniqueIdentifier>{fabdf4b6-80b2-4642-b12e-b9bdc87d3aed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\ECS\System\CollisionSystem\SpatialHashGrid">
-      <UniqueIdentifier>{8dde386a-8b75-4bcf-85e6-2e2b63300f02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\ECS\System\CollisionSystem\SpatialHashGrid\2D">
-      <UniqueIdentifier>{6ee0f1b6-e231-455d-a1fb-cd47c97e3a92}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\ECS\System\CollisionSystem\SpatialHashGrid\3D">
-      <UniqueIdentifier>{2270b63a-264b-4d95-81e4-de10fd08cd73}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\ECS\System\SkinnedMeshRendererSystem">
       <UniqueIdentifier>{823eb8d7-26bc-4c6e-989c-0312e2bf7760}</UniqueIdentifier>
     </Filter>
@@ -129,9 +120,6 @@
     </Filter>
     <Filter Include="Engine\ECS\Component\Damageable">
       <UniqueIdentifier>{730b6433-7123-43e1-84de-4e21c449f045}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\ECS\Component\BoneSocket\Camera">
-      <UniqueIdentifier>{2c63c779-9794-4947-bfe0-c1fced9dc95d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\ECS\World">
       <UniqueIdentifier>{1a58a290-9ca7-4c4c-9ce8-1124fc09e6e1}</UniqueIdentifier>
@@ -430,6 +418,36 @@
     <Filter Include="Game\Character\Registry">
       <UniqueIdentifier>{5f817933-08df-42f2-873a-02041bcf8d72}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\ECS\System\PhysicsSimulationSystem">
+      <UniqueIdentifier>{1b979d73-8c1c-4403-9332-9394e435b8ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Collision">
+      <UniqueIdentifier>{d94461f4-d5f1-4c7f-8033-5e835f6810fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\SpatialHashGrid">
+      <UniqueIdentifier>{8dde386a-8b75-4bcf-85e6-2e2b63300f02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\SpatialHashGrid\2D">
+      <UniqueIdentifier>{6ee0f1b6-e231-455d-a1fb-cd47c97e3a92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\SpatialHashGrid\3D">
+      <UniqueIdentifier>{2270b63a-264b-4d95-81e4-de10fd08cd73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource\Asset\Effect">
+      <UniqueIdentifier>{909cc1f2-bb6f-42aa-8c3a-614c5c3c0b33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource\AssetImporter\Effect">
+      <UniqueIdentifier>{fd687e73-4aa7-4bc5-8e18-7e945f23ce38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\System\EffectSystem">
+      <UniqueIdentifier>{b59551a1-b1f3-4fdf-bd76-54bbb6fa6da6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\Component\Effect">
+      <UniqueIdentifier>{3af8e34a-b4dc-4f9f-946c-68e6626541e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ECS\Component\Camera">
+      <UniqueIdentifier>{2c63c779-9794-4947-bfe0-c1fced9dc95d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -634,10 +652,10 @@
       <Filter>Engine\System\Physics</Filter>
     </ClCompile>
     <ClCompile Include="SpatialHashGrid2D.cpp">
-      <Filter>Engine\ECS\System\CollisionSystem\SpatialHashGrid\2D</Filter>
+      <Filter>Engine\System\SpatialHashGrid\2D</Filter>
     </ClCompile>
     <ClCompile Include="SpatialHashGrid.cpp">
-      <Filter>Engine\ECS\System\CollisionSystem\SpatialHashGrid\3D</Filter>
+      <Filter>Engine\System\SpatialHashGrid\3D</Filter>
     </ClCompile>
     <ClCompile Include="DebugManager.cpp">
       <Filter>Engine\System\Debug</Filter>
@@ -762,6 +780,36 @@
     <ClCompile Include="MoveSystem.cpp">
       <Filter>Game\Character\Combo\System</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsSimulationSystem.cpp">
+      <Filter>Engine\ECS\System\PhysicsSimulationSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionSolver.cpp">
+      <Filter>Engine\System\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsIntegrator.cpp">
+      <Filter>Engine\System\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="SpatialHashBroadPhase.cpp">
+      <Filter>Engine\System\SpatialHashGrid</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectSystem.cpp">
+      <Filter>Engine\ECS\System\EffectSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>Engine\Resource\Asset\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectAPI.cpp">
+      <Filter>Engine\ECS\System\EffectSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectImporter.cpp">
+      <Filter>Engine\Resource\AssetImporter\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectManager.cpp">
+      <Filter>Engine\Resource\Asset\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformAPI.cpp">
+      <Filter>Engine\ECS\System\TransformSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Keyboard.h">
@@ -861,7 +909,7 @@
       <Filter>Engine\ECS\System\TransformSystem</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Engine\ECS\Component\BoneSocket\Camera</Filter>
+      <Filter>Engine\ECS\Component\Camera</Filter>
     </ClInclude>
     <ClInclude Include="CameraSystem.h">
       <Filter>Engine\ECS\System\CameraSystem</Filter>
@@ -1095,10 +1143,10 @@
       <Filter>Engine\System\Layers</Filter>
     </ClInclude>
     <ClInclude Include="SpatialHashGrid2D.h">
-      <Filter>Engine\ECS\System\CollisionSystem\SpatialHashGrid\2D</Filter>
+      <Filter>Engine\System\SpatialHashGrid\2D</Filter>
     </ClInclude>
     <ClInclude Include="SpatialHashGrid.h">
-      <Filter>Engine\ECS\System\CollisionSystem\SpatialHashGrid\3D</Filter>
+      <Filter>Engine\System\SpatialHashGrid\3D</Filter>
     </ClInclude>
     <ClInclude Include="DebugRenderer.h">
       <Filter>Engine\ECS\Component\DebugRenderer</Filter>
@@ -1363,6 +1411,42 @@
     </ClInclude>
     <ClInclude Include="KeyToStrMap.h">
       <Filter>Engine\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsSimulationSystem.h">
+      <Filter>Engine\ECS\System\PhysicsSimulationSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionSolver.h">
+      <Filter>Engine\System\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsIntegrator.h">
+      <Filter>Engine\System\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionPair.h">
+      <Filter>Engine\System\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="SpatialHashBroadPhase.h">
+      <Filter>Engine\System\SpatialHashGrid</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectImporter.h">
+      <Filter>Engine\Resource\AssetImporter\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectSystem.h">
+      <Filter>Engine\ECS\System\EffectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectSource.h">
+      <Filter>Engine\ECS\Component\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>Engine\Resource\Asset\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectAPI.h">
+      <Filter>Engine\ECS\System\EffectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectManager.h">
+      <Filter>Engine\Resource\Asset\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformAPI.h">
+      <Filter>Engine\ECS\System\TransformSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

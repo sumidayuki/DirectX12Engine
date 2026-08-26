@@ -57,6 +57,20 @@ void AssetManager::LoadAsset(AssetType type, const std::wstring& path)
             }
             break;
 		}
+		case AssetType::Effect:
+		{
+			if (m_effectCache.count(path))
+			{
+				return;
+			}
+
+			Effect* effect = m_effImp.Import(path);
+			if (effect)
+			{
+				m_effectCache[path] = effect;
+			}
+			break;
+		}
     }
 
 #if _DEBUG
@@ -84,6 +98,20 @@ void AssetManager::LoadAssetsFromDirectory(AssetType type, const std::wstring& d
 				LoadAsset(AssetType::Texture, entry.path().generic_wstring());
 			}
 			break;
+
+		case AssetType::Audio:
+			if (entry.path().extension() == L".wav")
+			{
+				LoadAsset(AssetType::Audio, entry.path().generic_wstring());
+			}
+			break;
+
+		case AssetType::Effect:
+			if (entry.path().extension() == L".efkefc")
+			{
+				LoadAsset(AssetType::Effect, entry.path().generic_wstring());
+			}
+			break;
 		}
 	}
 }
@@ -103,14 +131,13 @@ Entity AssetManager::Instantiate(const std::wstring& path, Transform* parent, co
     if (rootEntity != INVALID_ENTITY)
     {
         Transform* rootTransform = world.GetComponent<Transform>(rootEntity);
-        TransformSystem* system = world.GetTransformSystem();
 
         if (parent)
         {
-            system->SetParent(*rootTransform, parent);
+            TransformAPI::SetParent(*rootTransform, parent);
         }
-        system->SetLocalPosition(*rootTransform, localPosition);
-        system->SetLocalRotation(*rootTransform, localRotation);
+		TransformAPI::SetLocalPosition(*rootTransform, localPosition);
+		TransformAPI::SetLocalRotation(*rootTransform, localRotation);
 
         if (modelData->skeleton && !modelData->animations.empty())
         {
@@ -145,7 +172,7 @@ Entity AssetManager::CreateEntityFromPrefab(const PrefabNode& node, const ModelD
 
     if (parentEntity != INVALID_ENTITY)
     {
-        TransformSystem::GetInstance()->SetParent(*transform, world.GetComponent<Transform>(parentEntity));
+        TransformAPI::SetParent(*transform, world.GetComponent<Transform>(parentEntity));
     }
 
     node.transform.Decompose(transform->scale, transform->rotation, transform->position);
@@ -209,10 +236,10 @@ void AssetManager::PrintHierarchy(Transform* transform, int level)
     OutputDebugStringA(transform->entity.name.c_str());
     OutputDebugStringA("\n");
 
-    const int childCount = TransformSystem::GetInstance()->GetChildCount(transform);
+    const int childCount = TransformAPI::GetChildCount(transform);
     for (int i = 0; i < childCount; i++)
     {
-        PrintHierarchy(TransformSystem::GetInstance()->GetChild(transform, i), level + 1);
+        PrintHierarchy(TransformAPI::GetChild(transform, i), level + 1);
     }
 }
 

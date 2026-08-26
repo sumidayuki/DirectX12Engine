@@ -20,20 +20,18 @@ private:
 	std::list<Entity>						m_allCameraEntities;
 	std::list<Camera*>						m_allCameras;
 	std::unordered_set<std::string>			m_entityNames;
-	TransformSystem*						m_transformSystem;
+	std::unordered_map<uint32_t, Entity> m_oneShotEntities;
 
 private:
 	void CollectDescendantsRecursive(Transform* parent, std::vector<Entity>& descendants);
 
 public:
-	World() {}
+	World() = default;
 
 	/// <summary>
 	/// ワールドの全エンティティ・システム・リソースをクリアします。
 	/// </summary>
 	void Clear();
-
-	TransformSystem* GetTransformSystem() { return m_transformSystem; }
 
 	/// <summary>
 	/// エンティティを作成します。
@@ -130,6 +128,9 @@ public:
 
 	Entity CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Color& color = Color::cornflowerBlue, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
+	void AddOneShotEntity(const std::string& name, Entity entity);
+
+	Entity GetOneShotEntity(const std::string& name) const;
 
 	/// <summary>
 	/// エンティティを破壊します。

@@ -35,7 +35,7 @@ bool MainScene::Load()
 	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Archer/se-damage.wav");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Warrok/se-punch.wav");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Audio, L"Assets/Audio/SE/Warrok/se-jump.wav");
-
+	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Effect, L"Assets/Effects");
 
 	// Worldにシステムを追加
 	m_world.AddSystem(std::make_unique<GameManagerSystem>());
@@ -79,19 +79,19 @@ void MainScene::Start()
 	for (float pos : coords)
 	{
 		// Z = 1500 の壁 (手前)
-		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, wallTexture);
+		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 50.0f, Layers::Environment, Color::white, false, wallTexture);
 		m_world.GetComponent<Transform>(wall0)->position = Vector3(pos, 250.0f, 1500.0f);
-
+	
 		// Z = -1500 の壁 (奥)
-		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 10.0f, Layers::Environment, Color::white, false, wallTexture);
+		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 50.0f, Layers::Environment, Color::white, false, wallTexture);
 		m_world.GetComponent<Transform>(wall1)->position = Vector3(pos, 250.0f, -1500.0f);
-
+	
 		// X = 1500 の壁 (右)
-		Entity wall2 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
+		Entity wall2 = m_world.CreateCube(50.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
 		m_world.GetComponent<Transform>(wall2)->position = Vector3(1500.0f, 250.0f, pos);
-
+	
 		// X = -1500 の壁 (左)
-		Entity wall3 = m_world.CreateCube(10.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
+		Entity wall3 = m_world.CreateCube(50.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
 		m_world.GetComponent<Transform>(wall3)->position = Vector3(-1500.0f, 250.0f, pos);
 	}
 

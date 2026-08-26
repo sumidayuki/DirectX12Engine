@@ -55,6 +55,33 @@
 // DirectX 入力コンポーネント
 #include <xinput.h>                         // XInput
 
+// Assimp
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#if _DEBUG
+#pragma comment(lib, "assimp-vc143-mtd.lib")
+#else
+#pragma comment(lib, "assimp-vc143-mt.lib")
+#endif
+
+// Effekseer
+#include <Effekseer.h>
+#include <EffekseerRendererDX12.h>
+#if _DEBUG
+#pragma comment(lib, "Effekseerd.lib")
+#pragma comment(lib, "EffekseerRendererCommond.lib")
+#pragma comment(lib, "EffekseerRendererDX12d.lib")
+#pragma comment(lib, "EffekseerRendererLLGId.lib")
+#pragma comment(lib, "LLGId.lib")
+#else
+#pragma comment(lib, "Effekseer.lib")
+#pragma comment(lib, "EffekseerRendererCommon.lib")
+#pragma comment(lib, "EffekseerRendererDX12.lib")
+#pragma comment(lib, "EffekseerRendererLLGI.lib")
+#pragma comment(lib, "LLGI.lib")
+#endif
+
 // Json
 #include <nlohmann/json.hpp>				// Jsonパーサーライブラリ
 
@@ -231,12 +258,14 @@ enum class GamepadButton;
 #include "Animation.h"
 #include "AudioClip.h"
 #include "Sprite.h"
+#include "Effect.h"
 
 // アセットインポーター関連
 #include "AssetImporter.h"
 #include "TextureImporter.h"
 #include "ModelImporter.h"
 #include "AudioImporter.h"
+#include "EffectImporter.h"
 #include "AssetManager.h"
 
 // Entity
@@ -305,6 +334,7 @@ enum class GamepadButton;
 #include "AIState.h"
 #include "AITrigger.h"
 #include "CharacterHitboxes.h"
+#include "EffectSource.h"
 
 #include "Physics.h"
 #include "GeometryUtility.h"
@@ -320,6 +350,7 @@ enum class GamepadButton;
 
 #include "UIManager.h"
 #include "AudioManager.h"
+#include "EffectManager.h"
 
 // API, Utility
 #include "UIAPI.h"
@@ -327,6 +358,8 @@ enum class GamepadButton;
 #include "SpriteAPI.h"
 #include "StatusAPI.h"
 #include "LocomotionUtility.h"
+#include "TransformAPI.h"
+#include "EffectAPI.h"
 
 // World
 #include "World.h"

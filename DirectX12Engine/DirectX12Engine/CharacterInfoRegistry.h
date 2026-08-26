@@ -10,8 +10,11 @@ struct CharacterInfo
 {
 	std::string name;
 	std::string aiFileName;
+
 	bool isPlayer = false;
+
 	CharacterStatus status;
+
 	std::vector<ColliderData> colliders;
 	std::vector<MoveData> moves;
 };
@@ -30,5 +33,5 @@ public:
 
 	bool CharcterInitialize(const std::string& name, Entity entity, World& world);
 
-	const MoveData& GetMoveById(const std::string& name, int id) const;
+	const MoveData& GetMoveById(const std::string& name, uint32_t id) const;
 };

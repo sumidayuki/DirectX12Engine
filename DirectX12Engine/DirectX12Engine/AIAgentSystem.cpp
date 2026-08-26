@@ -47,7 +47,7 @@ void AIAgentSystem::Update(World& world)
 
         if (aiAgent.updatePosition)
         {
-            TransformSystem::GetInstance()->Translate(transform, aiAgent.velocity * Time::GetDeltaTime());
+            TransformAPI::Translate(transform, aiAgent.velocity * Time::GetDeltaTime());
         }
 
         if (aiAgent.updateRotation)

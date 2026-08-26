@@ -32,6 +32,14 @@
                 "name": "Archer/se-shageki",
                 "bone": "mixamorig:Left_arch2",
                 "frame": 36
+            },
+            {
+                "type": "play-effect",
+                "name": "effect_arrow-attack_charge-00",
+                "bone": "mixamorig:Left_arch1",
+                "lifeTime":  1.3,
+                "scaleFactor":  50,
+                "frame": 1
             }
         ]
     },

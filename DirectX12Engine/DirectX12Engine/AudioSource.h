@@ -15,8 +15,8 @@ struct AudioSource : IComponentData
 
 	// 3D空間オーディオのパラメータ
 	float spatialBlend			= 0.0f;		// 0=2D, 1=3D
-	float minDistance			= 1.0f;		// 音が最大音量で聞こえる距離
-	float maxDistance			= 500.0f;	// 音が聞こえなくなる距離
+	float minDistance			= 200.0f;		// 音が最大音量で聞こえる距離
+	float maxDistance			= 3000.0f;	// 音が聞こえなくなる距離
 	
 	// 内部状態 (AudioSystemによって管理される)
 	bool isPlaying				= false;	// 現在再生中か

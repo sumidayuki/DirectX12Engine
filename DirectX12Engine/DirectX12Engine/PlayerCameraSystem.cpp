@@ -123,7 +123,7 @@ void PlayerCameraSystem::Draw(World& world)
                 + (lookAtPoint - targetPosition).Normalized() * 0.1f;
         }
 
-        TransformSystem::GetInstance()->SetLocalPosition(
+        TransformAPI::SetLocalPosition(
             transform,
             targetPosition
         );
@@ -131,7 +131,7 @@ void PlayerCameraSystem::Draw(World& world)
         const Vector3 lookDirection =
             (lookAtPoint - targetPosition).Normalized();
 
-        TransformSystem::GetInstance()->SetLocalRotation(
+        TransformAPI::SetLocalRotation(
             transform,
             Quaternion::LookRotation(
                 lookDirection,
