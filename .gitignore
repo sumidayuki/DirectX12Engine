@@ -399,4 +399,3 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/DirectX12Engine/DirectX12Engine/PlayerActionGuideSystem.cpp
