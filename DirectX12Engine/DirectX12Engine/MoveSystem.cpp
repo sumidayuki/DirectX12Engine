@@ -1,4 +1,4 @@
-#include "Precompiled.h"
+ï»¿#include "Precompiled.h"
 #include "MoveSystem.h"
 #include "MoveState.h"
 #include "MoveInput.h"
@@ -87,7 +87,7 @@ bool MoveSystem::TryInputTransition(MoveState& state, MoveInput& input, Stamina&
 
 		const MoveData* targetMove = GetTransitionTarget(state.name, transition, stamina);
 
-		// ƒXƒ^ƒ~ƒi•s‘«‚È‚Ç‚Å‘JˆÚæ‚ğæ“¾‚Å‚«‚È‚©‚Á‚½ê‡
+		// ã‚¹ã‚¿ãƒŸãƒŠä¸è¶³ãªã©ã§é·ç§»å…ˆã‚’å–å¾—ã§ããªã‹ã£ãŸå ´åˆ
 		if (!targetMove)
 		{
 			continue;
@@ -335,7 +335,7 @@ void MoveSystem::Update(World& world)
 					continue;
 				}
 
-				// ƒXƒ^ƒ~ƒi•s‘«‚Ì‹Z‚ÍƒRƒ“ƒ{ó•t‰Â”\‚È‘JˆÚ‚Æ‚µ‚Ä‚àˆµ‚í‚È‚¢
+				// ã‚¹ã‚¿ãƒŸãƒŠä¸è¶³ã®æŠ€ã¯ã‚³ãƒ³ãƒœå—ä»˜å¯èƒ½ãªé·ç§»ã¨ã—ã¦ã‚‚æ‰±ã‚ãªã„
 				const MoveData* targetMove = GetTransitionTarget(state.name, transition, stamina);
 
 				if (!targetMove)
