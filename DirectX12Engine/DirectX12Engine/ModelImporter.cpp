@@ -188,6 +188,16 @@ Material* ModelImporter::ProcessSingleMaterial(aiMaterial* mat, const aiScene* s
 
     newMaterial->SetFloat("_Occlusion", 1.0f);
 
+    for(int type = aiTextureType_NONE; type <= aiTextureType_UNKNOWN; ++type)
+    {
+        if (mat->GetTextureCount(static_cast<aiTextureType>(type)) > 0)
+        {
+            aiString path;
+            mat->GetTexture(static_cast<aiTextureType>(type), 0, &path);
+            OutputDebugStringA(("Material has texture of type " + std::to_string(type) + ": " + std::string(path.C_Str()) + "\n").c_str());
+        }
+	}
+
     // ディフューズテクスチャが存在すればロード
     if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
     {

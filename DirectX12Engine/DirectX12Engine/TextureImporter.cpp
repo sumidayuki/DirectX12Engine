@@ -248,16 +248,84 @@ Texture2D* TextureImporter::Import(const wchar_t* path)
 
 Texture2D* TextureImporter::Import(const void* data, size_t size)
 {
-	// メモリ上のデータから画像を読み込む
+	if (!data || size == 0)
+	{
+		OutputDebugStringA(
+			"TextureImporter Error: Invalid image memory.\n"
+		);
+		return nullptr;
+	}
+
 	DirectX::TexMetadata texMetadata;
 	DirectX::ScratchImage scratchImage;
 
-	HRESULT hr = DirectX::LoadFromWICMemory(reinterpret_cast<const uint8_t*>(data), size, DirectX::WIC_FLAGS_NONE, &texMetadata, scratchImage);
+	HRESULT hr = E_FAIL;
 
-	// 読み込みに失敗した場合は安全にnullptrを返す
+	const uint8_t* imageData = reinterpret_cast<const uint8_t*>(data);
+
+	// PNG / JPEG / BMP など
+	hr = DirectX::LoadFromWICMemory(
+		imageData,
+		size,
+		DirectX::WIC_FLAGS_NONE,
+		&texMetadata,
+		scratchImage
+	);
+
+	// DDS
 	if (FAILED(hr))
 	{
-		OutputDebugStringA("TextureImporter Error: Failed to load image from memory.\n");
+		scratchImage.Release();
+
+		hr = DirectX::LoadFromDDSMemory(
+			imageData,
+			size,
+			DirectX::DDS_FLAGS_NONE,
+			&texMetadata,
+			scratchImage
+		);
+	}
+
+	// TGA
+	if (FAILED(hr))
+	{
+		scratchImage.Release();
+
+		hr = DirectX::LoadFromTGAMemory(
+			imageData,
+			size,
+			DirectX::TGA_FLAGS_NONE,
+			&texMetadata,
+			scratchImage
+		);
+	}
+
+	// HDR
+	if (FAILED(hr))
+	{
+		scratchImage.Release();
+
+		hr = DirectX::LoadFromHDRMemory(
+			imageData,
+			size,
+			&texMetadata,
+			scratchImage
+		);
+	}
+
+	if (FAILED(hr))
+	{
+		char buffer[256];
+
+		sprintf_s(
+			buffer,
+			"TextureImporter Error: Failed to decode embedded image. "
+			"size=%zu HRESULT=0x%08X\n",
+			size,
+			static_cast<unsigned int>(hr)
+		);
+
+		OutputDebugStringA(buffer);
 		return nullptr;
 	}
 

@@ -18,12 +18,15 @@ bool MainScene::Load()
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Archer.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Arrow.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/field_1.fbx");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Wall_A.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Stage/Wall_A.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Warrok.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Stage/Arch_A.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Stage/Tile_A.fbx");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Model, L"Assets/Stage/stage.fbx");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/BaseTexture-00.jpg");
 	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/TextureNormal-00.jpg");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/T_Wall_C.png");
-	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/T_Wall_N.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Stage/T_Wall_C.png");
+	AssetManager::GetInstance()->LoadAsset(AssetType::Texture, L"Assets/Stage/T_Wall_N.png");
 	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Texture, L"Assets/Images/InputDevice_Icons/Key_Icons");
 	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Texture, L"Assets/Images/InputDevice_Icons/Gamepad_Icons/xbox");
 	AssetManager::GetInstance()->LoadAssetsFromDirectory(AssetType::Texture, L"Assets/Images/InputDevice_Icons/Mouse_Icons");
@@ -59,41 +62,61 @@ bool MainScene::Load()
 void MainScene::Start()
 {
 	m_world.CreateWithLight(LightType::Directional, Color(0.7, 0.3, 0.6), 2000, nullptr, Vector3(1000, 250, 1000), Quaternion::Euler(90.0f, 0.0f, 0.0f));
-	
-	Texture2D* wallTexture = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png");
 
-	// 座標の基準リスト
-	const float coords[] = { 1250.0f, 750.0f, 250.0f, -250.0f, -750.0f, -1250.0f };
+	Entity stage = m_world.CreateWithModel(L"Assets/Stage/stage.fbx", nullptr, Vector3::zero, Quaternion::identity, Layers::Environment);
+	Entity floorCol = m_world.CreateCube(5000.0f, 1.0f, 5000.0f, Layers::Environment, Color::white, true);
+	
+	Entity wallCol1 = m_world.CreateCube(5000.0f, 500.0f, 50.0f, Layers::Environment, Color::white, true);
+	Transform* wallCol1Transform = m_world.GetComponent<Transform>(wallCol1);
+	wallCol1Transform->position = Vector3(0.0f, 250.0f, 1800.0f);
 
-	// 床の生成
-	for (float z : coords)
-	{
-		for (float x : coords)
-		{
-			Entity floor = m_world.CreateCube(500.0f, 1.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
-			m_world.GetComponent<Transform>(floor)->position = Vector3(x, 0.0f, z);
-		}
-	}
+	Entity wallCol2 = m_world.CreateCube(5000.0f, 500.0f, 50.0f, Layers::Environment, Color::white, true);
+	Transform* wallCol2Transform = m_world.GetComponent<Transform>(wallCol2);
+	wallCol2Transform->position = Vector3(0.0f, 250.0f, -1800.0f);
+	
+	Entity wallCol3 = m_world.CreateCube(50.0f, 500.0f, 50000.0f, Layers::Environment, Color::white, true);
+	Transform* wallCol3Transform = m_world.GetComponent<Transform>(wallCol3);
+	wallCol3Transform->position = Vector3(1400.0f, 250.0f, 0.0f);
 
-	// 壁の生成
-	for (float pos : coords)
-	{
-		// Z = 1500 の壁 (手前)
-		Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 50.0f, Layers::Environment, Color::white, false, wallTexture);
-		m_world.GetComponent<Transform>(wall0)->position = Vector3(pos, 250.0f, 1500.0f);
-	
-		// Z = -1500 の壁 (奥)
-		Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 50.0f, Layers::Environment, Color::white, false, wallTexture);
-		m_world.GetComponent<Transform>(wall1)->position = Vector3(pos, 250.0f, -1500.0f);
-	
-		// X = 1500 の壁 (右)
-		Entity wall2 = m_world.CreateCube(50.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
-		m_world.GetComponent<Transform>(wall2)->position = Vector3(1500.0f, 250.0f, pos);
-	
-		// X = -1500 の壁 (左)
-		Entity wall3 = m_world.CreateCube(50.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
-		m_world.GetComponent<Transform>(wall3)->position = Vector3(-1500.0f, 250.0f, pos);
-	}
+	Entity wallCol4 = m_world.CreateCube(50.0f, 500.0f, 5000.0f, Layers::Environment, Color::white, true);
+	Transform* wallCol4Transform = m_world.GetComponent<Transform>(wallCol4);
+	wallCol4Transform->position = Vector3(-1400.0f, 250.0f, 0.0f);
+
+	//
+	//Texture2D* wallTexture = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/T_Wall_C.png");
+	//
+	//// 座標の基準リスト
+	//const float coords[] = { 1250.0f, 750.0f, 250.0f, -250.0f, -750.0f, -1250.0f };
+	//
+	//// 床の生成
+	//for (float z : coords)
+	//{
+	//	for (float x : coords)
+	//	{
+	//		Entity floor = m_world.CreateCube(500.0f, 1.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
+	//		m_world.GetComponent<Transform>(floor)->position = Vector3(x, 0.0f, z);
+	//	}
+	//}
+	//
+	//// 壁の生成
+	//for (float pos : coords)
+	//{
+	//	// Z = 1500 の壁 (手前)
+	//	Entity wall0 = m_world.CreateCube(500.0f, 500.0f, 50.0f, Layers::Environment, Color::white, false, wallTexture);
+	//	m_world.GetComponent<Transform>(wall0)->position = Vector3(pos, 250.0f, 1500.0f);
+	//
+	//	// Z = -1500 の壁 (奥)
+	//	Entity wall1 = m_world.CreateCube(500.0f, 500.0f, 50.0f, Layers::Environment, Color::white, false, wallTexture);
+	//	m_world.GetComponent<Transform>(wall1)->position = Vector3(pos, 250.0f, -1500.0f);
+	//
+	//	// X = 1500 の壁 (右)
+	//	Entity wall2 = m_world.CreateCube(50.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
+	//	m_world.GetComponent<Transform>(wall2)->position = Vector3(1500.0f, 250.0f, pos);
+	//
+	//	// X = -1500 の壁 (左)
+	//	Entity wall3 = m_world.CreateCube(50.0f, 500.0f, 500.0f, Layers::Environment, Color::white, false, wallTexture);
+	//	m_world.GetComponent<Transform>(wall3)->position = Vector3(-1500.0f, 250.0f, pos);
+	//}
 
 	Mouse::SetVisible(false);
 	Mouse::SetLock(true);
