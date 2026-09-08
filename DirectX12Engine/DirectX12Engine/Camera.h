@@ -6,6 +6,7 @@
 enum class CameraClearFlags
 {
     Skybox,
+	ProceduralSky,
     SolidColor,
     Depth,
     Nothing,

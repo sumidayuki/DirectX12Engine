@@ -8,6 +8,10 @@ struct CameraLayout
 {
     matrix view; // ビュー変換行列
     matrix proj; // プロジェクション変換行列
+    
+    matrix invView; // ビュー変換行列の逆行列
+    matrix invProj; // プロジェクション変換行列の逆行列
+    
     float3 position; // ワールド空間でのカメラの位置
     float padding0; // パディング
 };

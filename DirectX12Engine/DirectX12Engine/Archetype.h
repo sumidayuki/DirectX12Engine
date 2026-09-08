@@ -3,9 +3,8 @@
 #include "IComponentData.h"
 
 /// <summary>
-/// Archetypeは「コンポーネント集合（Entityの型）」を定義するものです。
+/// Archetypeはコンポーネント集合（Entityの型）を定義しています。
 /// 含まれるTypeInfoのリストを保持します。
-/// SoA化に伴い、オフセット計算は不要になりました。
 /// </summary>
 struct Archetype
 {

@@ -126,7 +126,7 @@ public:
 		LayerMask layer = Layers::Default
 	);
 
-	Entity CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Color& color = Color::cornflowerBlue, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
+	Entity CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, CameraClearFlags clearFlags = CameraClearFlags::SolidColor, const Color& color = Color::cornflowerBlue, const Vector3& localPosition = Vector3::zero, const Quaternion& localRotation = Quaternion::identity);
 
 	void AddOneShotEntity(const std::string& name, Entity entity);
 

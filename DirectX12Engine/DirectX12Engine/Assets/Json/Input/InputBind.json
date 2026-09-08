@@ -1,0 +1,21 @@
+{
+	"Attack1": {
+		"Key": "mouse_left",
+		"Gamepad": "gamepad_right_shoulder"
+	},
+
+	"Attack2": {
+		"Key": "mouse_right",
+		"Gamepad": "gamepad_east"
+	},
+
+	"Rolling": {
+		"Key": "space",
+		"Gamepad": "gamepad_south"
+	},
+
+	"Guard": {
+		"Key": "left_shift",
+		"Gamepad": "gamepad_left_shoulder"
+	}
+}

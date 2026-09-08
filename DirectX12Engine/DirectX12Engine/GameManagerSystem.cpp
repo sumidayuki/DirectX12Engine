@@ -4,6 +4,7 @@
 #include "Enemy.h"
 #include "CharacterImporter.h"
 #include "PlayerCamera.h"
+#include "ProceduralSkyRenderer.h"
 
 bool GameManagerSystem::Load(World& world)
 {
@@ -60,11 +61,8 @@ void GameManagerSystem::Start(World& world)
 	float farPlane = 5000.0f;
 
 	// ƒoƒgƒ‹ƒJƒƒ‰‚Ìì¬
-	Entity cameraEntity = world.CreateCamera3D(fov, aspect, nearPlane, farPlane);
-
-	//Entity skybox = world.CreateSphere(1000.0f, 16, 16);
-	//Transform* skyboxT = world.GetComponent<Transform>(skybox);
-	//TransformAPI::SetParent(*skyboxT, parentT);
+	Entity cameraEntity = world.CreateCamera3D(fov, aspect, nearPlane, farPlane, CameraClearFlags::ProceduralSky);
+	ProceduralSkyRenderer::Initialize(0, 60.0f, false, true);
 
 	world.AddComponent<AudioListener>(cameraEntity, AudioListener{});
 

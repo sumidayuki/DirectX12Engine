@@ -86,6 +86,92 @@ inline const std::map<KeyCode, std::string> KeyCodeToString = {
     {KeyCode::Mouse4, "mouse_x2"},
 };
 
+inline const std::map<std::string, KeyCode> StringToKeyCode =
+{
+	{ "a", KeyCode::A },
+	{ "b", KeyCode::B },
+	{ "c", KeyCode::C },
+	{ "d", KeyCode::D },
+	{ "e", KeyCode::E },
+	{ "f", KeyCode::F },
+	{ "g", KeyCode::G },
+	{ "h", KeyCode::H },
+	{ "i", KeyCode::I },
+	{ "j", KeyCode::J },
+	{ "k", KeyCode::K },
+	{ "l", KeyCode::L },
+	{ "m", KeyCode::M },
+	{ "n", KeyCode::N },
+	{ "o", KeyCode::O },
+	{ "p", KeyCode::P },
+	{ "q", KeyCode::Q },
+	{ "r", KeyCode::R },
+	{ "s", KeyCode::S },
+	{ "t", KeyCode::T },
+	{ "u", KeyCode::U },
+	{ "v", KeyCode::V },
+	{ "w", KeyCode::W },
+	{ "x", KeyCode::X },
+	{ "y", KeyCode::Y },
+	{ "z", KeyCode::Z },
+
+	{ "0", KeyCode::Alpha0 },
+	{ "1", KeyCode::Alpha1 },
+	{ "2", KeyCode::Alpha2 },
+	{ "3", KeyCode::Alpha3 },
+	{ "4", KeyCode::Alpha4 },
+	{ "5", KeyCode::Alpha5 },
+	{ "6", KeyCode::Alpha6 },
+	{ "7", KeyCode::Alpha7 },
+	{ "8", KeyCode::Alpha8 },
+	{ "9", KeyCode::Alpha9 },
+
+	{ "keypad0", KeyCode::Keypad0 },
+	{ "keypad1", KeyCode::Keypad1 },
+	{ "keypad2", KeyCode::Keypad2 },
+	{ "keypad3", KeyCode::Keypad3 },
+	{ "keypad4", KeyCode::Keypad4 },
+	{ "keypad5", KeyCode::Keypad5 },
+	{ "keypad6", KeyCode::Keypad6 },
+	{ "keypad7", KeyCode::Keypad7 },
+	{ "keypad8", KeyCode::Keypad8 },
+	{ "keypad9", KeyCode::Keypad9 },
+
+	{ "space", KeyCode::Space },
+	{ "enter", KeyCode::Enter },
+	{ "left_shift", KeyCode::LeftShift },
+	{ "right_shift", KeyCode::RightShift },
+	{ "control", KeyCode::LeftControl },
+	{ "escape", KeyCode::Escape },
+
+	{ "f1", KeyCode::F1 },
+	{ "f2", KeyCode::F2 },
+	{ "f3", KeyCode::F3 },
+	{ "f4", KeyCode::F4 },
+	{ "f5", KeyCode::F5 },
+	{ "f6", KeyCode::F6 },
+	{ "f7", KeyCode::F7 },
+	{ "f8", KeyCode::F8 },
+	{ "f9", KeyCode::F9 },
+	{ "f10", KeyCode::F10 },
+	{ "f11", KeyCode::F11 },
+	{ "f12", KeyCode::F12 },
+	{ "f13", KeyCode::F13 },
+	{ "f14", KeyCode::F14 },
+	{ "f15", KeyCode::F15 },
+
+	{ "uparrow", KeyCode::UpArrow },
+	{ "downarrow", KeyCode::DownArrow },
+	{ "leftarrow", KeyCode::LeftArrow },
+	{ "rightarrow", KeyCode::RightArrow },
+
+	{ "mouse_left", KeyCode::Mouse0 },
+	{ "mouse_right", KeyCode::Mouse1 },
+	{ "mouse_middle", KeyCode::Mouse2 },
+	{ "mouse_x1", KeyCode::Mouse3 },
+	{ "mouse_x2", KeyCode::Mouse4 },
+};
+
 inline const std::map<GamepadButton, std::string> GamepadButtonToString =
 {
     { GamepadButton::South,            "gamepad_south" },
@@ -108,4 +194,28 @@ inline const std::map<GamepadButton, std::string> GamepadButtonToString =
 
     { GamepadButton::Select,           "gamepad_select" },
     { GamepadButton::Start,            "gamepad_start" },
+};
+
+inline const std::map<std::string, GamepadButton> StringToGamepadButton =
+{
+	{ "gamepad_south",            GamepadButton::South },
+	{ "gamepad_east",             GamepadButton::East },
+	{ "gamepad_west",             GamepadButton::West },
+	{ "gamepad_north",             GamepadButton::North },
+
+	{ "gamepad_dpad_down",        GamepadButton::DpadDown },
+	{ "gamepad_dpad_right",       GamepadButton::DpadRight },
+	{ "gamepad_dpad_left",        GamepadButton::DpadLeft },
+	{ "gamepad_dpad_up",          GamepadButton::DpadUp },
+
+	{ "gamepad_left_shoulder",    GamepadButton::LeftShoulder },
+	{ "gamepad_left_trigger",     GamepadButton::LeftTrigger },
+	{ "gamepad_left_stick",       GamepadButton::LeftStickButton },
+
+	{ "gamepad_right_shoulder",   GamepadButton::RightShoulder },
+	{ "gamepad_right_trigger",    GamepadButton::RightTrigger },
+	{ "gamepad_right_stick",      GamepadButton::RightStickButton },
+
+	{ "gamepad_select",           GamepadButton::Select },
+	{ "gamepad_start",            GamepadButton::Start },
 };

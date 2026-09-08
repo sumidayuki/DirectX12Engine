@@ -314,7 +314,7 @@ Entity World::CreateWithModel(const std::wstring& path, Transform* parent, const
 	return AssetManager::GetInstance()->Instantiate(path, parent, localPosition, localRotation, layer);
 }
 
-Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, const Color& color, const Vector3& localPosition, const Quaternion& localRotation)
+Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlane, float farClipPlane, CameraClearFlags clearFlags, const Color& color, const Vector3& localPosition, const Quaternion& localRotation)
 {
 	// 3D向けカメラの作成
 	Entity entity = CreateEntity();
@@ -326,7 +326,7 @@ Entity World::CreateCamera3D(float fieldOfView, float aspect, float nearClipPlan
 	camera->aspect = aspect;								// アスペクト比
 	camera->nearClipPlane = nearClipPlane;					// 近平面
 	camera->farClipPlane = farClipPlane;					// 遠平面
-	camera->clearFlags = CameraClearFlags::SolidColor;		// 背景のクリア方法
+	camera->clearFlags = clearFlags;		// 背景のクリア方法
 	camera->backgroundColor = color;		// 背景色
 	camera->viewportRect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
 

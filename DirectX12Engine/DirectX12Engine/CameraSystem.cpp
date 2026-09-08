@@ -1,6 +1,7 @@
 #include "CameraSystem.h"
 #include "TransformSystem.h"
 #include "Camera.hlsli"
+#include "ProceduralSkyRenderer.h"
 
 const Matrix4x4& CameraSystem::GetWorldToCameraMatrix(Transform& transform, World& world) const
 {
@@ -55,6 +56,8 @@ void CameraSystem::InternalRender(World& world)
 		CameraLayout* lockedPointer = (CameraLayout*)camera.cameraBuffer->LockBufferForWrite();
 		lockedPointer->view = GetWorldToCameraMatrix(transform, world).Transpose();
 		lockedPointer->proj = GetProjectionMatrix(camera).Transpose();
+		lockedPointer->invView = lockedPointer->view.Inverse();
+		lockedPointer->invProj = lockedPointer->proj.Inverse();
 		lockedPointer->position = transform.position; // この行を追加
 		lockedPointer->padding0 = 0.0f; // パディングも初期化
 		camera.cameraBuffer->UnlockBufferAfterWrite();
@@ -86,6 +89,10 @@ void CameraSystem::InternalRender(World& world)
 		D3D12_CPU_DESCRIPTOR_HANDLE handleRTV = frameResource->GetHandleRTV();
 		D3D12_CPU_DESCRIPTOR_HANDLE handleDSV = frameResource->GetHandleDSV();
 
+		// コマンド「レンダーターゲット配列と深度ステンシルバッファを変更する」をコマンドリストに追加
+		const D3D12_CPU_DESCRIPTOR_HANDLE renderTargets[] = { handleRTV };
+		commandList->OMSetRenderTargets(_countof(renderTargets), renderTargets, TRUE, &handleDSV);
+
 		// レンダーターゲットをクリアする際の矩形領域
 		D3D12_RECT clearRect;
 		memset(&clearRect, 0, sizeof(clearRect));
@@ -97,6 +104,21 @@ void CameraSystem::InternalRender(World& world)
 		switch (camera.clearFlags)
 		{
 			case CameraClearFlags::Skybox:
+			{
+
+			}
+			break;
+
+			case CameraClearFlags::ProceduralSky:
+			{
+				// コマンド「レンダーターゲットを単色で塗りつぶす」をコマンドリストに追加
+				commandList->ClearRenderTargetView(handleRTV, camera.backgroundColor, 1, &clearRect);
+				commandList->ClearDepthStencilView(handleDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 1, &clearRect);
+				// プロシージャルスカイを描画
+				ProceduralSkyRenderer::Draw(world);
+			}
+			break;
+
 			case CameraClearFlags::SolidColor:
 			{
 				// コマンド「レンダーターゲットを単色で塗りつぶす」をコマンドリストに追加
@@ -112,10 +134,6 @@ void CameraSystem::InternalRender(World& world)
 			}
 			break;
 		}
-
-		// コマンド「レンダーターゲット配列と深度ステンシルバッファを変更する」をコマンドリストに追加
-		const D3D12_CPU_DESCRIPTOR_HANDLE renderTargets[] = { handleRTV };
-		commandList->OMSetRenderTargets(_countof(renderTargets), renderTargets, TRUE, &handleDSV);
 
 		// ビューフラスタム用の平面配列を作成
 		Plane planes[6];

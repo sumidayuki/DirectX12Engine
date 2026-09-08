@@ -6,6 +6,7 @@ void ShaderRegistry::StaticConstructor()
 {
     ShaderRegistry::LoadShader(L"Assets/Shaders/PBR.shader");
 	ShaderRegistry::LoadShader(L"Assets/Shaders/ScreenSpaceOverlay.shader");
+	ShaderRegistry::LoadShader(L"Assets/Shaders/ProceduralSky.shader");
 }
 
 void ShaderRegistry::StaticDestructor()

@@ -10,9 +10,7 @@ struct IComponentData
 
 /// <summary>
 /// Componentとして登録可能な型を制約するconcept。
-/// - IComponentDataを継承していること
-/// - memcpyで安全にコピーできること
-/// - メモリレイアウトが標準であること
+/// IComponentDataを継承していることを保証します。
 /// </summary>
 template<typename T>
 concept ComponentType =

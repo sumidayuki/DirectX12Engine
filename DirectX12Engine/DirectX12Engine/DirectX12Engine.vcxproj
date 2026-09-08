@@ -217,6 +217,7 @@
     <ClCompile Include="InputControls.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputSystem.cpp" />
+    <ClCompile Include="JSONImporter.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="main.cpp" />
@@ -237,6 +238,7 @@
     <ClCompile Include="PlayerActionGuideSystem.cpp" />
     <ClCompile Include="PlayerCameraSystem.cpp" />
     <ClCompile Include="PlayerSystem.cpp" />
+    <ClCompile Include="ProceduralSkyRenderer.cpp" />
     <ClCompile Include="ProjectileSystem.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Ray.cpp" />
@@ -356,7 +358,8 @@
     <ClInclude Include="EffectSource.h" />
     <ClInclude Include="EffectImporter.h" />
     <ClInclude Include="EffectSystem.h" />
-    <ClInclude Include="KeyToStrMap.h" />
+    <ClInclude Include="JSONImporter.h" />
+    <ClInclude Include="InputCodeMap.h" />
     <ClInclude Include="MoveInput.h" />
     <ClInclude Include="ComboMove.h" />
     <ClInclude Include="MoveState.h" />
@@ -429,6 +432,7 @@
     <ClInclude Include="PlayerCamera.h" />
     <ClInclude Include="PlayerCameraSystem.h" />
     <ClInclude Include="PlayerSystem.h" />
+    <ClInclude Include="ProceduralSkyRenderer.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="ProjectileSystem.h" />
     <ClInclude Include="Quaternion.h" />
@@ -511,6 +515,7 @@
     <None Include="Light.hlsli" />
     <None Include="Material.hlsli" />
     <None Include="MeshRenderer.hlsli" />
+    <None Include="ProceduralSky.hlsli" />
     <None Include="SkinnedMeshRenderer.hlsli" />
     <None Include="SpriteRenderer.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -524,6 +529,7 @@
       <FileType>Document</FileType>
     </None>
     <None Include="Standard.hlsli" />
+    <None Include="TypeMarshalling.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="LineShader.hlsl">
@@ -545,6 +551,21 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </FxCompile>
+    <None Include="ProceduralSky.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.1</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.1</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
     <None Include="PBR.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
@@ -557,6 +578,10 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
       <FileType>Document</FileType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VSMain</EntryPointName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
     <None Include="Standard.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>

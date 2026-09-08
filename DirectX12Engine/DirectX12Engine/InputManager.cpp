@@ -1,6 +1,6 @@
 #include "InputManager.h"
 #include "Mouse.h"
-#include "KeyToStrMap.h"
+#include "InputCodeMap.h"
 
 // ƒ‰ƒCƒuƒ‰ƒŠ‚ğƒŠƒ“ƒN‚·‚é
 #pragma comment(lib, "xinput.lib")

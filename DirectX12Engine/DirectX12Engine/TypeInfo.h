@@ -7,7 +7,7 @@
 /// <summary>
 /// Archetypeで型を識別する際の型情報を表す構造体です。
 /// RTTI(typeid)を使わずにconstexpr比較ができます。
-/// constexprを使用することで型情報や比較や生成がコンパイル時に最適化されます。
+/// constexprを使用することで型情報や比較や生成がコンパイル時に生成できるようにしています。
 /// RTTIを使わないので軽量かつ移植性が高くなっています。
 /// </summary>
 struct TypeInfo

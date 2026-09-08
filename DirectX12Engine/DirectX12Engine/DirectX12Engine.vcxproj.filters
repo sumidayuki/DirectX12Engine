@@ -448,6 +448,15 @@
     <Filter Include="Engine\ECS\Component\Camera">
       <UniqueIdentifier>{2c63c779-9794-4947-bfe0-c1fced9dc95d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Rendering">
+      <UniqueIdentifier>{f2fa2baa-11ba-4d7c-a306-c08a0fd0069d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Rendering\ProceduralSky">
+      <UniqueIdentifier>{71dcf95d-442b-4ce7-b0dc-8fa1c1a15748}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource\AssetImporter\JSON">
+      <UniqueIdentifier>{62e88eeb-c34e-4908-901d-009b326f1694}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -809,6 +818,12 @@
     </ClCompile>
     <ClCompile Include="TransformAPI.cpp">
       <Filter>Engine\ECS\System\TransformSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralSkyRenderer.cpp">
+      <Filter>Engine\Rendering\ProceduralSky</Filter>
+    </ClCompile>
+    <ClCompile Include="JSONImporter.cpp">
+      <Filter>Engine\Resource\AssetImporter\JSON</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1409,7 +1424,7 @@
     <ClInclude Include="MoveSystem.h">
       <Filter>Game\Character\Combo\System</Filter>
     </ClInclude>
-    <ClInclude Include="KeyToStrMap.h">
+    <ClInclude Include="InputCodeMap.h">
       <Filter>Engine\Input</Filter>
     </ClInclude>
     <ClInclude Include="PhysicsSimulationSystem.h">
@@ -1448,6 +1463,12 @@
     <ClInclude Include="TransformAPI.h">
       <Filter>Engine\ECS\System\TransformSystem</Filter>
     </ClInclude>
+    <ClInclude Include="ProceduralSkyRenderer.h">
+      <Filter>Engine\Rendering\ProceduralSky</Filter>
+    </ClInclude>
+    <ClInclude Include="JSONImporter.h">
+      <Filter>Engine\Resource\AssetImporter\JSON</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpriteRenderer.hlsl">
@@ -1478,6 +1499,15 @@
       <Filter>Engine\Resource\Asset\Shader\HLSL</Filter>
     </None>
     <None Include="ScreenSpaceOverlay.hlsl">
+      <Filter>Engine\Resource\Asset\Shader\HLSL</Filter>
+    </None>
+    <None Include="ProceduralSky.hlsli">
+      <Filter>Engine\Rendering\ProceduralSky</Filter>
+    </None>
+    <None Include="ProceduralSky.hlsl">
+      <Filter>Engine\Rendering\ProceduralSky</Filter>
+    </None>
+    <None Include="TypeMarshalling.hlsli">
       <Filter>Engine\Resource\Asset\Shader\HLSL</Filter>
     </None>
   </ItemGroup>

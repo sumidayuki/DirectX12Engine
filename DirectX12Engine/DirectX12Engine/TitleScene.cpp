@@ -22,7 +22,7 @@ void TitleScene::Start()
 	float nearPlane = 0.1f;
 	float farPlane = 5000.0f;
 
-	Entity camera = m_world.CreateCamera3D(fov, aspect, nearPlane, farPlane, Color::black, Vector3(0, 0, -10));
+	Entity camera = m_world.CreateCamera3D(fov, aspect, nearPlane, farPlane, CameraClearFlags::SolidColor, Color::black, Vector3(0, 0, -10));
 	Entity background = m_world.CreateWithSprite(L"Assets/Title.png", Rect(0, 0, 1920, 1080), Vector2(0.5f, 0.5f), 84);
 
 	Entity text = m_world.CreateWithSprite(L"Assets/Title_Text.png", Rect(0, 0, 971, 125), Vector2(0.5f, 0.5f), 84, nullptr, Vector3(0, -2, 0));
