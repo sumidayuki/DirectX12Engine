@@ -70,21 +70,16 @@ struct RollingParams
 // Moveデータ
 struct MoveData
 {
-	uint32_t moveId = 0;
-
-	std::string textName;
-
-	MoveType type = MoveType::Idle;
-
-	float duration = 0.0f;
-	float staminaCost = 0.0f;
-
+	uint32_t moveId = 0;						// MoveのID
+	std::string textName;						// ガイドテキストファイルのパス
+	MoveType type = MoveType::Idle;				// ムーブタイプ
+	float duration = 0.0f;						// このMoveの時間
+	float staminaCost = 0.0f;					// このMoveのスタミナ消費量
 	std::variant<
 		IdleParams,
 		AttackParams,
 		GuardParams,
 		RollingParams
-	> params;
-
-	std::vector<MoveTransition> transitions;
+	> params;									// ムーブタイプにあったパラメーター
+	std::vector<MoveTransition> transitions;	// Moveの際の遷移情報
 };

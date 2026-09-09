@@ -37,6 +37,8 @@ void TitleScene::Start()
 	bgmSource.volume = 0.5f;
 	bgmSource.spatialBlend = 0.0f;        // 2Di‹——£Œ¸Š‚È‚µj
 	//m_world.AddComponent<AudioSource>(m_world.CreateEntity("TitleBGM"), bgmSource);
+
+	Mouse::SetLock(false);
 }
 
 void TitleScene::Update()

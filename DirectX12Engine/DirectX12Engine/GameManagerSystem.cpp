@@ -62,7 +62,7 @@ void GameManagerSystem::Start(World& world)
 
 	// ƒoƒgƒ‹ƒJƒƒ‰‚Ìì¬
 	Entity cameraEntity = world.CreateCamera3D(fov, aspect, nearPlane, farPlane, CameraClearFlags::ProceduralSky);
-	ProceduralSkyRenderer::Initialize(0, 60.0f, false, true);
+	ProceduralSkyRenderer::Initialize(1.0f, 60.0f, false);
 
 	world.AddComponent<AudioListener>(cameraEntity, AudioListener{});
 
