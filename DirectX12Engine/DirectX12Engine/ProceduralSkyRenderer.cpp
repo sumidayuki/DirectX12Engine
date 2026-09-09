@@ -46,11 +46,11 @@ void ProceduralSkyRenderer::Draw(World& world)
 	ProceduralSkyConstants* skyConstants = (ProceduralSkyConstants*)m_skyConstantsBuffer->LockBufferForWrite();
 	skyConstants->timeOfDay = m_time;
 	skyConstants->time = Time::GetTime();
-	skyConstants->enableClouds = m_enableClouds;
-	skyConstants->enableStars = m_enableStars;
-	skyConstants->enableMoon = m_enableMoon;
-	skyConstants->enableSun = m_enableSun;
-	skyConstants->enableSunGlow = m_enableSunGlow;
+	skyConstants->enableClouds = m_enableClouds ? 1 : 0;
+	skyConstants->enableStars = m_enableStars ? 1 : 0;
+	skyConstants->enableMoon = m_enableMoon ? 1 : 0;
+	skyConstants->enableSun = m_enableSun ? 1 : 0;
+	skyConstants->enableSunGlow = m_enableSunGlow ? 1 : 0;
 	m_skyConstantsBuffer->UnlockBufferAfterWrite();
 
 	commandList->SetGraphicsRootConstantBufferView(1, m_skyConstantsBuffer->GetNativeBufferPtr()->GetGPUVirtualAddress());

@@ -16,7 +16,7 @@ bool GameManagerSystem::Load(World& world)
 
 void GameManagerSystem::Start(World& world)
 {
-	// ƒvƒŒƒCƒ„[‚ğ¶¬
+	// ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½ğ¶ï¿½
 	Entity player = world.CreateWithModel(L"Assets/Archer.fbx", nullptr, Vector3(0, 0, -500), Quaternion::identity, Layers::Player);
 	world.AddComponent<Input>(player, Input{});
 	world.AddComponent<PlayerTag>(player, PlayerTag{});
@@ -28,7 +28,7 @@ void GameManagerSystem::Start(World& world)
 
 	m_player = player;
 
-	// “G‚ğ¶¬
+	// ï¿½Gï¿½ğ¶ï¿½
 	Entity warrok = world.CreateWithModel(L"Assets/Warrok.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0), Layers::Enemy);
 	Transform* warrokT = world.GetComponent<Transform>(warrok);
 	warrokT->scale = warrokT->scale * 1.5f;
@@ -54,15 +54,16 @@ void GameManagerSystem::Start(World& world)
 
 	m_enemy = warrok;
 
-	//  ƒoƒgƒ‹ƒJƒƒ‰‚Ìİ’è
+	//  ï¿½oï¿½gï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½Ìİ’ï¿½
 	float fov = 60.0f;
 	float aspect = (float)Screen::GetWidth() / (float)Screen::GetHeight();
 	float nearPlane = 0.1f;
 	float farPlane = 5000.0f;
 
-	// ƒoƒgƒ‹ƒJƒƒ‰‚Ìì¬
+	// ï¿½oï¿½gï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½Ìì¬
 	Entity cameraEntity = world.CreateCamera3D(fov, aspect, nearPlane, farPlane, CameraClearFlags::ProceduralSky);
 	ProceduralSkyRenderer::Initialize(1.0f, 60.0f, false);
+
 
 	world.AddComponent<AudioListener>(cameraEntity, AudioListener{});
 

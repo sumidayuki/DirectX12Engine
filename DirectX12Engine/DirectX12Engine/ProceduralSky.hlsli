@@ -7,11 +7,11 @@ struct ProceduralSkyConstants
 {
     float timeOfDay;
     float time;
-    int enableClouds;
-    int enableStars;
-    int enableMoon;
-    int enableSun;
-    int enableSunGlow;
+    uint enableClouds;
+    uint enableStars;
+    uint enableMoon;
+    uint enableSun;
+    uint enableSunGlow;
 };
 
 struct LightConstants
