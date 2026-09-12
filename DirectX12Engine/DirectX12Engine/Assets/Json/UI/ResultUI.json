@@ -1,0 +1,126 @@
+{
+    "canvas": {
+        "renderMode": "ScreenSpaceOverlay",
+        "sortingOrder": 0,
+        "elements": [
+            {
+                "name": "Background",
+                "type": "Image",
+                "source": "Assets/white.png",
+                "rect": {
+                    "pos": [ 0, 0 ],
+                    "size": [ 1620, 920 ],
+                    "anchorMin": [ 0.5, 0.5 ],
+                    "anchorMax": [ 0.5, 0.5 ],
+                    "pivot": [ 0.5, 0.5 ]
+                },
+                "graphic": {
+                    "color": [ 1, 1, 1, 0.5 ],
+                    "depth": 0,
+                    "raycastTarget": false
+                }
+            },
+            {
+                "name": "ResultText",
+                "type": "Image",
+                "source": "Assets/white.png",
+                "rect": {
+                    "pos": [ 0, -490 ],
+                    "size": [ 100, 100 ],
+                    "anchorMin": [ 0.5, 0.5 ],
+                    "anchorMax": [ 0.5, 0.5 ],
+                    "pivot": [ 0.5, 0.5 ]
+                },
+                "graphic": {
+                    "color": [ 1, 1, 1, 1 ],
+                    "depth": 0,
+                    "raycastTarget": false
+                }
+            },
+            {
+                "name": "ToTitle",
+                "type": "Button",
+                "onClick": "ButtonClicked",
+                "source": "Assets/white.png",
+                "normalColor": [ 1, 0, 0, 1 ],
+                "hoveredColor": [ 0.8, 0.8, 0.8, 1 ],
+                "selectedColor": [ 0.7, 0.7, 0.7, 1 ],
+                "pressedColor": [ 0.6, 0.6, 0.6, 1 ],
+                "disabledColor": [ 0.4, 0.4, 0.4, 1 ],
+                "rect": {
+                    "pos": [ -150, 200 ],
+                    "size": [ 100, 50 ],
+                    "anchorMin": [ 0.5, 0.5 ],
+                    "anchorMax": [ 0.5, 0.5 ],
+                    "pivot": [ 0.5, 0.5 ]
+                },
+                "graphic": {
+                    "color": [ 1, 1, 1, 1 ],
+                    "depth": 0,
+                    "raycastTarget": true
+                },
+                "children": [
+                    {
+                        "name": "text",
+                        "type": "Image",
+                        "source": "Assets/Images/Text/text_totitle.png",
+                        "rect": {
+                            "pos": [ 100, 100 ],
+                            "size": [ 0, 0 ],
+                            "anchorMin": [ 0.5, 0.5 ],
+                            "anchorMax": [ 0.5, 0.5 ],
+                            "pivot": [ 0.5, 0.5 ]
+                        },
+                        "graphic": {
+                            "color": [ 1, 1, 1, 1 ],
+                            "depth": 0,
+                            "raycastTarget": false
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Retry",
+                "type": "Button",
+                "onClick": "ButtonClicked",
+                "source": "Assets/white.png",
+                "normalColor": [ 1, 0, 0, 1 ],
+                "hoveredColor": [ 0.8, 0.8, 0.8, 1 ],
+                "selectedColor": [ 0.7, 0.7, 0.7, 1 ],
+                "pressedColor": [ 0.6, 0.6, 0.6, 1 ],
+                "disabledColor": [ 0.4, 0.4, 0.4, 1 ],
+                "rect": {
+                    "pos": [ 150, 200 ],
+                    "size": [ 100, 50 ],
+                    "anchorMin": [ 0.5, 0.5 ],
+                    "anchorMax": [ 0.5, 0.5 ],
+                    "pivot": [ 0.5, 0.5 ]
+                },
+                "graphic": {
+                    "color": [ 1, 1, 1, 1 ],
+                    "depth": 0,
+                    "raycastTarget": true
+                },
+                "children": [
+                    {
+                        "name": "text",
+                        "type": "Image",
+                        "source": "Assets/Images/Text/text_retry.png",
+                        "rect": {
+                            "pos": [ 0, 0 ],
+                            "size": [ 100, 100 ],
+                            "anchorMin": [ 0.5, 0.5 ],
+                            "anchorMax": [ 0.5, 0.5 ],
+                            "pivot": [ 0.5, 0.5 ]
+                        },
+                        "graphic": {
+                            "color": [ 1, 1, 1, 1 ],
+                            "depth": 0,
+                            "raycastTarget": false
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

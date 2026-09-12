@@ -126,11 +126,17 @@ void UICanvasSystem::Update(World& world)
     View<Canvas> canvasView(world);
     for (auto [canvasEntity, canvas] : canvasView)
     {
-        if (canvas.renderMode != RenderMode::ScreenSpaceOverlay)
+        if (canvasEntity.enabled != true)
+        {
             continue;
+        }
+
+        if (canvas.renderMode != RenderMode::ScreenSpaceOverlay)
+        {
+            continue;
+        }
 
         Transform* canvasTransform = world.GetComponent<Transform>(canvasEntity);
-        if (!canvasTransform) continue;
 
         Vector2 canvasMin(0.0f, 0.0f);
         Vector2 canvasMax(sw, sh);
@@ -262,10 +268,17 @@ void UICanvasSystem::Draw(World& world)
 
     for (auto& ce : canvases)
     {
-        if (ce.canvas->renderMode != RenderMode::ScreenSpaceOverlay) continue;
+        if (ce.entity.enabled != true)
+        {
+            continue;
+        }
+
+        if (ce.canvas->renderMode != RenderMode::ScreenSpaceOverlay)
+        {
+            continue;
+        }
 
         Transform* canvasTransform = world.GetComponent<Transform>(ce.entity);
-        if (!canvasTransform) continue;
 
         std::vector<UIDrawItem> items;
         CollectUIChildren(world, canvasTransform, items);

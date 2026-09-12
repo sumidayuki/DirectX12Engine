@@ -55,7 +55,10 @@ bool MainScene::Load()
 
 	UILayoutImporter importer;
 	importer.Import(L"Assets/Json/UI/MainSceneUI.json", m_world);
+	importer.Import(L"Assets/Json/UI/ResultUI.json", m_world);
 
+	Entity result = UIManager::GetInstance()->GetCanvas(HashString("ResultUI"));
+	result.enabled = false;
 	return true;
 }
 
