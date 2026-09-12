@@ -46,6 +46,10 @@ public:
 
 	static float GetTime();
 
+	static float GetTimeScale() { return m_timeScale; };
+
+	static void SetTimeScale(float scale) { m_timeScale = scale; }
+
 	// シーン遷移後にdeltaTimeをリセットし、次のフレームの経過時間を0にします。
 	static void ResetDeltaTimeOnSceneLoad();
 };

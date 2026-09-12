@@ -13,6 +13,7 @@ class World
 private:
 	EntityManager							m_em;
 	ArchetypeManager						m_am;
+	std::vector<std::unique_ptr<System>>	m_coreSystems;
 	std::vector<std::unique_ptr<System>>	m_systems;
 	CameraSystem*							m_cameraSystem;
 	std::list<Entity>						m_allEntities;
@@ -178,6 +179,12 @@ public:
 	template <ComponentType T> bool HasComponent(Entity e) { return m_am.GetComponent<T>(e) != nullptr; }
 
 	/// <summary>
+	/// 指定したシステムをコアに追加します。
+	/// </summary>
+	/// <param name="sys"></param>
+	void AddCoreSystem(std::unique_ptr<System> sys);
+
+	/// <summary>
 	/// 指定したシステムを追加します。
 	/// </summary>
 	/// <param name="sys">make_unique<追加したいSystem>で指定します。</param>
@@ -191,6 +198,14 @@ public:
 	template <typename T>
 	T* GetSystem()
 	{
+		for (auto& sys : m_coreSystems)
+		{
+			if (auto ptr = dynamic_cast<T*>(sys.get()))
+			{
+				return ptr;
+			}
+		}
+
 		for (auto& sys : m_systems) 
 		{
 			if (auto ptr = dynamic_cast<T*>(sys.get())) 

@@ -372,6 +372,11 @@ void World::DestroyEntity(Entity entity)
 	m_allEntities.remove(entity);
 }
 
+void World::AddCoreSystem(std::unique_ptr<System> sys)
+{
+	m_coreSystems.push_back(std::move(sys));
+}
+
 void World::AddSystem(std::unique_ptr<System> sys)
 {
 	m_systems.push_back(std::move(sys));
@@ -379,26 +384,26 @@ void World::AddSystem(std::unique_ptr<System> sys)
 
 bool World::Load(World& world)
 {
-	world.AddSystem(std::make_unique<CameraSystem>());
-	world.AddSystem(std::make_unique<LightSystem>());
-	world.AddSystem(std::make_unique<SpriteRendererSystem>());
-	world.AddSystem(std::make_unique<MeshRendererSystem>());
-	world.AddSystem(std::make_unique<AnimationSystem>());
-	world.AddSystem(std::make_unique<BoneSocketSystem>());
-	world.AddSystem(std::make_unique<TransformSystem>());
-	world.AddSystem(std::make_unique<PhysicsSimulationSystem>());
-	world.AddSystem(std::make_unique<SkinnedMeshRendererSystem>());
-	world.AddSystem(std::make_unique<EffectSystem>());
-	world.AddSystem(std::make_unique<InputSystem>());
-	world.AddSystem(std::make_unique<ProjectileSystem>());
-	world.AddSystem(std::make_unique<AIAgentSystem>());
-	world.AddSystem(std::make_unique<HPSystem>());
-	world.AddSystem(std::make_unique<UILayoutSystem>());
-	world.AddSystem(std::make_unique<UICanvasSystem>());
-	world.AddSystem(std::make_unique<UIEventSystem>());
-	world.AddSystem(std::make_unique<UIButtonSystem>());
-	world.AddSystem(std::make_unique<UISliderSystem>());
-	world.AddSystem(std::make_unique<AudioSystem>());
+	world.AddCoreSystem(std::make_unique<CameraSystem>());
+	world.AddCoreSystem(std::make_unique<LightSystem>());
+	world.AddCoreSystem(std::make_unique<SpriteRendererSystem>());
+	world.AddCoreSystem(std::make_unique<MeshRendererSystem>());
+	world.AddCoreSystem(std::make_unique<AnimationSystem>());
+	world.AddCoreSystem(std::make_unique<BoneSocketSystem>());
+	world.AddCoreSystem(std::make_unique<TransformSystem>());
+	world.AddCoreSystem(std::make_unique<PhysicsSimulationSystem>());
+	world.AddCoreSystem(std::make_unique<SkinnedMeshRendererSystem>());
+	world.AddCoreSystem(std::make_unique<EffectSystem>());
+	world.AddCoreSystem(std::make_unique<InputSystem>());
+	world.AddCoreSystem(std::make_unique<ProjectileSystem>());
+	world.AddCoreSystem(std::make_unique<AIAgentSystem>());
+	world.AddCoreSystem(std::make_unique<HPSystem>());
+	world.AddCoreSystem(std::make_unique<UILayoutSystem>());
+	world.AddCoreSystem(std::make_unique<UICanvasSystem>());
+	world.AddCoreSystem(std::make_unique<UIEventSystem>());
+	world.AddCoreSystem(std::make_unique<UIButtonSystem>());
+	world.AddCoreSystem(std::make_unique<UISliderSystem>());
+	world.AddCoreSystem(std::make_unique<AudioSystem>());
 
 	AIAgentSystem::CreateSingleton();
 	UIManager::CreateSingleton();
@@ -449,9 +454,17 @@ void World::Start(World& world)
 {
 	m_cameraSystem = GetSystem<CameraSystem>();
 
-	for (auto& sys : m_systems)
+	for (auto& sys : m_coreSystems)
 	{
 		sys->Start(world);
+	}
+
+	if (Time::GetTimeScale() > 0.0f)
+	{
+		for (auto& sys : m_systems)
+		{
+			sys->Start(world);
+		}
 	}
 }
 
@@ -461,9 +474,17 @@ void World::BeginFrame(UINT frameIndex)
 
 void World::Update(World& world)
 {
-	for (auto& sys : m_systems)
+	for (auto& sys : m_coreSystems)
 	{
 		sys->Update(world);
+	}
+
+	if (Time::GetTimeScale() > 0.0f)
+	{
+		for (auto& sys : m_systems)
+		{
+			sys->Update(world);
+		}
 	}
 }
 
@@ -476,9 +497,18 @@ void World::Draw(World& world)
 		m_cameraSystem->SetCurrent(world.GetComponent<Camera>(entity), entity);
 	}
 
-	for (auto& sys : m_systems)
+	for (auto& sys : m_coreSystems)
 	{
 		sys->InternalRender(world);
 		sys->Draw(world);
+	}
+
+	if (Time::GetTimeScale() > 0.0f)
+	{
+		for (auto& sys : m_systems)
+		{
+			sys->InternalRender(world);
+			sys->Draw(world);
+		}
 	}
 }

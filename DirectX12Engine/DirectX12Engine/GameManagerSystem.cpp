@@ -76,4 +76,8 @@ void GameManagerSystem::Start(World& world)
 
 void GameManagerSystem::Update(World& world)
 {
+	if (Keyboard::GetKeyState(KeyCode::Escape).WasPressedThisFrame())
+	{
+		Time::SetTimeScale(0.0f);
+	}
 }
