@@ -6,6 +6,44 @@
 #include "PlayerCamera.h"
 #include "ProceduralSkyRenderer.h"
 
+void GameManagerSystem::NotifyDeath(Entity character, World& world)
+{
+	Time::SetTimeScale(0.0f);
+
+	m_resultCanvas.enabled = true;
+
+	Entity text = UIManager::GetInstance()->GetUIObject(HashString("ResultUI"), HashString("ResultText"));
+	UIGraphic* textUI = world.GetComponent<UIGraphic>(text);
+	Transform* textTransform = world.GetComponent<Transform>(text);
+	Image* image = world.GetComponent<Image>(textTransform->entity);
+	if (m_player == character)
+	{
+		Texture2D* texture = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/Images/Text/text_lose.png");
+		Rect spriteRect = { 0, 0, (float)texture->GetWidth(), (float)texture->GetHeight() };
+		Sprite* newSprite = Sprite::Create(
+			texture,
+			spriteRect,
+			Vector2(0.5f, 0.5f),
+			1.0f,
+			1.0f
+		);
+		image->sprite = newSprite;
+	}
+	else
+	{
+		Texture2D* texture = AssetManager::GetInstance()->GetAsset<Texture2D>(AssetType::Texture, L"Assets/Images/Text/text_win.png");
+		Rect spriteRect = { 0, 0, (float)texture->GetWidth(), (float)texture->GetHeight() };
+		Sprite* newSprite = Sprite::Create(
+			texture,
+			spriteRect,
+			Vector2(0.5f, 0.5f),
+			1.0f,
+			1.0f
+		);
+		image->sprite = newSprite;
+	}
+}
+
 bool GameManagerSystem::Load(World& world)
 {
 	m_enemy = INVALID_ENTITY;
@@ -16,7 +54,7 @@ bool GameManagerSystem::Load(World& world)
 
 void GameManagerSystem::Start(World& world)
 {
-	// �v���C���[�𐶐�
+	// プレイヤーを生成
 	Entity player = world.CreateWithModel(L"Assets/Archer.fbx", nullptr, Vector3(0, 0, -500), Quaternion::identity, Layers::Player);
 	world.AddComponent<Input>(player, Input{});
 	world.AddComponent<PlayerTag>(player, PlayerTag{});
@@ -28,7 +66,7 @@ void GameManagerSystem::Start(World& world)
 
 	m_player = player;
 
-	// �G�𐶐�
+	// 敵を生成
 	Entity warrok = world.CreateWithModel(L"Assets/Warrok.fbx", nullptr, Vector3::zero, Quaternion::Euler(0, 180, 0), Layers::Enemy);
 	Transform* warrokT = world.GetComponent<Transform>(warrok);
 	warrokT->scale = warrokT->scale * 1.5f;
@@ -54,16 +92,15 @@ void GameManagerSystem::Start(World& world)
 
 	m_enemy = warrok;
 
-	//  �o�g���J�����̐ݒ�
+	//  バトルカメラの設定
 	float fov = 60.0f;
 	float aspect = (float)Screen::GetWidth() / (float)Screen::GetHeight();
 	float nearPlane = 0.1f;
 	float farPlane = 5000.0f;
 
-	// �o�g���J�����̍쐬
+	// バトルカメラの作成
 	Entity cameraEntity = world.CreateCamera3D(fov, aspect, nearPlane, farPlane, CameraClearFlags::ProceduralSky);
 	ProceduralSkyRenderer::Initialize(1.0f, 60.0f, false);
-
 
 	world.AddComponent<AudioListener>(cameraEntity, AudioListener{});
 
@@ -76,8 +113,13 @@ void GameManagerSystem::Start(World& world)
 
 void GameManagerSystem::Update(World& world)
 {
-	if (Keyboard::GetKeyState(KeyCode::Escape).WasPressedThisFrame())
+	if (!world.IsAlive(m_player))
 	{
-		Time::SetTimeScale(0.0f);
+
+	}
+
+	if (!world.IsAlive(m_enemy))
+	{
+
 	}
 }

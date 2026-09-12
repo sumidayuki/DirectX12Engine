@@ -5,10 +5,12 @@ class GameManagerSystem : public System
 private:
 	Entity m_player;
 	Entity m_enemy;
+	Entity m_resultCanvas;
 
 public:
 	Entity GetPlayer() const { return m_player; }
 	Entity GetEnemy() const { return m_enemy; }
+	void NotifyDeath(Entity character, World& world);
 
 private:
 	bool Load(World& world) override;
